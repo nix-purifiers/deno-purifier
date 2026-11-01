@@ -38,14 +38,30 @@ dependencies to newer versions and records both lockfiles in one run.
 
 The flake's `overlays.default` adds one attribute to a package set, the
 scope `deno-purifier`. The scope holds the builder `buildDenoProject`
-beside the `deno-purifier` command. A package written for `callPackage`
-takes the scope by name:
+beside the `deno-purifier` command. Build from the project's directory,
+without adding a Nix file. Replace `my-app` with the output to build:
 
-```nix
-# package.nix
-{ deno-purifier }:
-(deno-purifier.buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app
+```zsh
+nix build --impure --expr '
+  let
+    purifier = builtins.getFlake "github:nix-purifiers/deno-purifier";
+    pkgs = import purifier.inputs.nixpkgs {
+      system = builtins.currentSystem;
+      overlays = [ purifier.overlays.default ];
+    };
+  in
+  (pkgs.deno-purifier.buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app'
 ```
+
+This uses the purifier's pinned nixpkgs, matching the lock command above.
+To build with ambient `<nixpkgs>` from your Nix search path instead,
+replace `import purifier.inputs.nixpkgs` with `import <nixpkgs>`.
+Both forms need no Nix files in your project. The build tool and language
+versions must match the lockfile; with ambient nixpkgs, lock with the
+purifier from that package set or pass a compatible toolchain to the builder.
+
+A flake is optional. It can live in the project's repository or in a
+separate packaging repository and call the builder directly:
 
 ```nix
 {
@@ -57,14 +73,12 @@ takes the scope by name:
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [
-          deno-purifier.overlays.default
-          (final: prev: { my-app = final.callPackage ./package.nix { }; })
-        ];
+        overlays = [ deno-purifier.overlays.default ];
       };
     in
     {
-      packages.${system}.default = pkgs.my-app;
+      packages.${system}.default =
+        (pkgs.deno-purifier.buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app;
     };
 }
 ```
