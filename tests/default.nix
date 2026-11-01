@@ -8,6 +8,8 @@
   overlay,
   # The source of deployctl at the commit tests/dependencies pins.
   deployctl,
+  # The `purifier` namespace of the shared purifier library.
+  purifier,
 }:
 let
   inherit (pkgs) lib;
@@ -49,12 +51,12 @@ let
   # Evaluates the lockfile reader on lockfiles written inline. The purifier
   # lockfile records the hash of the deno.lock it goes with.
   readLock =
-    platform: denoLock: purifier:
+    platform: denoLock: recorded:
     let
       text = builtins.toJSON denoLock;
     in
     import ../nix/lib/lock.nix {
-      inherit lib platform;
+      inherit lib platform purifier;
       src = ./fixtures/app;
       lockFile = builtins.toFile "deno.lock" text;
       purifierLockFile = builtins.toFile "deno-purifier.lock.json" (
@@ -68,7 +70,7 @@ let
             programs = [ ];
             remote = [ ];
           }
-          // purifier
+          // recorded
         )
       );
     };
@@ -282,7 +284,7 @@ in
   stale-lock = evalCheck "stale-lock" (refuses (
     _:
     import ../nix/lib/lock.nix {
-      inherit lib;
+      inherit lib purifier;
       platform = host;
       src = ./fixtures/app;
       lockFile = builtins.toFile "deno.lock" (builtins.toJSON esbuildLock);
@@ -294,7 +296,7 @@ in
   stale-config = evalCheck "stale-config" (refuses (
     _:
     import ../nix/lib/lock.nix {
-      inherit lib;
+      inherit lib purifier;
       platform = host;
       src = ./fixtures/app;
       lockFile = ./fixtures/app/deno.lock;
@@ -316,7 +318,7 @@ in
     refuses (
       _:
       import ../nix/lib/lock.nix {
-        inherit lib;
+        inherit lib purifier;
         platform = host;
         src = ./fixtures/app;
         lockFile = ./fixtures/app/deno.lock;
@@ -326,7 +328,7 @@ in
     && refuses (
       _:
       import ../nix/lib/lock.nix {
-        inherit lib;
+        inherit lib purifier;
         platform = host;
         src = ./fixtures/app;
         lockFile = ./fixtures/app/deno.lock;
@@ -341,7 +343,7 @@ in
   tampered-hash = evalCheck "tampered-hash" (refuses (
     _:
     import ../nix/lib/lock.nix {
-      inherit lib;
+      inherit lib purifier;
       platform = host;
       src = ./fixtures/app;
       lockFile = ./fixtures/app/deno.lock;
@@ -376,7 +378,7 @@ in
   interactive =
     let
       tree = import ../nix/lib/interactive.nix {
-        inherit pkgs;
+        inherit pkgs purifier;
         src = ./fixtures/app;
       };
     in

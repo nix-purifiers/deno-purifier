@@ -9,11 +9,14 @@
   pkgs,
   # The project root.
   src,
+  # The `purifier` namespace of the shared purifier library.
+  purifier,
 }:
 pkgs.callPackage ./cache.nix {
+  inherit purifier;
   lock = import ./lock.nix {
     inherit (pkgs) lib;
-    inherit src;
+    inherit src purifier;
     lockFile = src + "/deno.lock";
     purifierLockFile = src + "/deno-purifier.lock.json";
     platform = pkgs.stdenv.hostPlatform;

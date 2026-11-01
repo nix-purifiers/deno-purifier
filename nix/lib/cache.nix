@@ -4,24 +4,29 @@
 # --cached-only, and nothing it derives (transpiled modules, analysis
 # databases), which Deno writes beside it at run time.
 #
-# Deno keeps a remote module as one file: the body, then a line
-# `// denoCacheMetadata=` and a JSON object with the response headers, the
-# URL and the time of the fetch. A file entry fetches the body alone, so
-# this tree appends the line, with the headers the lock run recorded and a
-# time of 0. Inline entries already hold the whole cache file, and npm
-# packages lie unpacked as Deno unpacks them.
+# The shared purifier library lays the download entries out as a tree:
+# npm packages lie unpacked as Deno unpacks them, and inline entries hold
+# the whole cache file. Deno keeps a remote module as one file: the body,
+# then a line `// denoCacheMetadata=` and a JSON object with the response
+# headers, the URL and the time of the fetch. A file entry fetches the body
+# alone, so this tree appends the line, with the headers the lock run
+# recorded and a time of 0.
 {
   lib,
+  pkgs,
   runCommand,
-  callPackage,
+  # The `purifier` namespace of the shared purifier library.
+  purifier,
   # The result of nix/lib/lock.nix.
   lock,
   fetchurl ? null,
 }:
 let
-  dependencies = callPackage ./dependencies.nix (
+  dependencies = purifier.tree (
     {
-      inherit (lock) downloads;
+      inherit pkgs;
+      name = "deno-purifier-dependencies";
+      entries = lock.downloads;
     }
     // lib.optionalAttrs (fetchurl != null) { inherit fetchurl; }
   );

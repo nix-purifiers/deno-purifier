@@ -33,6 +33,9 @@
   stdenv,
   callPackage,
   deno,
+  # The `purifier` namespace of the shared purifier library, which the
+  # deno-purifier overlay passes.
+  purifier,
 }:
 {
   # The root of the Deno project: the directory of its deno.lock.
@@ -76,11 +79,12 @@ let
       purifierLockFile
       ;
     platform = stdenv.hostPlatform;
+    inherit purifier;
   };
 
   cache = callPackage ./cache.nix (
     {
-      inherit lock;
+      inherit lock purifier;
     }
     // lib.optionalAttrs (fetchurl != null) { inherit fetchurl; }
   );

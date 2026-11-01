@@ -48,8 +48,11 @@ the package publishes. `deno-purifier lock` records those:
    workspace members, such as an example with its own import map.
 2. It reads the remote module cache Deno filled. A module body becomes a
    file entry with its URL, hash and the headers Deno keeps. A version
-   list, trimmed to the versions `deno.lock` names, and a redirect become
-   inline entries that hold the whole cache file.
+   list, trimmed to the versions `deno.lock` names, becomes an inline
+   entry that holds the whole cache file. The entries have the shapes of
+   [purifier](https://github.com/nix-purifiers/purifier), the Nix library
+   the nix-purifiers share, and a build uses that library to fetch them
+   and lay them out as a `DENO_DIR`.
 3. It records the project's packages (the root and its workspace members),
    their tasks, and each `deno compile` command in the tasks with its
    entrypoint and flags.

@@ -27,6 +27,13 @@
   stdenv,
 }:
 let
+  # The wrapper evaluates outside this flake, so it fetches the shared
+  # purifier library at the revision this flake locks, the one the
+  # sandboxed builds use.
+  purifierLocked = builtins.toFile "purifier-locked.json" (
+    builtins.toJSON (lib.importJSON ../../flake.lock).nodes.purifier.locked
+  );
+
   lockTool = writeShellApplication {
     name = "deno-purifier";
     runtimeInputs = [ deno ];
@@ -108,9 +115,14 @@ let
         echo "deno-purifier: building the downloads of $dir" >&2
         mkdir -p "$cache"
         DENO_PURIFIER_ROOT="$dir" nix build --impure --out-link "$cache/cache" --expr '
-          import ${../../nix/lib}/interactive.nix {
+          let
             pkgs = import ${path} { system = "${stdenv.hostPlatform.system}"; };
+            purifierSource = builtins.fetchTree (builtins.fromJSON (builtins.readFile ${purifierLocked}));
+          in
+          import ${../../nix/lib}/interactive.nix {
+            inherit pkgs;
             src = /. + builtins.getEnv "DENO_PURIFIER_ROOT";
+            purifier = import (purifierSource.outPath + "/nix/lib") { inherit (pkgs) lib; };
           }
         '
         # Deno writes transpiled modules and analysis databases into

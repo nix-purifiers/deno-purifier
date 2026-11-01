@@ -63,6 +63,7 @@
             checks = import ../../../tests {
               inherit pkgs;
               inherit (inputs) deployctl;
+              inherit (lib) purifier;
               overlay = self.overlays.default;
             };
             treefmt.programs.nixfmt.enable = true;

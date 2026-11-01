@@ -32,11 +32,13 @@
   # other operating systems or CPUs (such as the per-platform binaries of
   # esbuild) are left out of `downloads`, as Deno leaves them out.
   platform,
+  # The `purifier` namespace of the shared purifier library.
+  purifier,
 }:
 let
   relock = what: "deno-purifier: ${what}; run `deno-purifier lock` at the project root.";
 
-  purifier =
+  recorded =
     if builtins.pathExists purifierLockFile then
       lib.importJSON purifierLockFile
     else
@@ -53,7 +55,7 @@ let
     remote = builtins.isList;
   };
   malformed = lib.filterAttrs (
-    field: valid: !(purifier ? ${field}) || !valid purifier.${field}
+    field: valid: !(recorded ? ${field}) || !valid recorded.${field}
   ) fields;
   entryShape =
     e:
@@ -71,33 +73,33 @@ let
         && builtins.match "sha256-[A-Za-z0-9+/]{43}=" e.hash != null
       )
     );
-  badEntries = builtins.filter (e: !entryShape e) (purifier.remote or [ ]);
+  badEntries = builtins.filter (e: !entryShape e) (recorded.remote or [ ]);
 
   denoLock =
-    if !builtins.isAttrs purifier then
+    if !builtins.isAttrs recorded then
       throw (relock "${toString purifierLockFile} is not a JSON object")
-    else if purifier.version or null == 1 && malformed != { } then
+    else if recorded.version or null == 1 && malformed != { } then
       throw (
         relock "${toString purifierLockFile} lacks ${lib.concatStringsSep ", " (builtins.attrNames malformed)} or has a value of the wrong type there"
       )
-    else if purifier.version or null == 1 && badEntries != [ ] then
+    else if recorded.version or null == 1 && badEntries != [ ] then
       throw (
         relock "${toString purifierLockFile} has a remote entry that is neither { path, url, mirrors, hash, headers } nor { path, contents }: ${builtins.toJSON (builtins.head badEntries)}"
       )
-    else if purifier.version or null != 1 then
+    else if recorded.version or null != 1 then
       throw (
         relock "${toString purifierLockFile} has format ${
-          toString (purifier.version or "?")
+          toString (recorded.version or "?")
         }, and this deno-purifier reads format 1"
       )
-    else if builtins.hashFile "sha256" lockFile != purifier.denoLock then
+    else if builtins.hashFile "sha256" lockFile != recorded.denoLock then
       throw (relock "deno.lock changed since deno-purifier.lock.json was written")
     else
       lib.importJSON lockFile;
 
   staleConfigs = lib.filterAttrs (
     path: hash: builtins.hashFile "sha256" (src + "/${path}") != hash
-  ) purifier.configs;
+  ) recorded.configs;
   checked =
     if staleConfigs != { } then
       throw (
@@ -106,33 +108,15 @@ let
     else
       denoLock;
 
-  nodeOs =
-    if platform.isLinux then
-      "linux"
-    else if platform.isDarwin then
-      "darwin"
-    else
-      platform.parsed.kernel.name;
-  nodeCpu =
-    {
-      x86_64 = "x64";
-      aarch64 = "arm64";
-      i686 = "ia32";
-      armv7l = "arm";
-    }
-    .${platform.parsed.cpu.name} or platform.parsed.cpu.name;
-
-  # npm's rule for the os and cpu fields, which Deno follows: a name that is
-  # listed allows, a name listed with a leading "!" forbids, and a list of
-  # only forbidden names allows the rest.
-  allows =
-    value: list:
-    let
-      denied = lib.elem "!${value}" list;
-      allowed = lib.filter (x: !lib.hasPrefix "!" x) list;
-    in
-    !denied && (allowed == [ ] || lib.elem value allowed);
-  admits = entry: allows nodeOs (entry.os or [ ]) && allows nodeCpu (entry.cpu or [ ]);
+  # npm's rule for the os and cpu fields, which Deno follows, from the
+  # purifier library. deno.lock records no libc filter.
+  admits =
+    entry:
+    purifier.admits {
+      os = entry.os or null;
+      cpu = entry.cpu or null;
+      libc = null;
+    } platform.system;
 
   # A deno.lock npm key is <name>@<version>, followed by "_" and the peer
   # dependencies when they shaped the resolution. The name of a scoped
@@ -155,7 +139,7 @@ let
     let
       scope = if lib.hasPrefix "@" name then builtins.head (lib.splitString "/" name) else "";
     in
-    purifier.npmRegistries.${scope} or purifier.npmRegistries."";
+    recorded.npmRegistries.${scope} or recorded.npmRegistries."";
 
   # Deno keeps npm packages under the host of their registry.
   hostOf = url: builtins.head (lib.splitString "/" (lib.last (lib.splitString "://" url)));
@@ -214,7 +198,7 @@ let
           hash
           ;
       }
-  ) purifier.remote;
+  ) recorded.remote;
 in
 # Every attribute depends on the checks that deno.lock and the deno.json
 # files are the ones the lock run read.
@@ -222,8 +206,8 @@ builtins.seq checked {
   downloads = npm ++ remote;
   headers = lib.listToAttrs (
     map (e: lib.nameValuePair e.path { inherit (e) url headers; }) (
-      builtins.filter (e: e ? url) purifier.remote
+      builtins.filter (e: e ? url) recorded.remote
     )
   );
-  inherit (purifier) members programs;
+  inherit (recorded) members programs;
 }
