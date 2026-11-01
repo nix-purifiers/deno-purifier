@@ -42,7 +42,7 @@ let
   # deployctl, a real-world project: a deno.jsonc with comments, a JSR
   # package with many pinned @std versions and an npm dependency. Its own
   # deno.lock at that commit is out of date for this Deno, so
-  # tests/real/deployctl holds the deno.lock `deno-purifier lock --update`
+  # tests/real/deployctl holds the deno.lock `deno-purifier update`
   # wrote, and the lockfile for it, outside deployctl's source. Its code
   # does not type-check with the TypeScript library of this Deno, so the
   # publish check skips type checking.

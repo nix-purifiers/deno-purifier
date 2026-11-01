@@ -1,0 +1,16 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@std/path@^1.0.0": "1.0.0"
+  },
+  "jsr": {
+    "@std/path@1.0.0": {
+      "integrity": "77fcb858b6e38777d1154df0f02245ba0b07e2c40ca3c0eec57c9233188c2d21"
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@std/path@^1.0.0"
+    ]
+  }
+}

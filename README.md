@@ -27,7 +27,7 @@ A project without a `deno.lock` needs one first: run `deno install`. A
 project whose configuration sets `"lock": false` needs that setting removed,
 since Deno then neither writes nor reads `deno.lock`. When the lock run
 reports that `deno.lock` is out of date, run
-`nix run github:nix-purifiers/deno-purifier -- lock --update`.
+`nix run github:nix-purifiers/deno-purifier -- update`.
 
 Build the project with the builder in the flake's library:
 
@@ -154,15 +154,22 @@ then rebuilds a `DENO_DIR` the way Nix does, from `deno.lock` and what it
 recorded alone, runs `deno install --cached-only` against it, and writes
 the lockfile only when that succeeds.
 
-The installs run with `--frozen`, so the lock run never changes
-`deno.lock` behind your back. A `deno.lock` that does not cover every
-module stops it with the change Deno wants to make. `deno-purifier lock
---update` lets a first pass update `deno.lock`, writes it back to the
-project, and records the downloads from a frozen pass, so the lockfile it
-writes is the same as the one a plain lock run writes. Locking a project
-again with the same `deno.lock` writes the same lockfile, byte for byte.
+The installs run with `--frozen`, so `lock` keeps the resolution
+`deno.lock` holds. A `deno.lock` that does not cover every module stops it
+with the change Deno wants to make. Locking a project again with the same
+`deno.lock` writes the same lockfile, byte for byte.
 
-`--lockfile <path>` writes the lockfile outside the project, and
+`deno-purifier update [--latest] [<package>...]` updates both lockfiles in
+one run. It runs `deno update --recursive` on the project, for every
+dependency or the named ones, within the version requirements of
+`deno.json` or, with `--latest`, to the latest versions. Deno writes the
+new requirements and resolution to `deno.json` and `deno.lock`. The lock
+run that follows lets a first pass add to `deno.lock` what the code
+imports, writes it back to the project, and records the downloads from a
+frozen pass, so the lockfile it writes is the same as the one a plain lock
+run then writes.
+
+`--lockfile <path>` writes the lockfile outside the project, and `update`,
 `prefetch` and `publish` take it too, matching the builder's `lockFile`.
 
 ## Everyday loop
@@ -229,7 +236,7 @@ of a test project, which show no diagnostics.
 | `does not match its contentHash` or `has no contentHash` | `deno-purifier.lock.json` was edited or cut short. | `deno-purifier lock` |
 | `lacks … or has a value of the wrong type`, `has format` | The lockfile is malformed or from another deno-purifier version. | `deno-purifier lock` |
 | `Deno needs a module that deno-purifier.lock.json does not record` | The code imports a module the lock run did not see, such as one added since. | `deno-purifier lock` |
-| `deno.lock does not cover every module the project imports` (lock run) | An import in the code is missing from `deno.lock`. | `deno-purifier lock --update` |
+| `deno.lock does not cover every module the project imports` (lock run) | An import in the code is missing from `deno.lock`. | `deno-purifier update` |
 | `sets "lock": false` (lock run) | Deno ignores `deno.lock` for this project. | Remove the setting, `deno install`, `deno-purifier lock` |
 | `hash mismatch in fixed-output derivation` (build) | A server now serves different bytes at a locked URL. | `deno-purifier lock`, then review the change |
 
@@ -279,9 +286,10 @@ Refused or left out:
   --unstable --no-check tests/ src/`) passes all 31 tests with only the
   locked downloads.
 
-  Working through it led to `--update`, to leaving nested projects and
-  `exclude`d paths out of the lock run, to `publishArgs`, to the
-  `denoLock` argument, and to the error messages above.
+  Working through it led to the pass of `update` that lets Deno update
+  `deno.lock`, to leaving nested projects and `exclude`d paths out of the
+  lock run, to `publishArgs`, to the `denoLock` argument, and to the error
+  messages above.
 - [oak](https://github.com/oakserver/oak), the web framework, sets
   `"lock": false`, which led to the lock run's message for that case.
 
@@ -292,7 +300,10 @@ builds of the fixtures in `tests/fixtures` and of deployctl, the contract's
 `conformance-malformed`, `conformance-rebuild`, `conformance-offline` and
 `conformance-external`, and checks of `publish` and of the wrapper. CI
 also runs `conformance-relock`, which locks every test project again with
-the network (`tests/relock.sh`) and fails when a lockfile changes.
+the network (`tests/relock.sh`) and fails when a lockfile changes, and
+`conformance-update`, which runs `update` on a fixture whose `deno.lock`
+pins an old `@std/path` and checks that Nix accepts both new lockfiles
+(`tests/update.sh`).
 
 ## Credits
 

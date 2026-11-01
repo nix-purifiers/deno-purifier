@@ -4,7 +4,8 @@
 #
 #   deno-purifier   `lock` records the project's downloads in
 #                   deno-purifier.lock.json (src/deno-purifier.ts);
-#                   `prefetch` realizes what the everyday loop and the
+#                   `update` updates the dependencies with `deno update`
+#                   and then records the downloads; `prefetch` realizes what the everyday loop and the
 #                   editor read (nix/lib/environment.nix) and links it into
 #                   the project as .deno-purifier/environment, a
 #                   garbage-collector root; `publish` builds the release
@@ -161,11 +162,15 @@ let
 
       usage() {
         cat >&2 << 'EOF'
-      usage: deno-purifier lock [--root DIR] [--lockfile PATH] [--update] [-- DENO-ARGS...]
+      usage: deno-purifier lock [--root DIR] [--lockfile PATH] [-- DENO-ARGS...]
+             deno-purifier update [--root DIR] [--lockfile PATH] [--latest] [PACKAGE...]
              deno-purifier prefetch [--root DIR] [--lockfile PATH]
              deno-purifier publish [--root DIR] [--lockfile PATH] [DENO-PUBLISH-ARGS...]
 
-        lock      record the project's downloads in deno-purifier.lock.json
+        lock      record the project's downloads in deno-purifier.lock.json,
+                  with the resolution deno.lock holds
+        update    update the dependencies with `deno update`, all of them or
+                  each PACKAGE, then record the downloads
         prefetch  realize the locked downloads, Deno and its runtime in the
                   Nix store, with a garbage-collector root in the project,
                   so that the everyday loop and the editor work offline
@@ -181,10 +186,10 @@ let
       verb="''${1:-}"
       [ $# -gt 0 ] && shift
       case "$verb" in
-        lock)
+        lock | update)
           export DENO_NO_UPDATE_CHECK=1
           exec "$deno" run --allow-all --no-config --no-lock \
-            ${../../src}/deno-purifier.ts lock "$@"
+            ${../../src}/deno-purifier.ts "$verb" "$@"
           ;;
         prefetch | publish) ;;
         *) usage ;;

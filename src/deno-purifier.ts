@@ -2,7 +2,8 @@
 //
 // deno-purifier: records what a Deno project downloads, for Nix.
 //
-//   deno-purifier lock [--root DIR] [--update] [-- DENO-ARGS...]
+//   deno-purifier lock [--root DIR] [--lockfile PATH] [-- DENO-ARGS...]
+//   deno-purifier update [--root DIR] [--lockfile PATH] [--latest] [PACKAGE...]
 //
 // The lock run copies the project to a temporary directory and runs
 // `deno install` there with an empty DENO_DIR and the network: once plainly,
@@ -42,8 +43,9 @@
 // known to serve the project offline.
 //
 // The installs run with --frozen, so a deno.lock that does not cover the
-// project stops the lock run. With --update they may change deno.lock, and
-// the lock run copies the new deno.lock back to the project.
+// project stops the lock run. `update` runs `deno update` first, and its
+// lock run lets Deno change deno.lock, then copies the new deno.lock back to
+// the project.
 //
 // DENO-ARGS, when given, are one more Deno command the lock run runs in the
 // copy, such as `task build`, for modules a task imports at run time.
@@ -462,7 +464,7 @@ async function lock(
     copyTree(root, project);
     const env = { DENO_DIR: denoDir, DENO_NO_UPDATE_CHECK: "1", NO_COLOR: "1" };
 
-    // With --update, a first pass lets Deno update deno.lock, with a cache
+    // For `update`, a first pass lets Deno update deno.lock, with a cache
     // of its own. The downloads are then always recorded from a frozen pass
     // into an empty cache, so the record does not depend on whether
     // deno.lock changed: a frozen install reads redirects from deno.lock
@@ -557,37 +559,72 @@ async function lock(
   }
 }
 
-function usage(): never {
-  console.error(`usage: deno-purifier lock [--root DIR] [--lockfile PATH] [--update] [-- DENO-ARGS...]
+// Updates the project's dependencies with `deno update`, all of them or the
+// named ones, within their version requirements or, with --latest, to the
+// latest versions. Deno writes deno.json and deno.lock; the lock run then
+// records the downloads, letting Deno add what the code imports to
+// deno.lock.
+async function update(
+  rootArg: string | null,
+  lockfilePath: string | null,
+  latest: boolean,
+  packages: string[],
+) {
+  const root = findRoot(rootArg ?? Deno.cwd());
+  const work = Deno.makeTempDirSync({ prefix: "deno-purifier-update-" });
+  try {
+    log(`updating ${packages.length > 0 ? packages.join(", ") : "every dependency"}`);
+    const args = ["update", "--recursive", ...(latest ? ["--latest"] : []), ...packages];
+    const result = await run(args, {
+      cwd: root,
+      env: { DENO_DIR: work, DENO_NO_UPDATE_CHECK: "1", NO_COLOR: "1" },
+    });
+    if (!result.ok) fail(explainFailure(args.join(" "), result.output));
+  } finally {
+    Deno.removeSync(work, { recursive: true });
+  }
+  await lock(root, lockfilePath, true, []);
+}
 
-Records the downloads of the Deno project at DIR (default: the nearest
-directory upwards with a deno.lock) in deno-purifier.lock.json.
+function usage(): never {
+  console.error(`usage: deno-purifier lock [--root DIR] [--lockfile PATH] [-- DENO-ARGS...]
+       deno-purifier update [--root DIR] [--lockfile PATH] [--latest] [PACKAGE...]
+
+lock records the downloads of the Deno project at DIR (default: the
+nearest directory upwards with a deno.lock) in deno-purifier.lock.json,
+with the resolution deno.lock holds. update first updates the
+dependencies with \`deno update\`, all of them or each PACKAGE, then
+records the downloads and lets Deno add what the code imports to
+deno.lock.
 
   --lockfile PATH  write the lockfile to PATH rather than to
                    deno-purifier.lock.json at DIR, such as for a project
                    whose source you do not change
-  --update         let Deno update deno.lock while the lock run installs,
-                   and write the updated deno.lock back to the project
-  DENO-ARGS  one more Deno command to run in the lock run, for modules a
-             task imports at run time, such as \`task build\``);
+  --latest         update to the latest versions, regardless of the
+                   version requirements in deno.json
+  DENO-ARGS        one more Deno command to run in the lock run, for
+                   modules a task imports at run time, such as \`task build\``);
   Deno.exit(2);
 }
 
 if (import.meta.main) {
   const [verb, ...rest] = Deno.args;
-  if (verb !== "lock") usage();
+  if (verb !== "lock" && verb !== "update") usage();
   let root: string | null = null;
   let lockfile: string | null = null;
-  let update = false;
+  let latest = false;
   let extra: string[] = [];
+  const packages: string[] = [];
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--root" && i + 1 < rest.length) root = rest[++i];
     else if (rest[i] === "--lockfile" && i + 1 < rest.length) lockfile = rest[++i];
-    else if (rest[i] === "--update") update = true;
-    else if (rest[i] === "--") {
+    else if (verb === "update" && rest[i] === "--latest") latest = true;
+    else if (verb === "lock" && rest[i] === "--") {
       extra = rest.slice(i + 1);
       break;
-    } else usage();
+    } else if (verb === "update" && !rest[i].startsWith("-")) packages.push(rest[i]);
+    else usage();
   }
-  await lock(root, lockfile, update, extra);
+  if (verb === "lock") await lock(root, lockfile, false, extra);
+  else await update(root, lockfile, latest, packages);
 }

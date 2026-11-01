@@ -176,7 +176,7 @@ Deno.test("explainFailure drops download progress and advises on a stale deno.lo
     "Download https://jsr.io/x\n\x1b[32mDownload\x1b[0m https://jsr.io/y\nerror: The lockfile is out of date.",
   );
   if (text.includes("Download")) throw new Error(`download lines kept:\n${text}`);
-  if (!text.includes("deno-purifier lock --update")) throw new Error(`no advice:\n${text}`);
+  if (!text.includes("deno-purifier update")) throw new Error(`no advice:\n${text}`);
 });
 
 Deno.test("withContentHash fills in the SHA-256 of the text with the empty value", async () => {
