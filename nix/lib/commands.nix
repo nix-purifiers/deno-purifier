@@ -31,7 +31,7 @@ let
 in
 {
   environment = import ./environment.nix {
-    inherit pkgs purifier src;
+    inherit pkgs lib src;
     lockFile = lockPath;
     keep = {
       deno = builtins.storePath deno;

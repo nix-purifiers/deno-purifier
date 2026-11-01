@@ -1,30 +1,34 @@
 # SPDX-License-Identifier: MIT
 #
-# Reads a Deno project's deno.lock and deno-purifier.lock.json at evaluation
-# time. It returns
+# readLock: a Deno project's deno.lock and deno-purifier.lock.json read
+# into the lock in memory of the purifier contract, at evaluation time:
 #
-#   problem     null, or the message of what is wrong with the lockfiles;
-#               every other attribute fails evaluation with it
-#   downloads   the download entries of the purifier library that make up
-#               the project's DENO_DIR, each at its `path` in DENO_DIR:
-#               - one archive entry per npm package of deno.lock, unpacked
-#                 at npm/<registry host>/<name>/<version>, where Deno keeps
-#                 npm packages; `hash` is the lock's integrity
-#               - one file entry per remote module outside JSR, with the
-#                 hash deno.lock pins
-#               - one file entry per JSR version's <version>_meta.json, with
-#                 the hash deno.lock pins as its integrity
-#               - one inline entry per JSR package: its version list
-#                 (meta.json), naming the locked versions
-#               - one file entry per JSR module file, with the hash
-#                 deno-purifier.lock.json records
-#   headers     for each file entry of the remote module cache, by path, the
-#               URL and the response headers Deno keeps beside the body: the
-#               ones deno-purifier.lock.json records for the module, or none
-#   members     the project's packages, as the lock run recorded them:
-#               { name, version, dir, config, tasks }
-#   programs    the `deno compile` commands of the tasks:
-#               { name, member, task, entrypoint, flags, args }
+#   purifier   "deno-purifier"
+#   entries    the download entries of the purifier library that make up
+#              the project's DENO_DIR, each at its `path` in DENO_DIR:
+#              - one archive entry per npm package of deno.lock, unpacked
+#                at npm/<registry host>/<name>/<version>, where Deno keeps
+#                npm packages; `hash` is the lock's integrity, and
+#                `systems` lists the systems a package with os or cpu
+#                filters installs on
+#              - one file entry per remote module outside JSR, with the
+#                hash deno.lock pins
+#              - one file entry per JSR version's <version>_meta.json, with
+#                the hash deno.lock pins as its integrity
+#              - one inline entry per JSR package: its version list
+#                (meta.json), naming the locked versions
+#              - one file entry per JSR module file, with the hash
+#                deno-purifier.lock.json records
+#              A file entry also carries `headers`: the response headers
+#              Deno keeps beside the body, which deno-purifier.lock.json
+#              records for the modules that need them.
+#   outputs    the names of the builder's `packages`, each with what the
+#              builder needs to build it:
+#                <program>    { kind = "program"; program; version; }
+#                <package>    { kind = "package"; member; version; }
+#                task:<task>  { kind = "task"; member; task; }
+#   problems   what is wrong with the lockfiles, each naming the command
+#              that fixes it; `entries` and `outputs` are empty then
 #
 # Deno keeps a remote module at remote/<scheme>/<host>/<SHA-256 of the
 # path and query>, with a port written as <host>_PORT<port>. Deno reads
@@ -35,22 +39,25 @@
 # on the text before parsing it, so a lockfile edited by hand or cut short
 # fails with a request to lock again. The lockfile also holds hashes of
 # deno.lock and of every deno.json the lock run read; when one of them
-# changed since, evaluation stops with a request to lock again.
+# changed since, the lock has a problem that asks to lock again.
+#
+# `lib` is the composed library, which has the shared purifier library as
+# `lib.purifier`.
+{ lib }:
 {
-  lib,
   # The project root.
   src,
-  denoLock,
-  lockFile,
-  # The platform the build runs for, as a nixpkgs platform. npm packages for
-  # other operating systems or CPUs (such as the per-platform binaries of
-  # esbuild) are left out of `downloads`, as Deno leaves them out.
-  platform,
-  # The `purifier` namespace of the shared purifier library.
-  purifier,
+  lockFile ? src + "/deno-purifier.lock.json",
+  denoLock ? src + "/deno.lock",
 }:
 let
   format = 3;
+
+  # The systems of the nix-purifiers family.
+  systems = [
+    "x86_64-linux"
+    "aarch64-linux"
+  ];
 
   relock = what: "deno-purifier: ${what}; run `deno-purifier lock` at the project root.";
   name = "deno-purifier.lock.json";
@@ -118,20 +125,26 @@ let
       relock "deno.lock changed since ${name} was written"
     else if staleConfigs != { } then
       relock "${lib.concatStringsSep ", " (builtins.attrNames staleConfigs)} changed since ${name} was written"
+    else if clash != null then
+      "deno-purifier: more than one output of the project is named ${builtins.toJSON clash}; rename a program, a package or a task."
     else
       null;
 
   parsedDenoLock = lib.importJSON denoLock;
 
   # npm's rule for the os and cpu fields, which Deno follows, from the
-  # purifier library. deno.lock records no libc filter.
-  admits =
+  # purifier library: the systems a package installs on, or null for every
+  # one. deno.lock records no libc filter.
+  systemsOf =
     entry:
-    purifier.admits {
-      os = entry.os or null;
-      cpu = entry.cpu or null;
-      libc = null;
-    } platform.system;
+    if !(entry ? os || entry ? cpu) then
+      null
+    else
+      builtins.filter (lib.purifier.admits {
+        os = entry.os or null;
+        cpu = entry.cpu or null;
+        libc = null;
+      }) systems;
 
   # A deno.lock npm key is <name>@<version>, followed by "_" and the peer
   # dependencies when they shaped the resolution. The name of a scoped
@@ -166,6 +179,7 @@ let
       registry = registryFor name;
       unscoped = lib.last (lib.splitString "/" name);
       tarball = entry.tarball or "${registry}${name}/-/${unscoped}-${version}.tgz";
+      packageSystems = systemsOf entry;
     in
     if !(entry ? integrity) then
       throw "deno-purifier: npm package ${key} has no integrity in deno.lock; run `deno-purifier lock --update` to record one."
@@ -179,24 +193,19 @@ let
         };
         hash = builtins.head (lib.splitString " " entry.integrity);
       }
-      // lib.getAttrs (builtins.filter (f: entry ? ${f}) [
-        "os"
-        "cpu"
-      ]) entry;
+      // lib.optionalAttrs (packageSystems != null) { systems = packageSystems; };
 
   # A package resolved with different peer dependencies appears once per
   # resolution; Deno's cache holds it once.
-  npm = builtins.filter admits (
-    builtins.attrValues (
-      lib.listToAttrs (
-        lib.mapAttrsToList (
-          key: entry:
-          let
-            e = npmEntry key entry;
-          in
-          lib.nameValuePair e.path e
-        ) (parsedDenoLock.npm or { })
-      )
+  npm = builtins.attrValues (
+    lib.listToAttrs (
+      lib.mapAttrsToList (
+        key: entry:
+        let
+          e = npmEntry key entry;
+        in
+        lib.nameValuePair e.path e
+      ) (parsedDenoLock.npm or { })
     )
   );
 
@@ -237,6 +246,7 @@ let
     path = cachePath url;
     inherit url hash;
     mirrors = [ ];
+    headers = recorded.headers.${url} or { };
   };
 
   # The remote modules outside JSR, which deno.lock pins by URL.
@@ -288,25 +298,49 @@ let
 
   jsrFiles = lib.mapAttrsToList fileEntry recorded.jsrFiles;
 
-  files = remoteFiles ++ versionMetas ++ jsrFiles;
+  versionOf =
+    dir:
+    let
+      member = lib.findFirst (m: m.dir == dir) null recorded.members;
+    in
+    if member != null && member.version != null then member.version else "0.0.0";
 
-  # Every attribute but `problem` fails with the problem, when there is one.
-  checked = value: if problem != null then throw problem else value;
+  # The outputs, in a list so that a name given twice is found.
+  outputList =
+    map (p: {
+      name = p.name;
+      value = {
+        kind = "program";
+        program = p;
+        version = versionOf p.member;
+      };
+    }) recorded.programs
+    ++ map (m: {
+      inherit (m) name;
+      value = {
+        kind = "package";
+        member = m;
+        version = versionOf m.dir;
+      };
+    }) (builtins.filter (m: m.name != null) recorded.members)
+    ++ lib.concatMap (
+      m:
+      map (t: {
+        name = if m.dir == "" then "task:${t}" else "task:${m.dir}:${t}";
+        value = {
+          kind = "task";
+          member = m;
+          task = t;
+        };
+      }) m.tasks
+    ) recorded.members;
+  names = map (o: o.name) outputList;
+  clash = lib.findFirst (n: lib.count (m: m == n) names > 1) null names;
 in
 {
-  inherit problem;
-  downloads = checked (npm ++ files ++ versionLists);
-  headers = checked (
-    lib.listToAttrs (
-      map (
-        e:
-        lib.nameValuePair e.path {
-          inherit (e) url;
-          headers = recorded.headers.${e.url} or { };
-        }
-      ) files
-    )
-  );
-  members = checked recorded.members;
-  programs = checked recorded.programs;
+  purifier = "deno-purifier";
+  problems = lib.optional (problem != null) problem;
+  entries =
+    if problem != null then [ ] else npm ++ remoteFiles ++ versionMetas ++ jsrFiles ++ versionLists;
+  outputs = if problem != null then { } else builtins.listToAttrs outputList;
 }

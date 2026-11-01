@@ -68,34 +68,26 @@ let
       ]
       text;
 
-  # Reads lockfiles with the lockfile reader.
+  # Reads lockfiles with readLock, into the lock in memory.
   readLockFiles =
     {
       src ? ./fixtures/app,
-      platform ? pkgs.stdenv.hostPlatform,
       denoLock ? ./fixtures/app/deno.lock,
       lockText,
     }:
-    import ../nix/lib/lock.nix {
-      inherit
-        lib
-        src
-        platform
-        denoLock
-        purifier
-        ;
+    lib.deno-purifier.readLock {
+      inherit src denoLock;
       lockFile = builtins.toFile "deno-purifier.lock.json" lockText;
     };
 
-  # Evaluates the lockfile reader on a deno.lock written inline and a
-  # lockfile that records its hash.
+  # Evaluates readLock on a deno.lock written inline and a lockfile that
+  # records its hash.
   readLock =
-    platform: denoLock: recorded:
+    denoLock: recorded:
     let
       text = builtins.toJSON denoLock;
     in
     readLockFiles {
-      inherit platform;
       denoLock = builtins.toFile "deno.lock" text;
       lockText = seal (
         {
@@ -112,7 +104,6 @@ let
         // recorded
       );
     };
-  host = pkgs.stdenv.hostPlatform;
 
   # A check passes when `assertion` holds; it fails with `message`
   # otherwise.
@@ -123,14 +114,12 @@ let
     else
       throw "deno-purifier check ${name}: ${message}";
 
-  # Whether the lockfile reader refuses, with a message that names the
-  # command to run and says `what`.
+  # Whether a lock in memory has a problem that says `what` and names the
+  # command to run, and whether the library's checkLock refuses it.
   refusesWith =
-    what: read:
-    read.problem != null
-    && lib.hasInfix what read.problem
-    && lib.hasInfix "run `deno-purifier lock`" read.problem
-    && !(builtins.tryEval (builtins.deepSeq read.downloads true)).success;
+    what: lock:
+    builtins.any (p: lib.hasInfix what p && lib.hasInfix "run `deno-purifier lock`" p) lock.problems
+    && !(builtins.tryEval (builtins.deepSeq (purifier.checkLock lock) true)).success;
 
   esbuildLock = {
     version = "5";
@@ -186,7 +175,7 @@ let
     '';
 
   appEnvironment = import ../nix/lib/environment.nix {
-    inherit pkgs purifier;
+    inherit pkgs lib;
     src = ./fixtures/app;
     keep = {
       inherit (pkgs) deno;
@@ -276,14 +265,19 @@ in
   '';
 
   # The packages are the programs, the members with a name and the tasks,
-  # and the fetches are the locked downloads.
+  # the fetches are the entries of the lock in memory, and readLock gives
+  # the contract's shape.
   outputs = evalCheck "outputs" (
-    builtins.attrNames app.packages == [
-      "@fixture/greeting"
-      "hello"
-      "task:build"
-      "task:cli:compile"
-    ]
+    (purifier.checkLock (lib.deno-purifier.readLock { src = ./fixtures/app; })).purifier
+    == "deno-purifier"
+    && app.fetches == (lib.deno-purifier.readLock { src = ./fixtures/app; }).entries
+    &&
+      builtins.attrNames app.packages == [
+        "@fixture/greeting"
+        "hello"
+        "task:build"
+        "task:cli:compile"
+      ]
     && builtins.any (e: (e.url or "") == "https://deno.land/std@0.224.0/fmt/colors.ts") app.fetches
     && builtins.any (e: (e.url or "") == "https://jsr.io/@std/path/1.1.6_meta.json") app.fetches
     && builtins.any (e: (e.url or "") == pathMod) app.fetches
@@ -302,7 +296,7 @@ in
   deployctl-cli =
     let
       environment = import ../nix/lib/environment.nix {
-        inherit pkgs purifier;
+        inherit pkgs lib;
         src = deployctl;
         lockFile = ./real/deployctl/deno-purifier.lock.json;
         denoLock = ./real/deployctl/deno.lock;
@@ -329,9 +323,7 @@ in
   # Only the npm packages for the platform are fetched.
   platform-filter =
     let
-      urls =
-        platform:
-        map (d: d.archive.url) (readLock (lib.systems.elaborate platform) esbuildLock { }).downloads;
+      urls = system: map (d: d.archive.url) (purifier.entriesFor system (readLock esbuildLock { }));
     in
     evalCheck "platform-filter" (
       urls "x86_64-linux" == [
@@ -349,7 +341,7 @@ in
   scoped-registry =
     let
       downloads =
-        (readLock host
+        (readLock
           {
             version = "5";
             npm."@acme/widget@1.2.3_react@18.2.0".integrity = "sha512-AAAA";
@@ -360,7 +352,7 @@ in
               "@acme" = "https://npm.acme.example/";
             };
           }
-        ).downloads;
+        ).entries;
     in
     evalCheck "scoped-registry" (
       downloads == [
@@ -381,13 +373,13 @@ in
   tarball-url =
     let
       downloads =
-        (readLock host {
+        (readLock {
           version = "5";
           npm."left-pad@1.3.0" = {
             integrity = "sha512-AAAA";
             tarball = "https://mirror.example/left-pad-1.3.0.tgz";
           };
-        } { }).downloads;
+        } { }).entries;
     in
     evalCheck "tarball-url" (
       (builtins.head downloads).archive.url == "https://mirror.example/left-pad-1.3.0.tgz"

@@ -74,6 +74,20 @@ Build the project with the builder in the flake's library:
 
 The names come from the lockfile, so they are known at evaluation time.
 
+### The lock in memory
+
+`lib.deno-purifier.readLock { src, lockFile, denoLock }` reads both
+lockfiles into the shape every purifier shares:
+`{ purifier = "deno-purifier"; entries; outputs; problems; }`. `entries`
+are the download entries of every system, and an npm package with
+platform filters carries `systems`, the systems it installs on. `outputs`
+names each attribute of `packages`. `problems` holds a message for a
+stale, edited, malformed or missing lockfile, and each message names the
+command that fixes it. The builder passes the lock to the purifier
+library's `checkLock`, takes the downloads of its system from
+`entriesFor`, and returns the entries as `fetches`. A tool that reads
+every purifier, such as an SBOM generator, can call `readLock` alone.
+
 ### The builder's arguments
 
 `nix/lib/build-deno-project.nix` documents each of them:

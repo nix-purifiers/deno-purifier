@@ -81,20 +81,18 @@
 let
   inherit (pkgs) stdenv;
 
-  lock = import ./lock.nix {
-    inherit
-      lib
-      src
-      lockFile
-      denoLock
-      ;
-    inherit (lib) purifier;
-    platform = stdenv.hostPlatform;
-  };
+  # The lock in memory of the purifier contract; checkLock fails evaluation
+  # with its problems.
+  lock = lib.purifier.checkLock (
+    lib.deno-purifier.readLock {
+      inherit src lockFile denoLock;
+    }
+  );
 
   cache = import ./cache.nix {
-    inherit pkgs lock fetchers;
+    inherit pkgs fetchers;
     inherit (lib) purifier;
+    entries = lib.purifier.entriesFor stdenv.hostPlatform.system lock;
   };
 
   defaultSrcFilter =
@@ -181,22 +179,16 @@ let
 
   storeSafe = name: builtins.replaceStrings [ "@" "/" ":" ] [ "" "-" "-" ] name;
 
-  named = builtins.filter (m: m.name != null) lock.members;
-
-  versionOf =
-    dir:
-    let
-      member = lib.findFirst (m: m.dir == dir) null lock.members;
-    in
-    if member != null && member.version != null then member.version else "0.0.0";
+  jsrPackages = builtins.filter (o: o.kind == "package") (builtins.attrValues lock.outputs);
+  rootPackage = lib.findFirst (o: o.member.dir == "") null jsrPackages;
 
   mkPackage =
-    member:
+    { member, version, ... }:
     stdenv.mkDerivation (
       common
       // {
         pname = storeSafe member.name;
-        version = versionOf member.dir;
+        inherit version;
         buildPhase = ''
           runHook preBuild
           ${buildCommands}
@@ -216,12 +208,12 @@ let
     );
 
   mkProgram =
-    program:
+    { program, version, ... }:
     stdenv.mkDerivation (
       common
       // {
         pname = program.name;
-        version = versionOf program.member;
+        inherit version;
         buildPhase = ''
           runHook preBuild
           ${buildCommands}
@@ -244,7 +236,7 @@ let
     );
 
   mkTask =
-    member: task:
+    { member, task, ... }:
     stdenv.mkDerivation (
       common
       // {
@@ -282,14 +274,14 @@ let
   );
 
   release =
-    if named == [ ] then
+    if jsrPackages == [ ] then
       throw "deno-purifier: the project has no package with a `name` in its deno.json, so it has no release to publish"
     else
       stdenv.mkDerivation (
         common
         // {
           pname = "deno-release";
-          version = versionOf "";
+          version = if rootPackage != null then rootPackage.version else "0.0.0";
           buildPhase = ''
             runHook preBuild
             ${buildCommands}
@@ -305,24 +297,14 @@ let
         }
       );
 
-  programs = map (p: lib.nameValuePair p.name (mkProgram p)) lock.programs;
-  jsrPackages = map (m: lib.nameValuePair m.name (mkPackage m)) named;
-  taskOutputs = lib.concatMap (
-    m:
-    map (
-      t: lib.nameValuePair (if m.dir == "" then "task:${t}" else "task:${m.dir}:${t}") (mkTask m t)
-    ) m.tasks
-  ) lock.members;
-  all = programs ++ jsrPackages ++ taskOutputs;
-  names = map (p: p.name) all;
-  clash = lib.findFirst (n: lib.count (m: m == n) names > 1) null names;
+  build = {
+    program = mkProgram;
+    package = mkPackage;
+    task = mkTask;
+  };
 in
 {
-  packages =
-    if clash != null then
-      throw "deno-purifier: more than one output of the project is named ${builtins.toJSON clash}"
-    else
-      builtins.listToAttrs all;
+  packages = builtins.mapAttrs (_: output: build.${output.kind} output) lock.outputs;
   inherit tests release;
-  fetches = lock.downloads;
+  fetches = lock.entries;
 }

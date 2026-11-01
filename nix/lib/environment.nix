@@ -16,8 +16,8 @@
 # evaluate it directly.
 {
   pkgs,
-  # The `purifier` namespace of the shared purifier library.
-  purifier,
+  # A library with the shared purifier library as `lib.purifier`.
+  lib,
   # The project root.
   src,
   lockFile ? src + "/deno-purifier.lock.json",
@@ -27,18 +27,15 @@
   keep ? { },
 }:
 let
+  lock = lib.purifier.checkLock (
+    import ./lock.nix { inherit lib; } {
+      inherit src lockFile denoLock;
+    }
+  );
   cache = import ./cache.nix {
-    inherit pkgs purifier;
-    lock = import ./lock.nix {
-      inherit (pkgs) lib;
-      inherit
-        src
-        lockFile
-        denoLock
-        purifier
-        ;
-      platform = pkgs.stdenv.hostPlatform;
-    };
+    inherit pkgs;
+    inherit (lib) purifier;
+    entries = lib.purifier.entriesFor pkgs.stdenv.hostPlatform.system lock;
   };
 in
 pkgs.runCommand "deno-purifier-environment"
@@ -52,9 +49,9 @@ pkgs.runCommand "deno-purifier-environment"
   ''
     mkdir -p "$out"
     ln -s ${cache} "$out/cache"
-    ${pkgs.lib.concatStrings (
-      pkgs.lib.mapAttrsToList (name: path: ''
-        ln -s ${path} "$out"/${pkgs.lib.escapeShellArg name}
+    ${lib.concatStrings (
+      lib.mapAttrsToList (name: path: ''
+        ln -s ${path} "$out"/${lib.escapeShellArg name}
       '') keep
     )}
   ''
