@@ -1,9 +1,11 @@
 # deno-purifier
 
-deno-purifier builds Deno projects in the Nix sandbox from their
-`deno.lock` and a small second lockfile, `deno-purifier.lock.json`, which
-it records beside it. The second lockfile holds only what `deno.lock`
-cannot tell Nix. The project needs no generated Nix files.
+deno-purifier keeps Deno's development workflow on locked,
+Nix-resolved dependencies. Use the normal build and test commands in your
+working tree; building the project itself in the Nix sandbox is an
+optional next step.
+
+It follows the [purifier contract](https://github.com/nix-purifiers/purifier/blob/main/CONTRACT.md).
 
 deno-purifier meets the
 [purifier contract](https://github.com/nix-purifiers/purifier/blob/main/CONTRACT.md)
@@ -15,50 +17,81 @@ bug-fix and security releases, after which its development ends. JSR keeps
 running on Cloudflare. deno-purifier builds with the Deno of its package
 set, and keeps working for as long as nixpkgs packages a Deno.
 
+## Installation
+
+Install the integration into your Nix profile once:
+
+```sh
+nix profile install 'github:nix-purifiers/deno-purifier'
+```
+
+This installs the `deno` wrapper. Use it for the locked
+development workflow below. With no purifier lockfile, it warns on standard
+error and runs the ordinary tool with impure resolution.
+
+`nix shell` makes an integration available temporarily instead of installing
+it. Keep using the activation steps below where a project environment or
+prefetched cache is required.
+
 ## Quickstart
 
-Record the lockfile at the project root:
+Install Nix, then run the following from your existing project's root.
+The setup prepares the locked dependencies and the integration that
+Deno's normal commands use:
 
 ```zsh
-nix run github:nix-purifiers/deno-purifier -- lock
+nix develop github:nix-purifiers/deno-purifier
+deno-purifier lock
+deno test
+deno task
 ```
 
-`lock` keeps the resolution that `deno.lock` holds. Where the project has
-no `deno.lock`, or its `deno.lock` does not cover every import, Deno writes
-the missing entries first. A project whose configuration sets
-`"lock": false` needs that setting removed, since Deno then neither writes
-nor reads `deno.lock`.
+Commit the lockfiles that the lock command writes, including the build
+tool's own lockfile when it has one. Keep using the project's usual build,
+test and editor commands with this setup. Nix provides the locked
+dependencies; the development commands above run outside the Nix sandbox.
+No project Nix files are needed for this workflow.
 
-We recommend committing `deno.lock` and `deno-purifier.lock.json` to the
-repository of the project. The builder and the commands look for them in
-the project by default.
+Sandboxed builds of the whole project are an optional
+[next step](#building-the-project-with-nix).
 
-`nix run github:nix-purifiers/deno-purifier -- update` moves the
-dependencies to newer versions and records both lockfiles in one run.
-
-The flake's `overlays.default` adds one attribute to a package set, the
-scope `deno-purifier`. The scope holds the builder `buildDenoProject`
-beside the `deno-purifier` command. Build from the project's directory,
-without adding a Nix file. Replace `my-app` with the output to build:
+## Development loop
 
 ```zsh
-nix build --impure --expr '
-  let
-    purifier = builtins.getFlake "github:nix-purifiers/deno-purifier";
-    pkgs = import purifier.inputs.nixpkgs {
-      system = builtins.currentSystem;
-      overlays = [ purifier.overlays.default ];
-    };
-  in
-  (pkgs.deno-purifier.buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app'
+nix develop github:nix-purifiers/deno-purifier
 ```
 
-This uses the purifier's pinned nixpkgs, matching the lock command above.
-To build with ambient `<nixpkgs>` from your Nix search path instead,
-replace `import purifier.inputs.nixpkgs` with `import <nixpkgs>`.
-Both forms need no Nix files in your project. The build tool and language
-versions must match the lockfile; with ambient nixpkgs, lock with the
-purifier from that package set or pass a compatible toolchain to the builder.
+The shell has `deno-purifier` and a `deno` wrapper. Deno has no plugin
+mechanism for tasks, so deno-purifier is a separate command that runs Deno,
+and the wrapper puts the locked downloads under Deno's own commands.
+
+The development loop is Deno's own commands, `deno run`, `deno test`,
+`deno task` and the rest, through the wrapper. In a project with both
+lockfiles, the wrapper reads the locked downloads and nothing from the
+network: it passes `--cached-only` to the commands that load modules
+(`run`, `test`, `check`, `install`, `cache`, `bench`, `compile`, `info`,
+`doc`, `serve`, `eval` and `repl`), and `--lock` when `deno.lock` lies
+outside the project.
+
+Adding a dependency goes `deno add jsr:@std/fmt`, which the wrapper lets
+reach the network, then `deno-purifier lock`. Until the lock run, the
+wrapper stops the commands that load modules and says to run
+`deno-purifier lock`. The commands that change dependencies (`add`,
+`remove`, `outdated`, `update`, `upgrade`, and `install` with a package or
+`--global`) always run as Deno runs without the wrapper.
+`DENO_PURIFIER=0` turns the wrapper off.
+
+`deno-purifier publish` builds the `release` with Nix and runs
+`deno publish` on it, with the arguments that follow, such as `--dry-run`
+or `--token`.
+
+## Building the project with Nix
+
+Once the native development workflow is working, you can also build and
+test the whole project in the Nix sandbox. For this step, keep a flake or
+another Nix build definition in the project's repository, or maintain an
+external packaging repository that points at its sources and lockfiles.
+The builder consumes the same lockfiles as the development workflow.
 
 A flake is optional. It can live in the project's repository or in a
 separate packaging repository and call the builder directly:
@@ -212,35 +245,29 @@ builder as `lockFile` and `denoLock`. `update` with a `deno.lock` outside
 the project keeps the version requirements of `deno.json` and takes the
 newest versions they allow, so it does not take `--latest`.
 
-## Development loop
+### One-off builds without a project Nix file
+
+For an ad hoc build, the builder can also be evaluated directly from the
+project root. Replace the example package name with one from your project:
 
 ```zsh
-nix develop github:nix-purifiers/deno-purifier
+nix build --impure --expr '
+  let
+    purifier = builtins.getFlake "github:nix-purifiers/deno-purifier";
+    pkgs = import purifier.inputs.nixpkgs {
+      system = builtins.currentSystem;
+      overlays = [ purifier.overlays.default ];
+    };
+  in
+  (pkgs.deno-purifier.buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app'
 ```
 
-The shell has `deno-purifier` and a `deno` wrapper. Deno has no plugin
-mechanism for tasks, so deno-purifier is a separate command that runs Deno,
-and the wrapper puts the locked downloads under Deno's own commands.
-
-The development loop is Deno's own commands, `deno run`, `deno test`,
-`deno task` and the rest, through the wrapper. In a project with both
-lockfiles, the wrapper reads the locked downloads and nothing from the
-network: it passes `--cached-only` to the commands that load modules
-(`run`, `test`, `check`, `install`, `cache`, `bench`, `compile`, `info`,
-`doc`, `serve`, `eval` and `repl`), and `--lock` when `deno.lock` lies
-outside the project.
-
-Adding a dependency goes `deno add jsr:@std/fmt`, which the wrapper lets
-reach the network, then `deno-purifier lock`. Until the lock run, the
-wrapper stops the commands that load modules and says to run
-`deno-purifier lock`. The commands that change dependencies (`add`,
-`remove`, `outdated`, `update`, `upgrade`, and `install` with a package or
-`--global`) always run as Deno runs without the wrapper.
-`DENO_PURIFIER=0` turns the wrapper off.
-
-`deno-purifier publish` builds the `release` with Nix and runs
-`deno publish` on it, with the arguments that follow, such as `--dry-run`
-or `--token`.
+This uses the purifier's pinned nixpkgs, matching the lock command above.
+To build with ambient `<nixpkgs>` from your Nix search path instead,
+replace `import purifier.inputs.nixpkgs` with `import <nixpkgs>`.
+Both forms need no Nix files in your project. The build tool and language
+versions must match the lockfile; with ambient nixpkgs, lock with the
+purifier from that package set or pass a compatible toolchain to the builder.
 
 ## Working offline
 
@@ -315,6 +342,11 @@ Limits that affect a project:
   uses.
 
 ## Examples
+
+For day-to-day work on these projects, use the native-tool setup and
+commands in [Quickstart](#quickstart) and [Development loop](#development-loop).
+The Nix expressions below show optional sandboxed packaging of those
+projects.
 
 ### deployctl
 

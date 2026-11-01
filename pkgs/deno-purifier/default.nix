@@ -306,6 +306,40 @@ let
             ;;
         esac
       done
+      # The project root is the nearest directory upwards with a deno.lock
+      # or a Deno configuration file, and with both lockfiles. A lockfile
+      # outside the project is the one that DENO_PURIFIER_LOCKFILE or
+      # DENO_PURIFIER_TOOL_LOCKFILE names, or else the one that a prefetch
+      # linked as .deno-purifier/lockfile or .deno-purifier/tool-lockfile.
+      dir="$PWD"
+      while :; do
+        if [ -f "$dir/deno.lock" ] || [ -f "$dir/deno.json" ] || [ -f "$dir/deno.jsonc" ]; then
+          lockfile="$dir/$LOCK_FILE"
+          denolock="$dir/deno.lock"
+          if [ -n "''${DENO_PURIFIER_LOCKFILE:-}" ]; then
+            lockfile="$(realpath "$DENO_PURIFIER_LOCKFILE")"
+          elif [ -f "$dir/.deno-purifier/lockfile" ]; then
+            lockfile="$(realpath "$dir/.deno-purifier/lockfile")"
+          fi
+          if [ -n "''${DENO_PURIFIER_TOOL_LOCKFILE:-}" ]; then
+            denolock="$(realpath "$DENO_PURIFIER_TOOL_LOCKFILE")"
+          elif [ -f "$dir/.deno-purifier/tool-lockfile" ]; then
+            denolock="$(realpath "$dir/.deno-purifier/tool-lockfile")"
+          fi
+          if [ -e "$lockfile" ]; then
+            [ -f "$denolock" ] || fail "$denolock is missing beside an existing purifier lock; run deno-purifier lock"
+            break
+          fi
+          echo "deno-purifier: warning: no deno-purifier.lock.json found; running deno impurely. Run \`deno-purifier lock\` to use Nix-resolved dependencies." >&2
+          exec "$deno" "$@"
+        fi
+        if [ "$dir" = / ]; then
+          echo "deno-purifier: warning: no deno-purifier.lock.json found; running deno impurely. Run \`deno-purifier lock\` to use Nix-resolved dependencies." >&2
+          exec "$deno" "$@"
+        fi
+        dir="$(dirname "$dir")"
+      done
+
       case "$command" in
         add | remove | outdated | update | upgrade | "")
           exec "$deno" "$@"
@@ -328,34 +362,6 @@ let
           done
           ;;
       esac
-
-      # The project root is the nearest directory upwards with a deno.lock
-      # or a Deno configuration file, and with both lockfiles. A lockfile
-      # outside the project is the one that DENO_PURIFIER_LOCKFILE or
-      # DENO_PURIFIER_TOOL_LOCKFILE names, or else the one that a prefetch
-      # linked as .deno-purifier/lockfile or .deno-purifier/tool-lockfile.
-      dir="$PWD"
-      while :; do
-        if [ -f "$dir/deno.lock" ] || [ -f "$dir/deno.json" ] || [ -f "$dir/deno.jsonc" ]; then
-          lockfile="$dir/$LOCK_FILE"
-          denolock="$dir/deno.lock"
-          if [ -n "''${DENO_PURIFIER_LOCKFILE:-}" ]; then
-            lockfile="$(realpath "$DENO_PURIFIER_LOCKFILE")"
-          elif [ -f "$dir/.deno-purifier/lockfile" ]; then
-            lockfile="$(realpath "$dir/.deno-purifier/lockfile")"
-          fi
-          if [ -n "''${DENO_PURIFIER_TOOL_LOCKFILE:-}" ]; then
-            denolock="$(realpath "$DENO_PURIFIER_TOOL_LOCKFILE")"
-          elif [ -f "$dir/.deno-purifier/tool-lockfile" ]; then
-            denolock="$(realpath "$dir/.deno-purifier/tool-lockfile")"
-          fi
-          if [ -f "$lockfile" ] && [ -f "$denolock" ]; then
-            break
-          fi
-        fi
-        [ "$dir" = / ] && exec "$deno" "$@"
-        dir="$(dirname "$dir")"
-      done
 
       loads=0
       case "$command" in
