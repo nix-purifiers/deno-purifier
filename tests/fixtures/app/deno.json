@@ -1,0 +1,12 @@
+{
+  "workspace": ["./greeting", "./cli"],
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.0",
+    "@std/path": "jsr:@std/path@^1.0.0",
+    "esbuild": "npm:esbuild@0.25.0",
+    "is-odd": "npm:is-odd@3.0.1"
+  },
+  "tasks": {
+    "build": "deno run --allow-read --allow-write=dist --allow-env --allow-run scripts/build.ts"
+  }
+}

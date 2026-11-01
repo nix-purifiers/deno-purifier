@@ -1,0 +1,7 @@
+{
+  "name": "node-modules-fixture",
+  "private": true,
+  "dependencies": {
+    "is-odd": "3.0.1"
+  }
+}

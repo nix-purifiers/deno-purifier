@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "deno": "2.9.8",
+  "denoLock": "7b34a2f8a7ed339593c1bb7119b2bf1b7244a7b29fa36ca0d807fd5b4dbb5c42",
+  "configs": {
+    "deno.json": "f3793d6f10cabef5a3ee2280ed73042252eb361e07ebfe729249cf602b32f2c4"
+  },
+  "jsr": "https://jsr.io/",
+  "npmRegistries": {
+    "": "https://registry.npmjs.org/"
+  },
+  "members": [
+    {
+      "name": null,
+      "version": null,
+      "dir": "",
+      "config": "deno.json",
+      "tasks": [
+        "compile"
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "name": "odd",
+      "member": "",
+      "task": "compile",
+      "entrypoint": "main.ts",
+      "flags": [],
+      "args": []
+    }
+  ],
+  "remote": []
+}

@@ -1,0 +1,6 @@
+{
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "compile": "deno compile -o odd main.ts"
+  }
+}
