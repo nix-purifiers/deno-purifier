@@ -14,8 +14,10 @@ import {
   shellWords,
   splitCacheFile,
   stripJsonc,
-  trimVersionList,
+  versionListBody,
   withContentHash,
+  cachePath,
+  headersMatter,
 } from "./lib.ts";
 
 function assertEquals(actual: unknown, expected: unknown) {
@@ -133,24 +135,38 @@ Deno.test("jsrVersionListOf recognizes version lists only", () => {
   assertEquals(jsrVersionListOf("https://deno.land/@std/path/meta.json", "https://jsr.io/"), null);
 });
 
-Deno.test("trimVersionList keeps the locked versions of each package", () => {
+Deno.test("versionListBody lists the locked versions of a package, keys sorted", () => {
   const versions = lockedJsrVersions({
     jsr: { "@std/path@1.0.0": {}, "@std/path@0.9.0": {}, "@std/fmt@1.0.0": {} },
   });
-  assertEquals([...versions.get("@std/path")!].sort(), ["0.9.0", "1.0.0"]);
   assertEquals(
-    JSON.parse(
-      trimVersionList(
-        JSON.stringify({
-          scope: "std",
-          name: "path",
-          latest: "2.0.0",
-          versions: { "2.0.0": {}, "1.0.0": { yanked: false }, "0.9.0": {} },
-        }),
-        versions.get("@std/path")!,
-      ),
-    ),
-    { scope: "std", name: "path", versions: { "1.0.0": { yanked: false }, "0.9.0": {} } },
+    versionListBody("@std/path", versions.get("@std/path")!),
+    '{"name":"path","scope":"std","versions":{"0.9.0":{},"1.0.0":{}}}',
+  );
+});
+
+Deno.test("cachePath hashes the path and query, and names a port", async () => {
+  // The hash is that of `/std@0.224.0/fmt/colors.ts`, from sha256sum.
+  assertEquals(
+    await cachePath("https://deno.land/std@0.224.0/fmt/colors.ts"),
+    "remote/https/deno.land/cdde2da1e0655f7895b70ff820cf7c731b9cde333c7c62147ebac4b7109705b8",
+  );
+  const withPort = await cachePath("http://localhost:4545/a.ts?x=1");
+  if (!withPort.startsWith("remote/http/localhost_PORT4545/")) throw new Error(withPort);
+});
+
+Deno.test("headersMatter keeps the headers Deno reads differently from the extension", () => {
+  assertEquals(headersMatter("https://jsr.io/@std/fmt/1.0.0/colors.ts", {}), false);
+  assertEquals(
+    headersMatter("https://deno.land/x/a.ts", { "content-type": "application/typescript; charset=utf-8" }),
+    false,
+  );
+  assertEquals(headersMatter("https://jsr.io/@x/y/1.0.0/a.js", { "content-type": "text/javascript" }), false);
+  assertEquals(headersMatter("https://esm.sh/react@18", { "content-type": "application/javascript" }), true);
+  assertEquals(headersMatter("https://example.com/a.ts", { "content-type": "application/javascript" }), true);
+  assertEquals(
+    headersMatter("https://esm.sh/a.js", { "content-type": "application/javascript", "x-typescript-types": "./a.d.ts" }),
+    true,
   );
 });
 

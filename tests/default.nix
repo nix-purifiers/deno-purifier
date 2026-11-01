@@ -99,13 +99,15 @@ let
       denoLock = builtins.toFile "deno.lock" text;
       lockText = seal (
         {
-          version = 2;
+          version = 3;
           denoLock = builtins.hashString "sha256" text;
           configs = { };
+          jsrRegistry = "https://jsr.io/";
           npmRegistries."" = "https://registry.npmjs.org/";
           members = [ ];
           programs = [ ];
-          remote = [ ];
+          jsrFiles = { };
+          headers = { };
         }
         // recorded
       );
@@ -150,12 +152,12 @@ let
   appLock = builtins.fromJSON appLockText;
   # The app fixture's lockfile, changed by f and sealed again.
   appLockWith = f: seal (removeAttrs (f appLock) [ "contentHash" ]);
-  # A module of the app fixture that the command-line member imports.
-  colors = lib.findFirst (
-    e: (e.url or "") == "https://deno.land/std@0.224.0/fmt/colors.ts"
-  ) (throw "the app fixture records no colors.ts") appLock.remote;
-  # Another module's hash, a valid SHA-256 that is not that of colors.ts.
-  otherHash = (lib.findFirst (e: e ? hash && e != colors) null appLock.remote).hash;
+  # A JSR module file that the command-line member imports, which only the
+  # lockfile records, and its hash.
+  pathMod = "https://jsr.io/@std/path/1.1.6/mod.ts";
+  pathModHash = appLock.jsrFiles.${pathMod};
+  # Another file's hash, a valid SHA-256 that is not that of mod.ts.
+  otherHash = lib.findFirst (hash: hash != pathModHash) null (builtins.attrValues appLock.jsrFiles);
 
   # Links the environment of a project the way `deno-purifier prefetch`
   # does, for the checks that run the commands: a `nix` that answers
@@ -282,7 +284,9 @@ in
       "task:build"
       "task:cli:compile"
     ]
-    && builtins.any (e: (e.url or "") == colors.url) app.fetches
+    && builtins.any (e: (e.url or "") == "https://deno.land/std@0.224.0/fmt/colors.ts") app.fetches
+    && builtins.any (e: (e.url or "") == "https://jsr.io/@std/path/1.1.6_meta.json") app.fetches
+    && builtins.any (e: (e.url or "") == pathMod) app.fetches
     && builtins.any (e: e ? archive) app.fetches
   ) "the packages or the fetches differ from those the fixture declares";
 
@@ -414,7 +418,7 @@ in
   conformance-tampered = evalCheck "conformance-tampered" (
     otherHash != null
     && refusesWith "does not match its contentHash" (readLockFiles {
-      lockText = builtins.replaceStrings [ colors.hash ] [ otherHash ] appLockText;
+      lockText = builtins.replaceStrings [ pathModHash ] [ otherHash ] appLockText;
     })
   ) "a lockfile with a changed hash evaluated, or its message does not name `deno-purifier lock`";
 
@@ -426,7 +430,7 @@ in
         inherit pkgs;
         src = ./fixtures/app;
         lockFile = builtins.toFile "deno-purifier.lock.json" (
-          appLockWith (l: l // { remote = builtins.filter (e: e != colors) l.remote; })
+          appLockWith (l: l // { jsrFiles = removeAttrs l.jsrFiles [ pathMod ]; })
         );
       };
       failure = pkgs.testers.testBuildFailure missing.packages.hello;
@@ -437,21 +441,29 @@ in
       touch $out
     '';
 
-  # A lockfile that is not JSON, one without one of its fields, and one
-  # with an entry of no known shape stop evaluation, with the command to
-  # run.
+  # A lockfile that is not JSON, one without one of its fields, one with a
+  # hash of the wrong kind, and one of another format stop evaluation, with
+  # the command to run.
   conformance-malformed = evalCheck "conformance-malformed" (
     refusesWith "has no contentHash" (readLockFiles {
       lockText = builtins.substring 0 100 appLockText;
     })
-    && refusesWith "lacks remote" (readLockFiles {
-      lockText = appLockWith (l: removeAttrs l [ "remote" ]);
+    && refusesWith "lacks jsrFiles" (readLockFiles {
+      lockText = appLockWith (l: removeAttrs l [ "jsrFiles" ]);
     })
-    && refusesWith "has a remote entry" (readLockFiles {
-      lockText = appLockWith (l: l // { remote = l.remote ++ [ { path = "remote/x"; } ]; });
+    && refusesWith "not a SHA-256 in SRI form" (readLockFiles {
+      lockText = appLockWith (
+        l:
+        l
+        // {
+          jsrFiles = l.jsrFiles // {
+            ${pathMod} = "sha1-${pathModHash}";
+          };
+        }
+      );
     })
     && refusesWith "has format" (readLockFiles {
-      lockText = appLockWith (l: l // { version = 1; });
+      lockText = appLockWith (l: l // { version = 2; });
     })
   ) "a malformed lockfile evaluated, or its message does not name `deno-purifier lock`";
 

@@ -10,18 +10,25 @@
 #               - one archive entry per npm package of deno.lock, unpacked
 #                 at npm/<registry host>/<name>/<version>, where Deno keeps
 #                 npm packages; `hash` is the lock's integrity
-#               - the file and inline entries of the remote module cache
-#                 (remote/...), from deno-purifier.lock.json
+#               - one file entry per remote module outside JSR, with the
+#                 hash deno.lock pins
+#               - one file entry per JSR version's <version>_meta.json, with
+#                 the hash deno.lock pins as its integrity
+#               - one inline entry per JSR package: its version list
+#                 (meta.json), naming the locked versions
+#               - one file entry per JSR module file, with the hash
+#                 deno-purifier.lock.json records
 #   headers     for each file entry of the remote module cache, by path, the
-#               URL and the response headers Deno keeps beside the body
+#               URL and the response headers Deno keeps beside the body: the
+#               ones deno-purifier.lock.json records for the module, or none
 #   members     the project's packages, as the lock run recorded them:
 #               { name, version, dir, config, tasks }
 #   programs    the `deno compile` commands of the tasks:
 #               { name, member, task, entrypoint, flags, args }
 #
-# deno.lock names every npm package with its integrity and its os and cpu
-# filters, so the npm packages for every platform come from it. The remote
-# modules and the JSR files are recorded by `deno-purifier lock`.
+# Deno keeps a remote module at remote/<scheme>/<host>/<SHA-256 of the
+# path and query>, with a port written as <host>_PORT<port>. Deno reads
+# redirects from deno.lock, so they need no entry.
 #
 # deno-purifier.lock.json holds `contentHash`: the SHA-256 of the file's
 # text with that value replaced by the empty string. The reader checks it
@@ -43,7 +50,7 @@
   purifier,
 }:
 let
-  format = 2;
+  format = 3;
 
   relock = what: "deno-purifier: ${what}; run `deno-purifier lock` at the project root.";
   name = "deno-purifier.lock.json";
@@ -72,31 +79,19 @@ let
     version = builtins.isInt;
     denoLock = builtins.isString;
     configs = builtins.isAttrs;
+    jsrRegistry = builtins.isString;
     npmRegistries = builtins.isAttrs;
     members = builtins.isList;
     programs = builtins.isList;
-    remote = builtins.isList;
+    jsrFiles = builtins.isAttrs;
+    headers = builtins.isAttrs;
   };
   malformed = lib.filterAttrs (
     field: valid: !(recorded ? ${field}) || !valid recorded.${field}
   ) fields;
-  entryShape =
-    e:
-    builtins.isAttrs e
-    && e ? path
-    && (
-      (e ? contents && builtins.isString e.contents)
-      || (
-        e ? url
-        && e ? mirrors
-        && e ? headers
-        && e ? hash
-        # The lock run records SHA-256 hashes in SRI form.
-        && builtins.isString e.hash
-        && builtins.match "sha256-[A-Za-z0-9+/]{43}=" e.hash != null
-      )
-    );
-  badEntries = builtins.filter (e: !entryShape e) recorded.remote;
+  # The lock run records SHA-256 hashes in SRI form.
+  isSri = hash: builtins.isString hash && builtins.match "sha256-[A-Za-z0-9+/]{43}=" hash != null;
+  badFiles = lib.filterAttrs (_: hash: !isSri hash) recorded.jsrFiles;
 
   staleConfigs = lib.filterAttrs (
     path: hash: builtins.hashFile "sha256" (src + "/${path}") != hash
@@ -117,8 +112,8 @@ let
       }, and this deno-purifier reads format ${toString format}"
     else if malformed != { } then
       relock "${name} lacks ${lib.concatStringsSep ", " (builtins.attrNames malformed)} or has a value of the wrong type there"
-    else if badEntries != [ ] then
-      relock "${name} has a remote entry that is neither { path, url, mirrors, hash, headers } nor { path, contents }: ${builtins.toJSON (builtins.head badEntries)}"
+    else if badFiles != { } then
+      relock "${name} records a hash that is not a SHA-256 in SRI form for ${builtins.head (builtins.attrNames badFiles)}"
     else if builtins.hashFile "sha256" denoLock != recorded.denoLock then
       relock "deno.lock changed since ${name} was written"
     else if staleConfigs != { } then
@@ -205,32 +200,111 @@ let
     )
   );
 
-  remote = map (
-    e:
-    if e ? contents then
-      { inherit (e) path contents; }
+  # Where Deno caches the remote module at `url`, relative to DENO_DIR.
+  cachePath =
+    url:
+    let
+      parts = builtins.match "([a-z]+)://([^/?#]+)([^#]*).*" url;
+      scheme = builtins.elemAt parts 0;
+      authority = builtins.elemAt parts 1;
+      rest = builtins.elemAt parts 2;
+      pathQuery = if lib.hasPrefix "/" rest then rest else "/${rest}";
+      hostPort = builtins.match "([^:]+):([0-9]+)" authority;
+      defaultPort = {
+        http = "80";
+        https = "443";
+      };
+      host =
+        if hostPort == null || builtins.elemAt hostPort 1 == defaultPort.${scheme} or null then
+          builtins.head (lib.splitString ":" authority)
+        else
+          "${builtins.elemAt hostPort 0}_PORT${builtins.elemAt hostPort 1}";
+    in
+    if parts == null then
+      throw "deno-purifier: cannot read the URL ${url}"
     else
-      {
-        inherit (e)
-          path
-          url
-          mirrors
-          hash
-          ;
-      }
-  ) recorded.remote;
+      "remote/${scheme}/${host}/${builtins.hashString "sha256" pathQuery}";
+
+  sriOf =
+    hex:
+    builtins.convertHash {
+      hash = hex;
+      hashAlgo = "sha256";
+      toHashFormat = "sri";
+    };
+
+  fileEntry = url: hash: {
+    path = cachePath url;
+    inherit url hash;
+    mirrors = [ ];
+  };
+
+  # The remote modules outside JSR, which deno.lock pins by URL.
+  remoteFiles = lib.mapAttrsToList (url: hex: fileEntry url (sriOf hex)) (
+    parsedDenoLock.remote or { }
+  );
+
+  # The JSR versions of deno.lock, keyed "@scope/name@version".
+  jsrVersions = lib.mapAttrsToList (
+    key: entry:
+    let
+      parts = builtins.match "(@[^/]+/[^@]+)@(.+)" key;
+    in
+    {
+      package = builtins.elemAt parts 0;
+      version = builtins.elemAt parts 1;
+      inherit (entry) integrity;
+    }
+  ) (parsedDenoLock.jsr or { });
+
+  versionMetas = map (
+    v: fileEntry "${recorded.jsrRegistry}${v.package}/${v.version}_meta.json" (sriOf v.integrity)
+  ) jsrVersions;
+
+  # The version list of each JSR package, naming the locked versions. The
+  # lock run writes the same list when it checks the lockfile.
+  versionLists = lib.mapAttrsToList (
+    package: versions:
+    let
+      url = "${recorded.jsrRegistry}${package}/meta.json";
+      scopeName = builtins.match "@([^/]+)/(.+)" package;
+      body = builtins.toJSON {
+        scope = builtins.elemAt scopeName 0;
+        name = builtins.elemAt scopeName 1;
+        versions = lib.genAttrs (map (v: v.version) versions) (_: { });
+      };
+    in
+    {
+      path = cachePath url;
+      contents = "${body}\n// denoCacheMetadata=${
+        builtins.toJSON {
+          headers = { };
+          inherit url;
+          time = 0;
+        }
+      }";
+    }
+  ) (builtins.groupBy (v: v.package) jsrVersions);
+
+  jsrFiles = lib.mapAttrsToList fileEntry recorded.jsrFiles;
+
+  files = remoteFiles ++ versionMetas ++ jsrFiles;
 
   # Every attribute but `problem` fails with the problem, when there is one.
   checked = value: if problem != null then throw problem else value;
 in
 {
   inherit problem;
-  downloads = checked (npm ++ remote);
+  downloads = checked (npm ++ files ++ versionLists);
   headers = checked (
     lib.listToAttrs (
-      map (e: lib.nameValuePair e.path { inherit (e) url headers; }) (
-        builtins.filter (e: e ? url) recorded.remote
-      )
+      map (
+        e:
+        lib.nameValuePair e.path {
+          inherit (e) url;
+          headers = recorded.headers.${e.url} or { };
+        }
+      ) files
     )
   );
   members = checked recorded.members;

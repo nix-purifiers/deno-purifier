@@ -264,17 +264,62 @@ export function lockedJsrVersions(denoLock: Record<string, Json>): Map<string, S
   return versions;
 }
 
-// A JSR version list trimmed to the given versions, without the `latest`
-// field, so that it stays the same until deno.lock changes.
-export function trimVersionList(text: string, keep: Set<string>): string {
-  const list = JSON.parse(text);
-  const versions: Record<string, Json> = {};
-  for (const [v, info] of Object.entries(list.versions ?? {})) {
-    if (keep.has(v)) versions[v] = info as Json;
-  }
-  list.versions = versions;
-  delete list.latest;
-  return JSON.stringify(list);
+// The JSR version list (meta.json) of package `@scope/name` that names the
+// locked versions alone. Nix writes the same list from deno.lock, with its
+// keys sorted as builtins.toJSON sorts them, so the lock run need not
+// record the registry's list, which changes whenever the package publishes.
+export function versionListBody(pkg: string, versions: Iterable<string>): string {
+  const [scope, name] = pkg.slice(1).split("/");
+  const listed: Record<string, Json> = {};
+  for (const v of [...versions].sort()) listed[v] = {};
+  return JSON.stringify({ name, scope, versions: listed });
+}
+
+// Where Deno caches the remote module at `url`, relative to DENO_DIR:
+// remote/<scheme>/<host>/<SHA-256 of the path and query>, with a port
+// written as <host>_PORT<port>.
+export async function cachePath(url: string): Promise<string> {
+  const u = new URL(url);
+  const host = u.port === "" ? u.hostname : `${u.hostname}_PORT${u.port}`;
+  const digest = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(u.pathname + u.search)),
+  );
+  const hex = Array.from(digest, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `remote/${u.protocol.slice(0, -1)}/${host}/${hex}`;
+}
+
+// The media types each extension stands for. A module whose content-type is
+// one of those of its extension reads the same without its headers.
+const EXTENSION_TYPES: [string[], string[]][] = [
+  [[".ts", ".mts", ".cts", ".tsx"], [
+    "application/typescript",
+    "text/typescript",
+    "application/x-typescript",
+    "video/vnd.dlna.mpeg-tts",
+    "video/mp2t",
+  ]],
+  [[".js", ".mjs", ".cjs", ".jsx"], [
+    "application/javascript",
+    "text/javascript",
+    "application/ecmascript",
+    "text/ecmascript",
+    "application/x-javascript",
+    "application/node",
+  ]],
+  [[".json"], ["application/json", "text/json"]],
+  [[".wasm"], ["application/wasm"]],
+];
+
+// Whether Deno reads the module at `url` differently with these headers
+// than with none, in which case Deno goes by the extension of the URL.
+export function headersMatter(url: string, headers: Record<string, string>): boolean {
+  if (Object.keys(headers).some((h) => h !== "content-type")) return true;
+  const type = headers["content-type"];
+  if (type === undefined) return false;
+  const mime = type.split(";")[0].trim().toLowerCase();
+  const path = new URL(url).pathname;
+  const entry = EXTENSION_TYPES.find(([exts]) => exts.some((e) => path.endsWith(e)));
+  return entry === undefined || !entry[1].includes(mime);
 }
 
 // The output of a failed Deno command, without the progress lines of its

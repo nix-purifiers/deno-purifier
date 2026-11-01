@@ -2,8 +2,9 @@
 #
 # Runs every check of the flake on both Linux platforms: the unit tests,
 # the fixture builds and the deployctl build in the Nix sandbox, the
-# lockfile reader checks and the formatting check. The relock job locks the
-# test projects again with the network, and fails when a lockfile changes.
+# lockfile reader checks, the conformance checks and the formatting check.
+# The conformance-relock job locks the test projects again with the
+# network, and fails when a lockfile changes.
 name: check
 
 on:
@@ -26,8 +27,13 @@ jobs:
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
       - run: nix flake check -L
 
-  relock:
-    runs-on: ubuntu-latest
+  # The `conformance-relock` check of the purifier contract, which needs the
+  # network and so runs outside the Nix sandbox.
+  conformance-relock:
+    strategy:
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4

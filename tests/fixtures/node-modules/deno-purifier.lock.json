@@ -1,12 +1,11 @@
 {
-  "version": 2,
-  "contentHash": "ac673f3cc0ff4420f6f77238d20df77025463a6843fb91c3342476516c8377cf",
-  "deno": "2.9.8",
+  "version": 3,
+  "contentHash": "40fd8e642edd455e1b63fedce20d9068f4e2156a647ca783419756feb8f47578",
   "denoLock": "ff17feecd64b7e469c6b751fe163113b5b003118effcef506480efd1b1411d23",
   "configs": {
     "deno.json": "a4fe8f78cdd2a314039c931b3e8539808e612646ee466997ec3f1078c07cfcd7"
   },
-  "jsr": "https://jsr.io/",
+  "jsrRegistry": "https://jsr.io/",
   "npmRegistries": {
     "": "https://registry.npmjs.org/"
   },
@@ -32,5 +31,6 @@
       "args": []
     }
   ],
-  "remote": []
+  "jsrFiles": {},
+  "headers": {}
 }
