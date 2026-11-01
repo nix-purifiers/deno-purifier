@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-{ ... }:
+{ closure-lib, ... }:
 {
   config,
   inputs,
@@ -8,22 +8,21 @@
 }:
 {
 
-  imports = [ inputs.flake-parts.flakeModules.partitions ];
+  imports = [
+    inputs.flake-parts.flakeModules.partitions
+    closure-lib.caisson.modules.flake."purifier/purifier-packages"
+  ];
+
+  # The package overlay registry (pkg-overlays/) has the `default` entry,
+  # which adds the scope `pkgs.deno-purifier`. The package set applies it by
+  # default, and the flake exports it as `pkgOverlays` and as the plain
+  # `overlays.default`. The module from the purifier library publishes the
+  # derivations of that scope as the packages of the flake.
+  purifier.scope = "deno-purifier";
 
   debug = false;
-  caisson = {
-    libOverlays.exported = libOverlays: {
-      inherit (libOverlays) default;
-    };
-
-    # The package overlay registry (pkg-overlays/) has the `default` entry,
-    # which adds the scope `pkgs.deno-purifier`. The package set applies it
-    # by default, and the flake exports it as `pkgOverlays` and as the plain
-    # `overlays.default`. The scope holds the builder, a function, so the
-    # flake names the packages it exports below.
-    nixpkgs = {
-      packages.export.enabled = false;
-    };
+  caisson.libOverlays.exported = libOverlays: {
+    inherit (libOverlays) default;
   };
 
   # `nix run github:nix-purifiers/deno-purifier -- lock` records a project's
@@ -33,9 +32,7 @@
   perSystem =
     { pkgs, ... }:
     {
-      packages = pkgs.lib.filterAttrs (_: pkgs.lib.isDerivation) pkgs.deno-purifier // {
-        default = pkgs.deno-purifier.deno-purifier;
-      };
+      packages.default = pkgs.deno-purifier.deno-purifier;
       devShells.default = pkgs.mkShell {
         packages = [ pkgs.deno-purifier.deno-purifier ];
       };
