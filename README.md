@@ -223,9 +223,7 @@ An editor that starts `deno lsp` from the `PATH` of the development shell
 gets the wrapper, so the language server reads the locked downloads. An
 import the lock covers resolves, and one it does not is reported as an
 uncached URL, as Deno reports any module missing from its cache. The
-language server needs nothing beyond what `prefetch` realizes. The
-`conformance-offline` check starts it with no network and opens two files
-of a test project, which show no diagnostics.
+language server needs nothing beyond what `prefetch` realizes.
 
 ## Errors and fixes
 
@@ -253,8 +251,7 @@ Supported:
 - workspaces, with packages and compiled programs in any member.
 
 The lock run keeps the headers of a remote module when they change how
-Deno reads it, as for a module without an extension. The unit tests cover
-that rule, and no test project has such a module yet.
+Deno reads it, as for a module without an extension.
 
 Refused or left out:
 
@@ -273,39 +270,70 @@ Refused or left out:
 
 ## Examples
 
-CI locks and builds the small projects in `tests/fixtures` and one real
-project, deployctl. These examples show what the lock run and the
-builder handle, and they are not a list of the projects that work.
+### deployctl
 
-[deployctl](https://github.com/denoland/deployctl) at `87e43e5` is the
-command-line tool of Deno Deploy. It has a `deno.jsonc` with comments, a
-JSR package with many pinned `@std` versions, an npm dependency, a nested
-Node.js GitHub Action and a nested Fresh example. Its `deno.lock` at that
-commit is out of date for Deno 2.9.8, and its code does not type-check
-with the TypeScript library of Deno 2.9.8. CI builds it from the lockfiles
-in `tests/real/deployctl`, kept outside its source. Its JSR package passes
-`deno publish --dry-run --no-check`, its release task runs, and its
-command-line tool prints its version. A lock run of it takes about three
-seconds. Through the `deno` wrapper, its test suite (`deno test -A
---unstable --no-check tests/ src/`) passes all 31 tests with only the
-locked downloads.
+[deployctl](https://github.com/denoland/deployctl) is the command-line
+tool of Deno Deploy. Its authors do not use deno-purifier, so the two
+lockfiles live in a packaging directory beside the flake, outside the
+source of deployctl.
 
-Working on deployctl led to the pass of `update` that lets Deno update
-`deno.lock`, to leaving nested projects and `exclude`d paths out of the
-lock run, to `publishArgs`, to the `denoLock` argument, and to several of
-the error messages above.
+In the packaging directory, clone the project and record the lockfiles:
 
-`nix flake check` runs every check in the sandbox on x86_64-linux and
-aarch64-linux: the unit tests of the lock run (`src/lib_test.ts`), the
-builds of the fixtures in `tests/fixtures` and of deployctl, the contract's
-`conformance-stale`, `conformance-tampered`, `conformance-missing`,
-`conformance-malformed`, `conformance-rebuild`, `conformance-offline` and
-`conformance-external`, and checks of `publish` and of the wrapper. CI
-also runs `conformance-relock`, which locks every test project again with
-the network (`tests/relock.sh`) and fails when a lockfile changes, and
-`conformance-update`, which runs `update` on a fixture whose `deno.lock`
-pins an old `@std/path` and checks that Nix accepts both new lockfiles
-(`tests/update.sh`).
+```zsh
+git clone https://github.com/denoland/deployctl
+nix run github:nix-purifiers/deno-purifier -- update --root deployctl --lockfile deno-purifier.lock.json
+cp deployctl/deno.lock .
+```
+
+The `deno.lock` that deployctl commits does not cover every import for a
+current Deno, which is why the first command is `update` and not `lock`.
+`update` writes `deno-purifier.lock.json` into the packaging directory and
+updates the `deno.lock` in the clone, and the last command copies that
+`deno.lock` beside it.
+
+The flake takes the source of deployctl as an input that is not a flake,
+and builds its JSR package:
+
+```nix
+{
+  inputs.deno-purifier.url = "github:nix-purifiers/deno-purifier";
+  inputs.nixpkgs.follows = "deno-purifier/nixpkgs";
+  inputs.deployctl = {
+    url = "github:denoland/deployctl";
+    flake = false;
+  };
+
+  outputs = { nixpkgs, deno-purifier, deployctl, ... }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+      project = deno-purifier.lib.deno-purifier.buildDenoProject {
+        inherit pkgs;
+        src = deployctl;
+        lockFile = ./deno-purifier.lock.json;
+        denoLock = ./deno.lock;
+        publishArgs = [ "--no-check" ];
+      };
+    in
+    {
+      packages.${system}.default = project.packages."@deno/deployctl";
+    };
+}
+```
+
+The code of deployctl does not type-check with the TypeScript library of a
+current Deno, so the flake passes `--no-check` to the `deno publish
+--dry-run` that checks the package.
+
+Nix sees the files that Git tracks, so add `flake.nix`,
+`deno-purifier.lock.json` and `deno.lock` to the packaging repository,
+then build:
+
+```zsh
+nix build
+```
+
+`result` holds the files of the JSR package `@deno/deployctl`.
 
 ## Credits
 
