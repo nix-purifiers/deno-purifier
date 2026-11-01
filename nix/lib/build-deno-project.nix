@@ -52,6 +52,9 @@
   # Arguments of `deno install`, such as `--allow-scripts` for npm packages
   # whose install scripts must run.
   installArgs ? [ ],
+  # Arguments of the `deno publish --dry-run` that checks each package, such
+  # as `--no-check` for a package that does not type-check with this Deno.
+  publishArgs ? [ ],
   # Tools the tasks and the npm packages' install scripts need.
   nativeBuildInputs ? [ ],
   # Libraries native npm addons link against.
@@ -116,6 +119,17 @@ let
       cp -rL ${cache}/npm "$DENO_DIR/npm"
       chmod -R u+w "$DENO_DIR/npm"
     fi
+    # Deno's error for a module missing from the locked downloads names the
+    # module only; the build adds what to run.
+    deno() {
+      local status=0
+      command deno "$@" 2> >(tee -a "$TMPDIR/deno-errors" >&2) || status=$?
+      wait
+      if [ "$status" != 0 ] && grep -q 'not found in cache' "$TMPDIR/deno-errors"; then
+        echo "deno-purifier: Deno needs a module that deno-purifier.lock.json does not record; run \`deno-purifier lock\` at the project root and commit the result." >&2
+      fi
+      return "$status"
+    }
     deno install --frozen --cached-only ${lib.escapeShellArgs installArgs}
   '';
 
@@ -131,6 +145,13 @@ let
     nativeBuildInputs = [ denoPackage ] ++ nativeBuildInputs;
     inherit buildInputs;
     dontConfigure = true;
+    # A deno.lock given apart from the source, such as an updated one for a
+    # project whose own deno.lock is out of date, replaces the one in the
+    # source, so that Deno reads the lockfile Nix read.
+    postPatch = lib.optionalString (lockFile != src + "/deno.lock") ''
+      cp ${lockFile} deno.lock
+      chmod u+w deno.lock
+    '';
   };
 
   buildCommands = ''
@@ -172,7 +193,7 @@ let
         buildPhase = ''
           runHook preBuild
           ${buildCommands}
-          (cd ./${lib.escapeShellArg member.dir} && deno publish --dry-run --allow-dirty --frozen)
+          (cd ./${lib.escapeShellArg member.dir} && deno publish --dry-run --allow-dirty --frozen ${lib.escapeShellArgs publishArgs})
           runHook postBuild
         '';
         installPhase = ''

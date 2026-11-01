@@ -1,6 +1,7 @@
 {
   "nodeModulesDir": "auto",
   "tasks": {
-    "compile": "deno compile -o odd main.ts"
+    "compile": "deno compile -o odd main.ts",
+    "version": "semver -i minor 1.2.3 > version.txt"
   }
 }

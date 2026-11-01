@@ -33,7 +33,7 @@ let
     text = ''
       export DENO_NO_UPDATE_CHECK=1
       exec ${lib.getExe deno} run --allow-all --no-config --no-lock \
-        ${../../src/deno-purifier.ts} "$@"
+        ${../../src}/deno-purifier.ts "$@"
     '';
   };
 
@@ -133,8 +133,25 @@ let
 
       export DENO_DIR="$cache/deno-dir"
       export DENORT_BIN=${deno.denort}/bin/denort
+      # Deno checks for a newer release over the network; the locked Deno is
+      # the one nixpkgs ships.
+      export DENO_NO_UPDATE_CHECK=1
       case "$command" in
-        run | test | check | install | i | cache | bench | compile | info | doc | serve | eval | repl)
+        run | test | check | install | i | cache | bench | compile | info | doc)
+          set -- "''${@:1:$((position + 1))}" --cached-only "''${@:$((position + 2))}"
+          # Deno's error for a module missing from the locked downloads
+          # names the module only; the wrapper adds what to run.
+          errors="$(mktemp)"
+          trap 'rm -f "$errors"' EXIT
+          status=0
+          "$deno" "$@" 2> >(tee "$errors" >&2) || status=$?
+          wait
+          if [ "$status" != 0 ] && grep -q 'not found in cache' "$errors"; then
+            echo "deno-purifier: Deno needs a module that deno-purifier.lock.json does not record; run \`deno-purifier lock\` at $dir to record it, or DENO_PURIFIER=0 to run Deno with the network." >&2
+          fi
+          exit "$status"
+          ;;
+        serve | eval | repl)
           set -- "''${@:1:$((position + 1))}" --cached-only "''${@:$((position + 2))}"
           ;;
       esac

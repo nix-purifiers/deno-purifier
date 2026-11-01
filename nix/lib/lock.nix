@@ -42,8 +42,49 @@ let
     else
       throw (relock "${toString purifierLockFile} does not exist");
 
+  # The fields of format 1 and their types. A lockfile edited by hand or cut
+  # short fails here, with the field it lacks, rather than deep in a build.
+  fields = {
+    denoLock = builtins.isString;
+    configs = builtins.isAttrs;
+    npmRegistries = builtins.isAttrs;
+    members = builtins.isList;
+    programs = builtins.isList;
+    remote = builtins.isList;
+  };
+  malformed = lib.filterAttrs (
+    field: valid: !(purifier ? ${field}) || !valid purifier.${field}
+  ) fields;
+  entryShape =
+    e:
+    builtins.isAttrs e
+    && e ? path
+    && (
+      (e ? contents && builtins.isString e.contents)
+      || (
+        e ? url
+        && e ? mirrors
+        && e ? headers
+        && e ? hash
+        # The lock run records SHA-256 hashes in SRI form.
+        && builtins.isString e.hash
+        && builtins.match "sha256-[A-Za-z0-9+/]{43}=" e.hash != null
+      )
+    );
+  badEntries = builtins.filter (e: !entryShape e) (purifier.remote or [ ]);
+
   denoLock =
-    if purifier.version or null != 1 then
+    if !builtins.isAttrs purifier then
+      throw (relock "${toString purifierLockFile} is not a JSON object")
+    else if purifier.version or null == 1 && malformed != { } then
+      throw (
+        relock "${toString purifierLockFile} lacks ${lib.concatStringsSep ", " (builtins.attrNames malformed)} or has a value of the wrong type there"
+      )
+    else if purifier.version or null == 1 && badEntries != [ ] then
+      throw (
+        relock "${toString purifierLockFile} has a remote entry that is neither { path, url, mirrors, hash, headers } nor { path, contents }: ${builtins.toJSON (builtins.head badEntries)}"
+      )
+    else if purifier.version or null != 1 then
       throw (
         relock "${toString purifierLockFile} has format ${
           toString (purifier.version or "?")

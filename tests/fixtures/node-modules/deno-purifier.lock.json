@@ -1,9 +1,9 @@
 {
   "version": 1,
   "deno": "2.9.8",
-  "denoLock": "7b34a2f8a7ed339593c1bb7119b2bf1b7244a7b29fa36ca0d807fd5b4dbb5c42",
+  "denoLock": "ff17feecd64b7e469c6b751fe163113b5b003118effcef506480efd1b1411d23",
   "configs": {
-    "deno.json": "f3793d6f10cabef5a3ee2280ed73042252eb361e07ebfe729249cf602b32f2c4"
+    "deno.json": "a4fe8f78cdd2a314039c931b3e8539808e612646ee466997ec3f1078c07cfcd7"
   },
   "jsr": "https://jsr.io/",
   "npmRegistries": {
@@ -16,7 +16,8 @@
       "dir": "",
       "config": "deno.json",
       "tasks": [
-        "compile"
+        "compile",
+        "version"
       ]
     }
   ],

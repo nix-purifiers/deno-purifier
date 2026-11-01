@@ -2,13 +2,15 @@
 //
 // deno-purifier: records what a Deno project downloads, for Nix.
 //
-//   deno-purifier lock [--root DIR] [-- DENO-ARGS...]
+//   deno-purifier lock [--root DIR] [--update] [-- DENO-ARGS...]
 //
 // The lock run copies the project to a temporary directory and runs
-// `deno install` on every module of the project there, with an empty
-// DENO_DIR and the network. Deno downloads every remote module, every JSR
-// file and every npm package the project needs into that DENO_DIR. The lock
-// run then writes deno-purifier.lock.json at the project root:
+// `deno install` there with an empty DENO_DIR and the network: once plainly,
+// which fetches every package in the import map, and once on every module
+// of the project, which fetches what the modules import. Deno downloads
+// every remote module, every JSR file and every npm package the project
+// needs into that DENO_DIR. The lock run then writes deno-purifier.lock.json
+// at the project root:
 //
 //   remote    the entries of Deno's remote module cache
 //             (DENO_DIR/remote/<scheme>/<host>/<sha256 of path>), as
@@ -28,35 +30,35 @@
 // runs `deno install --cached-only` against it, so a recorded lockfile is
 // known to serve the project offline.
 //
+// The installs run with --frozen, so a deno.lock that does not cover the
+// project stops the lock run. With --update they may change deno.lock, and
+// the lock run copies the new deno.lock back to the project.
+//
 // DENO-ARGS, when given, are one more Deno command the lock run runs in the
 // copy, such as `task build`, for modules a task imports at run time.
 
+import {
+  cacheFile,
+  explainFailure,
+  type Json,
+  jsrVersionListOf,
+  keptHeaders,
+  lockedJsrVersions,
+  parseCompile,
+  parseNpmrc,
+  type Program,
+  shellWords,
+  splitCacheFile,
+  stripJsonc,
+  trimVersionList,
+} from "./lib.ts";
+
 const LOCK_FILE = "deno-purifier.lock.json";
 const LOCK_VERSION = 1;
-const MARKER = "\n// denoCacheMetadata=";
-// The response headers Deno reads from its cache: the media type, the
-// types of a JavaScript module, a redirect target and a warning to print.
-const KEPT_HEADERS = [
-  "content-type",
-  "location",
-  "x-deno-warning",
-  "x-typescript-types",
-];
-const SOURCE_EXTENSIONS = [
-  ".ts",
-  ".tsx",
-  ".mts",
-  ".cts",
-  ".js",
-  ".jsx",
-  ".mjs",
-  ".cjs",
-];
+const SOURCE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"];
 // Directories that hold installed or generated files rather than the
 // project's modules.
 const SKIPPED_DIRS = new Set(["node_modules", "vendor"]);
-
-type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
 
 interface FileEntry {
   path: string;
@@ -77,15 +79,6 @@ interface Member {
   dir: string;
   config: string;
   tasks: string[];
-}
-
-interface Program {
-  name: string;
-  member: string;
-  task: string;
-  entrypoint: string;
-  flags: string[];
-  args: string[];
 }
 
 function fail(message: string): never {
@@ -111,10 +104,6 @@ function dirname(path: string): string {
   return i <= 0 ? (i === 0 ? "/" : ".") : path.slice(0, i);
 }
 
-function basename(path: string): string {
-  return path.slice(path.lastIndexOf("/") + 1);
-}
-
 function exists(path: string): boolean {
   try {
     Deno.statSync(path);
@@ -132,32 +121,9 @@ function configIn(dir: string): string | null {
   return null;
 }
 
-// Reads JSON with comments and trailing commas, as Deno accepts them in
-// deno.jsonc.
 function readJsonc(path: string): Record<string, Json> {
-  const text = Deno.readTextFileSync(path);
-  let out = "";
-  let i = 0;
-  while (i < text.length) {
-    const c = text[i];
-    if (c === '"') {
-      let j = i + 1;
-      while (j < text.length && text[j] !== '"') j += text[j] === "\\" ? 2 : 1;
-      out += text.slice(i, j + 1);
-      i = j + 1;
-    } else if (c === "/" && text[i + 1] === "/") {
-      while (i < text.length && text[i] !== "\n") i++;
-    } else if (c === "/" && text[i + 1] === "*") {
-      i = text.indexOf("*/", i + 2);
-      i = i < 0 ? text.length : i + 2;
-    } else {
-      out += c;
-      i++;
-    }
-  }
-  out = out.replace(/,(\s*[}\]])/g, "$1");
   try {
-    return JSON.parse(out);
+    return JSON.parse(stripJsonc(Deno.readTextFileSync(path)));
   } catch (e) {
     fail(`cannot parse ${path}: ${e}`);
   }
@@ -215,6 +181,19 @@ function walk(dir: string, rel = ""): string[] {
   return files;
 }
 
+// The node_modules directories below dir, relative to dir, outermost
+// first, without descending into them.
+function walkDirs(dir: string, rel = ""): string[] {
+  const dirs: string[] = [];
+  for (const entry of Deno.readDirSync(joinPath(dir, rel))) {
+    if (!entry.isDirectory || entry.name === ".git") continue;
+    const path = rel === "" ? entry.name : `${rel}/${entry.name}`;
+    if (entry.name === "node_modules") dirs.push(path);
+    else dirs.push(...walkDirs(dir, path));
+  }
+  return dirs;
+}
+
 function copyTree(from: string, to: string) {
   Deno.mkdirSync(to, { recursive: true });
   for (const entry of Deno.readDirSync(from)) {
@@ -226,42 +205,55 @@ function copyTree(from: string, to: string) {
     const target = joinPath(to, entry.name);
     if (entry.isDirectory) copyTree(source, target);
     else if (entry.isFile) Deno.copyFileSync(source, target);
-    else if (entry.isSymlink) {
-      Deno.symlinkSync(Deno.readLinkSync(source), target);
-    }
+    else if (entry.isSymlink) Deno.symlinkSync(Deno.readLinkSync(source), target);
   }
 }
 
-// The project root: the nearest directory upwards with a deno.lock.
+// The project root: the nearest directory upwards with a deno.lock. A
+// project without one gets told how to write it, at the outermost
+// directory with a configuration file.
 function findRoot(start: string): string {
   let dir = Deno.realPathSync(start);
+  let outermostConfig: string | null = null;
   while (true) {
     if (exists(joinPath(dir, "deno.lock"))) return dir;
-    if (dir === "/") {
-      fail(
-        "no deno.lock in this directory or above; run `deno install` to write one.",
-      );
-    }
+    if (configIn(dir) !== null) outermostConfig = dir;
+    if (dir === "/") break;
     dir = dirname(dir);
   }
+  if (outermostConfig === null) {
+    fail("no deno.json, deno.jsonc or deno.lock in this directory or above; run deno-purifier in a Deno project.");
+  }
+  const config = readJsonc(joinPath(outermostConfig, configIn(outermostConfig)!));
+  if (config.lock === false) {
+    fail(
+      `${outermostConfig}/${configIn(outermostConfig)} sets "lock": false, so Deno writes no deno.lock, ` +
+        "and deno-purifier builds from deno.lock. Remove the setting, run `deno install`, then run `deno-purifier lock`.",
+    );
+  }
+  fail(`${outermostConfig} has no deno.lock; run \`deno install\` there, then run \`deno-purifier lock\`.`);
 }
 
 // The root and its workspace members, from their configuration files.
 function readMembers(root: string): Member[] {
   const rootConfig = configIn(root);
   if (rootConfig === null) fail(`no deno.json or deno.jsonc in ${root}`);
-  const dirs = [""];
   const config = readJsonc(joinPath(root, rootConfig));
+  if (config.lock === false) {
+    fail(
+      `${root}/${rootConfig} sets "lock": false, so Deno ignores deno.lock, ` +
+        "and deno-purifier builds from deno.lock. Remove the setting, run `deno install`, then run `deno-purifier lock`.",
+    );
+  }
   const workspace = config.workspace;
   const memberDirs = Array.isArray(workspace)
     ? workspace
-    : (workspace && typeof workspace === "object" && !Array.isArray(workspace) &&
-        Array.isArray(workspace.members))
+    : (workspace && typeof workspace === "object" && Array.isArray(workspace.members))
     ? workspace.members
     : [];
+  const dirs = [""];
   for (const m of memberDirs) {
-    if (typeof m !== "string") continue;
-    dirs.push(m.replace(/^\.\//, "").replace(/\/$/, ""));
+    if (typeof m === "string") dirs.push(m.replace(/^\.\//, "").replace(/\/$/, ""));
   }
   return dirs.map((dir) => {
     const name = configIn(joinPath(root, dir));
@@ -290,169 +282,70 @@ function taskCommand(root: string, member: Member, task: string): string {
   return "";
 }
 
-// Splits shell text into words, keeping quoted strings together. Task
-// commands are shell text that Deno's task runner reads; a `deno compile`
-// command in them is plain words.
-function shellWords(text: string): string[][] {
-  const commands: string[][] = [[]];
-  let word: string | null = null;
-  let quote: string | null = null;
-  const end = () => {
-    if (word !== null) commands[commands.length - 1].push(word);
-    word = null;
-  };
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (quote !== null) {
-      if (c === quote) quote = null;
-      else if (c === "\\" && quote === '"' && i + 1 < text.length) word += text[++i];
-      else word += c;
-    } else if (c === "'" || c === '"') {
-      quote = c;
-      word = word ?? "";
-    } else if (c === "\\" && i + 1 < text.length) {
-      word = (word ?? "") + text[++i];
-    } else if (/\s/.test(c)) {
-      end();
-    } else if (c === ";" || c === "|" || c === "&") {
-      end();
-      while (text[i + 1] === c) i++;
-      commands.push([]);
-    } else {
-      word = (word ?? "") + c;
-    }
-  }
-  end();
-  return commands.filter((c) => c.length > 0);
+// The project's modules: the source files below the root, without the
+// paths the root configuration excludes and without nested projects. A
+// nested project is a directory below the root that holds a deno.json,
+// deno.jsonc or package.json of its own and is not a workspace member, such
+// as an example with its own import map or a Node.js tool kept beside the
+// Deno project.
+function projectModules(root: string, members: Member[]): string[] {
+  const config = readJsonc(joinPath(root, configIn(root)!));
+  const excluded = Array.isArray(config.exclude)
+    ? config.exclude.filter((e): e is string => typeof e === "string")
+    : [];
+  const memberDirs = new Set(members.map((m) => m.dir));
+  const nestedProjects = walk(root)
+    .filter((f) => /\/(deno\.jsonc?|package\.json)$/.test(f))
+    .map((f) => dirname(f))
+    .filter((d) => !memberDirs.has(d));
+  return walk(root)
+    .filter((f) => SOURCE_EXTENSIONS.some((e) => f.endsWith(e)))
+    .filter((f) => !nestedProjects.some((d) => f.startsWith(`${d}/`)))
+    .filter((f) => !excluded.some((e) => isExcluded(f, e)))
+    .sort();
 }
 
-// The flags of `deno compile` that take a value as the next word. The flags
-// whose value is optional (`--lock`, `--reload`, `--env-file`) take it only
-// after an equals sign.
-const COMPILE_VALUE_FLAGS = new Set([
-  "-o",
-  "--output",
-  "--target",
-  "--include",
-  "--exclude",
-  "--icon",
-  "-c",
-  "--config",
-  "--import-map",
-  "--location",
-  "--seed",
-  "--cert",
-]);
-// The flags the lock run leaves out of a program: the output, which the
-// builder chooses, the cross-compilation target, and the lockfile and cache
-// flags, which the builder sets.
-const COMPILE_DROPPED_FLAGS = new Set([
-  "-o",
-  "--output",
-  "--target",
-  "--lock",
-  "--frozen",
-  "--no-lock",
-  "--cached-only",
-  "--reload",
-  "-r",
-]);
+// Whether a configuration `exclude` entry covers a file: an entry names a
+// file or a directory relative to the root, and may end in `/**` or use
+// `*` within one path segment.
+export function isExcluded(file: string, entry: string): boolean {
+  const pattern = entry.replace(/^\.\//, "").replace(/\/\*\*$/, "").replace(/\/$/, "");
+  const regex = new RegExp(
+    "^" + pattern.split("*").map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join("[^/]*") +
+      "(/|$)",
+  );
+  return regex.test(file);
+}
 
 function readPrograms(root: string, members: Member[]): Program[] {
   const programs: Program[] = [];
   for (const member of members) {
     for (const task of member.tasks) {
       for (const words of shellWords(taskCommand(root, member, task))) {
-        if (words[0] !== "deno" || words[1] !== "compile") continue;
-        const flags: string[] = [];
-        let output: string | null = null;
-        let entrypoint: string | null = null;
-        const args: string[] = [];
-        for (let i = 2; i < words.length; i++) {
-          const w = words[i];
-          if (entrypoint !== null) {
-            args.push(w);
-            continue;
-          }
-          if (!w.startsWith("-")) {
-            entrypoint = w;
-            continue;
-          }
-          const [flag, inline] = w.includes("=") ? w.split(/=(.*)/s, 2) : [w, null];
-          const takesValue = inline === null && COMPILE_VALUE_FLAGS.has(flag);
-          const value = inline ?? (takesValue ? words[++i] : null);
-          if (flag === "-o" || flag === "--output") output = value;
-          if (COMPILE_DROPPED_FLAGS.has(flag)) continue;
-          flags.push(value === null ? flag : `${flag}=${value}`);
-        }
-        if (entrypoint === null) continue;
-        const stem = basename(output ?? entrypoint).replace(/\.[^.]*$/, "");
-        programs.push({
-          name: output === null ? stem : basename(output),
-          member: member.dir,
-          task,
-          entrypoint,
-          flags,
-          args,
-        });
+        const program = parseCompile(words, member.dir, task);
+        if (program !== null) programs.push(program);
       }
     }
   }
   return programs;
 }
 
-// The registry URL of npm packages and of each scope, as Deno reads them.
-// NPM_CONFIG_REGISTRY sets the default registry. Otherwise the project's
-// .npmrc comes first and ~/.npmrc second.
 function readNpmRegistries(root: string): Record<string, string> {
-  const registries: Record<string, string> = {};
-  const files = [joinPath(root, ".npmrc")];
+  const texts: string[] = [];
   const home = Deno.env.get("HOME");
-  if (home) files.push(joinPath(home, ".npmrc"));
-  for (const file of files) {
-    let text: string;
+  for (const file of [joinPath(root, ".npmrc"), ...(home ? [joinPath(home, ".npmrc")] : [])]) {
     try {
-      text = Deno.readTextFileSync(file);
+      texts.push(Deno.readTextFileSync(file));
     } catch {
-      continue;
-    }
-    for (const line of text.split("\n")) {
-      const m = line.trim().match(/^(@[^:\s]+:)?registry\s*=\s*(\S+)$/);
-      if (!m) continue;
-      const scope = m[1] ? m[1].slice(0, -1) : "";
-      registries[scope] ??= m[2];
+      // A missing .npmrc sets nothing.
     }
   }
-  const env = Deno.env.get("NPM_CONFIG_REGISTRY");
-  if (env) registries[""] = env;
-  registries[""] ??= "https://registry.npmjs.org/";
-  for (const k of Object.keys(registries)) {
-    if (!registries[k].endsWith("/")) registries[k] += "/";
-  }
-  return registries;
+  return parseNpmrc(texts, Deno.env.get("NPM_CONFIG_REGISTRY"));
 }
 
 function jsrBase(): string {
   const url = Deno.env.get("JSR_URL") ?? "https://jsr.io/";
   return url.endsWith("/") ? url : `${url}/`;
-}
-
-function lockedJsrVersions(denoLock: Record<string, Json>): Map<string, Set<string>> {
-  const versions = new Map<string, Set<string>>();
-  const jsr = denoLock.jsr;
-  if (jsr && typeof jsr === "object" && !Array.isArray(jsr)) {
-    for (const key of Object.keys(jsr)) {
-      const at = key.lastIndexOf("@");
-      const name = key.slice(0, at);
-      if (!versions.has(name)) versions.set(name, new Set());
-      versions.get(name)!.add(key.slice(at + 1));
-    }
-  }
-  return versions;
-}
-
-function cacheFile(body: string, url: string, headers: Record<string, string>): string {
-  return body + MARKER + JSON.stringify({ headers, url, time: 0 });
 }
 
 // Reads Deno's remote module cache into download entries.
@@ -467,48 +360,28 @@ async function readRemote(
   if (!exists(remoteDir)) return { files, inline, bodies };
   const jsr = jsrBase();
   const jsrVersions = lockedJsrVersions(denoLock);
-  const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  const markerBytes = encoder.encode(MARKER);
   for (const rel of walk(remoteDir).sort()) {
-    const bytes = Deno.readFileSync(joinPath(remoteDir, rel));
-    let at = -1;
-    for (let i = bytes.length - markerBytes.length; i >= 0 && at < 0; i--) {
-      let match = true;
-      for (let j = 0; j < markerBytes.length && match; j++) {
-        match = bytes[i + j] === markerBytes[j];
-      }
-      if (match) at = i;
+    const split = splitCacheFile(Deno.readFileSync(joinPath(remoteDir, rel)));
+    if (split === null) {
+      fail(`remote/${rel} has no cache metadata; this Deno's cache format is not one deno-purifier reads`);
     }
-    if (at < 0) fail(`remote/${rel} has no cache metadata; this Deno's cache format is not known`);
-    const body = bytes.slice(0, at);
-    const meta = JSON.parse(decoder.decode(bytes.slice(at + markerBytes.length)));
-    const url: string = meta.url;
-    const headers: Record<string, string> = {};
-    for (const h of KEPT_HEADERS) {
-      if (meta.headers && typeof meta.headers[h] === "string") headers[h] = meta.headers[h];
-    }
+    const { body, meta } = split;
+    const headers = keptHeaders(meta.headers);
     const path = `remote/${rel}`;
-    const metaMatch = url.startsWith(jsr) &&
-      url.slice(jsr.length).match(/^(@[^/]+\/[^/]+)\/meta\.json$/);
-    if (metaMatch) {
-      // A JSR version list, trimmed to the versions deno.lock names, so the
-      // recorded file stays the same until the lock changes.
-      const versionList = JSON.parse(decoder.decode(body));
-      const keep = jsrVersions.get(metaMatch[1]) ?? new Set();
-      const versions: Record<string, Json> = {};
-      for (const [v, info] of Object.entries(versionList.versions ?? {})) {
-        if (keep.has(v)) versions[v] = info as Json;
-      }
-      versionList.versions = versions;
-      delete versionList.latest;
-      inline.push({ path, contents: cacheFile(JSON.stringify(versionList), url, headers) });
+    const versionList = jsrVersionListOf(meta.url, jsr);
+    if (versionList !== null) {
+      const keep = jsrVersions.get(versionList) ?? new Set();
+      inline.push({
+        path,
+        contents: cacheFile(trimVersionList(decoder.decode(body), keep), meta.url, headers),
+      });
     } else if (body.length === 0) {
-      inline.push({ path, contents: cacheFile("", url, headers) });
+      inline.push({ path, contents: cacheFile("", meta.url, headers) });
     } else {
       files.push({
         path,
-        url,
+        url: meta.url,
         mirrors: [],
         hash: `sha256-${base64(await sha256(body))}`,
         headers,
@@ -548,20 +421,17 @@ function rebuild(
   if (exists(npm)) {
     copyTree(npm, joinPath(target, "npm"));
     for (const rel of walk(joinPath(target, "npm"))) {
-      if (basename(rel) === "registry.json") Deno.removeSync(joinPath(target, "npm", rel));
+      if (rel.endsWith("/registry.json")) Deno.removeSync(joinPath(target, "npm", rel));
     }
   }
 }
 
-async function lock(rootArg: string | null, extra: string[]) {
+async function lock(rootArg: string | null, update: boolean, extra: string[]) {
+  const started = Date.now();
   const root = findRoot(rootArg ?? Deno.cwd());
-  const denoLockText = Deno.readTextFileSync(joinPath(root, "deno.lock"));
-  const denoLock = JSON.parse(denoLockText);
   const members = readMembers(root);
   const programs = readPrograms(root, members);
-  const modules = walk(root)
-    .filter((f) => SOURCE_EXTENSIONS.some((e) => f.endsWith(e)))
-    .sort();
+  const modules = projectModules(root, members);
   const entrypoints = modules.length > 0 ? ["--entrypoint", ...modules] : [];
 
   const work = Deno.makeTempDirSync({ prefix: "deno-purifier-" });
@@ -569,42 +439,53 @@ async function lock(rootArg: string | null, extra: string[]) {
     const project = joinPath(work, "project");
     const denoDir = joinPath(work, "deno-dir");
     copyTree(root, project);
-    const env = {
-      DENO_DIR: denoDir,
-      DENO_NO_UPDATE_CHECK: "1",
-      NO_COLOR: "1",
-    };
+    const env = { DENO_DIR: denoDir, DENO_NO_UPDATE_CHECK: "1", NO_COLOR: "1" };
 
-    // A plain `deno install` fetches the whole export graph of every JSR
-    // package in the import map, beyond what the project's modules import;
-    // `deno install --entrypoint` fetches what the modules import from
-    // remote URLs too.
+    // With --update, a first pass lets Deno update deno.lock, with a cache
+    // of its own. The downloads are then always recorded from a frozen pass
+    // into an empty cache, so the record does not depend on whether
+    // deno.lock changed: a frozen install reads redirects from deno.lock
+    // and fetches their targets alone, as the sandbox does.
+    if (update) {
+      log("updating deno.lock");
+      const updateEnv = { ...env, DENO_DIR: joinPath(work, "update-deno-dir") };
+      for (const args of [["install"], ["install", ...entrypoints]]) {
+        const install = await run(args, { cwd: project, env: updateEnv });
+        if (!install.ok) fail(explainFailure(args.slice(0, 1).join(" "), install.output));
+      }
+      // A node_modules the first pass made would let the frozen pass skip
+      // the downloads it must record.
+      for (const rel of walkDirs(project)) {
+        Deno.removeSync(joinPath(project, rel), { recursive: true });
+      }
+    }
+
     log(`installing the dependencies and ${modules.length} modules into an empty DENO_DIR`);
     for (const args of [["install", "--frozen"], ["install", "--frozen", ...entrypoints]]) {
       const install = await run(args, { cwd: project, env });
-      if (!install.ok) {
-        fail(`\`deno ${args.join(" ")}\` failed in the lock run:\n${install.output}`);
-      }
+      if (!install.ok) fail(explainFailure(args.slice(0, 2).join(" "), install.output));
     }
     // Type checking fetches type-only dependencies, such as @types/node.
     if (modules.length > 0) {
       const check = await run(["check", "--frozen", ...modules], { cwd: project, env });
       if (!check.ok) {
-        log("`deno check` reported errors; the lock run continues, and a build with doCheck reports them too.");
+        log("`deno check` reported type errors; the lock run continues, and a build with doCheck reports them too.");
       }
     }
     if (extra.length > 0) {
       const r = await run(extra, { cwd: project, env });
-      if (!r.ok) fail(`\`deno ${extra.join(" ")}\` failed in the lock run:\n${r.output}`);
+      if (!r.ok) fail(explainFailure(extra.join(" "), r.output));
     }
 
+    const denoLockText = Deno.readTextFileSync(joinPath(project, "deno.lock"));
+    const denoLock = JSON.parse(denoLockText);
     const { files, inline, bodies } = await readRemote(denoDir, denoLock);
 
     log("checking that the recorded downloads serve the project offline");
     const verifyDir = joinPath(work, "verify-deno-dir");
     const verifyProject = joinPath(work, "verify-project");
     rebuild(verifyDir, denoDir, files, inline, bodies);
-    copyTree(root, verifyProject);
+    copyTree(project, verifyProject);
     for (
       const args of [
         ["install", "--frozen", "--cached-only"],
@@ -613,10 +494,17 @@ async function lock(rootArg: string | null, extra: string[]) {
     ) {
       const verify = await run(args, { cwd: verifyProject, env: { ...env, DENO_DIR: verifyDir } });
       if (!verify.ok) {
-        fail(`the recorded downloads do not serve \`deno ${args.join(" ")}\`:\n${verify.output}`);
+        fail(
+          `the recorded downloads do not serve \`deno ${args.join(" ")}\`; ` +
+            `this is a deno-purifier bug, please report it with this output:\n${verify.output}`,
+        );
       }
     }
 
+    if (update && denoLockText !== Deno.readTextFileSync(joinPath(root, "deno.lock"))) {
+      Deno.writeTextFileSync(joinPath(root, "deno.lock"), denoLockText);
+      log("updated deno.lock");
+    }
     const configs: Record<string, string> = {};
     for (const m of members) {
       configs[m.config] = hex(await sha256(Deno.readFileSync(joinPath(root, m.config))));
@@ -633,8 +521,10 @@ async function lock(rootArg: string | null, extra: string[]) {
       remote: [...files, ...inline].sort((a, b) => (a.path < b.path ? -1 : 1)),
     };
     Deno.writeTextFileSync(joinPath(root, LOCK_FILE), JSON.stringify(lockfile, null, 2) + "\n");
+    const seconds = ((Date.now() - started) / 1000).toFixed(1);
     log(
-      `wrote ${LOCK_FILE}: ${files.length} module files, ${inline.length} inline cache entries, ${members.length} packages, ${programs.length} programs`,
+      `wrote ${LOCK_FILE} in ${seconds}s: ${files.length} module files, ${inline.length} inline cache entries, ` +
+        `${members.length} packages, ${programs.length} programs`,
     );
   } finally {
     Deno.removeSync(work, { recursive: true });
@@ -642,25 +532,31 @@ async function lock(rootArg: string | null, extra: string[]) {
 }
 
 function usage(): never {
-  console.error(`usage: deno-purifier lock [--root DIR] [-- DENO-ARGS...]
+  console.error(`usage: deno-purifier lock [--root DIR] [--update] [-- DENO-ARGS...]
 
 Records the downloads of the Deno project at DIR (default: the nearest
-directory upwards with a deno.lock) in deno-purifier.lock.json.`);
+directory upwards with a deno.lock) in deno-purifier.lock.json.
+
+  --update   let Deno update deno.lock while the lock run installs, and
+             write the updated deno.lock back to the project
+  DENO-ARGS  one more Deno command to run in the lock run, for modules a
+             task imports at run time, such as \`task build\``);
   Deno.exit(2);
 }
 
-const [verb, ...rest] = Deno.args;
-if (verb === "lock") {
+if (import.meta.main) {
+  const [verb, ...rest] = Deno.args;
+  if (verb !== "lock") usage();
   let root: string | null = null;
+  let update = false;
   let extra: string[] = [];
   for (let i = 0; i < rest.length; i++) {
-    if (rest[i] === "--root") root = rest[++i];
+    if (rest[i] === "--root" && i + 1 < rest.length) root = rest[++i];
+    else if (rest[i] === "--update") update = true;
     else if (rest[i] === "--") {
       extra = rest.slice(i + 1);
       break;
     } else usage();
   }
-  await lock(root, extra);
-} else {
-  usage();
+  await lock(root, update, extra);
 }

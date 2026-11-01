@@ -35,6 +35,23 @@
         "type": "github"
       }
     },
+    "deployctl": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1770996715,
+        "narHash": "sha256-bLs+sLUKDvAhTdyyDq7TYKWkiesihUfQhGjIdAqe7Cs=",
+        "owner": "denoland",
+        "repo": "deployctl",
+        "rev": "87e43e57b2336bcaf96bcd193687edcb3c5795c1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "denoland",
+        "repo": "deployctl",
+        "rev": "87e43e57b2336bcaf96bcd193687edcb3c5795c1",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
@@ -110,6 +127,7 @@
     "root": {
       "inputs": {
         "caisson": "caisson",
+        "deployctl": "deployctl",
         "flake-parts": "flake-parts_2",
         "nixpkgs": "nixpkgs",
         "treefmt-nix": "treefmt-nix"

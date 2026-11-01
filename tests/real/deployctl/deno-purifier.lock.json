@@ -1,0 +1,3533 @@
+{
+  "version": 1,
+  "deno": "2.9.8",
+  "denoLock": "3ad69e12323efe155a4d98ea0bc891ee4323723fe22e0046268a7f749d1aa4b6",
+  "configs": {
+    "deno.jsonc": "39b031ce3f02324916aeae991011f9be68ab459603c687eec2154aedc2c9f268"
+  },
+  "jsr": "https://jsr.io/",
+  "npmRegistries": {
+    "": "https://registry.npmjs.org/"
+  },
+  "members": [
+    {
+      "name": "@deno/deployctl",
+      "version": "1.13.1",
+      "dir": "",
+      "config": "deno.jsonc",
+      "tasks": [
+        "build-action",
+        "test",
+        "version-match"
+      ]
+    }
+  ],
+  "programs": [],
+  "remote": [
+    {
+      "path": "remote/https/jsr.io/00456a179ff2ed3f924ce586c9ea7c2176639c5b55d9f55057fc3e0c236cb117",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/join.ts",
+      "mirrors": [],
+      "hash": "sha256-B6f+/iAU769Y6CdmkgmAMAy4vcgN9Zu6XIQnAz1wNfA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/016ca767f6f393a0e78c804e9f382cf37abb2af8d19bd174289594da2eafd637",
+      "url": "https://jsr.io/@std/semver/0.217.0/equals.ts",
+      "mirrors": [],
+      "hash": "sha256-i5sYJgyaVf7unT+SUPujRb6SI4Dy6PgAnkVcOUzl6B0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/017f2783f2a5fa574f19ffbb715eeaf0dc33dbbeb9330b776c3c4dab98032e48",
+      "url": "https://jsr.io/@std/async/0.217.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-ArpqfQZUgbYxjQeDrXJDQm5PG8TN7g0bZGC/c+nqs+M=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/01956387b697f1f75ec3137fef4ace7ded8dddb4ee56ccb2e12e28056432e6c7",
+      "url": "https://jsr.io/@std/streams/0.217.0/text_line_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-OKM9IqFKOEFgISOuxTwsKcMFVPdWhsirTlSgeHlxYAc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/01c63340f4b62f9569e06361a9683dabfe12220d2eb0dbcaee0e5aae2ebb6236",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/relative.ts",
+      "mirrors": [],
+      "hash": "sha256-Nm6yW9NGlDPkfdTKxS0DBI1eJ+iongWSFwZdOvpOfnE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/01dcab67e0f2f1d38bef7a51dec3c9604e8ef8207c9889c1d74f0a23f088c109",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/to_namespaced_path.ts",
+      "mirrors": [],
+      "hash": "sha256-KLIWs8dviSpNypc0/xzABF0TVTK/2cQ1rkhYv6Wi6/A=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/0214d1cc1f59b4053135f38dd3c88a9d3704c0d4b18e108aa6915cd56fe64272",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/normalize_string.ts",
+      "mirrors": [],
+      "hash": "sha256-M+3vdzwqjiQnYfcxresr1taD6caeTj0Akphb7edPSsM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/03adf7a4082af5f9a35a8b2c285039f431ac3d2e65ecf46f014f9b53bd00998f",
+      "url": "https://jsr.io/@std/io/0.223.0/read_short.ts",
+      "mirrors": [],
+      "hash": "sha256-dUz51DevSxmg4yvHe6ZBMYVtGyumxzfEWc1Lug1FU2A=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/04e6bb2fe4c771e0573607ca38b383739d4ae23880a7ee17fc7fa05e807bfb4b",
+      "url": "https://jsr.io/@std/path/0.223.0/join.ts",
+      "mirrors": [],
+      "hash": "sha256-ri7FykTH6EojX9Uy5KARa/sfI2izlNscT7dePA8mozo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/066b0894b1c368ad650a0c0834a153b3d9a479aa5bdaef1974a1a5980763081b",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/extname.ts",
+      "mirrors": [],
+      "hash": "sha256-KX/0blHXW5fUCWz1ZkRx3KZbUp9VfC5uCK7D8kQXZ78=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/06d1c0be2c6c3ef42e9354b900be422c67c79f740586ce367b4d369f5146ff56",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-QxERKMk63S9hUD2v1ByX6bPlranxX8Xyb1x3nxYV3ks=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/06d1ebac98c34acad770eb0586a43676f5da50823babd12e7e20cabdb6555c59",
+      "url": "https://jsr.io/@std/flags/0.217.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-3cVCbWuofK7OwaVE4hbt//HwBAzyfl9rz4N7EXVnDKo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/0752890aec2fbf76e49c43e97f92ea70061819aff7373f4470c3f0d2db1af265",
+      "url": "https://jsr.io/@std/encoding/0.217.0/base32.ts",
+      "mirrors": [],
+      "hash": "sha256-9ywG6y0cGxveSMXkLVtvc543zqSN9Vh9D6D+GlfP6so=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/091c36301fd55c365c85daed1bcc49fae6c391d132708fcc0446943f6e3d3013",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/extname.ts",
+      "mirrors": [],
+      "hash": "sha256-sUANnQrCFgrM2jJ3kMk9qk7oMluH9MTZshiH58j9c9s=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/094c41dcfd8d505d8c3e66dbd44650bd1bc5526c68a678be407f0e984e6e976f",
+      "url": "https://jsr.io/@std/semver/0.217.0/greater_or_equal.ts",
+      "mirrors": [],
+      "hash": "sha256-icJvaAcIlpRGduuXBMu2F/68btaTcgKCdB1oWcPR/oA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/09eb8b44bbe64f70598668bc730a92f7301a69a539379e14243a33c13dcdc8a3",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/from_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-LUYA9OQpXoIzZBDiqsafXpSbc5prcq4bvOQLLETiNIA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/0a5232c6a6a8487b9303056c16d7755aac1a3ea18d5ccaf8befad989b9b54a53",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_greater.ts",
+      "mirrors": [],
+      "hash": "sha256-RBz8q2q4wG1sVNWZXVE6FIye1+wtJBwVTmoSez8i+ZU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/0a89b22a25de485dec1415f0093e86b37935a0667953797e1bf0ab091e49a825",
+      "url": "https://jsr.io/@std/bytes/0.217.0/copy.ts",
+      "mirrors": [],
+      "hash": "sha256-4zMdyLkXXxAWue9sGJDxuAdwdi4Be2ygi5t2SVTSbe8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/0b05c2775f8a7e6364c8a40c23cd7a568ee03e5b882922a6645742b2af70c3fb",
+      "url": "https://jsr.io/@std/streams/0.217.0/readable_stream_from_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-vzo35+xHGfSe7k3WzpHjPQEFnV2qNbu+TYcmxpzP1e4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/0c587939d7f86023f8a5391122339ecdbe22ccaa4c7b2facf6f533f113f4c68f",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_not_instance_of.ts",
+      "mirrors": [],
+      "hash": "sha256-NAhhEoxaAwcSR/3GARuEmf0nfZ+usUMGpK+c1kKjAsM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/0d86b7ce64ce452d9d7f47e38b3601cef7b0fb027ad51a6be3a6e8b696d1624c",
+      "url": "https://jsr.io/@std/assert/0.217.0/_constants.ts",
+      "mirrors": [],
+      "hash": "sha256-onHo71pXPx346CKm650J3wZK1mpDkPIbPjH4IKOOCXU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/10402e5d91980b133fe7c692ea92c30abf8f27525dc1c920925869645f47f604",
+      "url": "https://jsr.io/@std/path/0.223.0/basename.ts",
+      "mirrors": [],
+      "hash": "sha256-5sBhPB6nITD4cuMcZIwuL5/vw9kl5Ny4OSAz53uKSuA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/10f015ad7e60cff38977bb9465ed3dbcc3a8cde90ed52a88e45474bc4e943447",
+      "url": "https://jsr.io/@std/io/0.223.0/buffer.ts",
+      "mirrors": [],
+      "hash": "sha256-N9t9zpV+/L095u2LbRV//pkW2vgiEGtBiS8dRi8N/aI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1124821cfe0223e88472c93e9320256151fa5db61d3d0b715baf556ebe8080df",
+      "url": "https://jsr.io/@std/assert/0.217.0/fail.ts",
+      "mirrors": [],
+      "hash": "sha256-Z1eaEwixdtUnVt7W0eMUn4dwNkjlmvwzO6UWj+/rjXs=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/12728dc6122d4af496b784a23a8ffe28b4f14f5966fc686f677073cfed01732e",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1/strip_ansi.ts",
+      "mirrors": [],
+      "hash": "sha256-ZnHY1E2hkqcTqsBvuaCVmjwLEaFhQ4/fVAhW4iCIV9k=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/12a88f8703a4de4a0550ebaa6bbcf39da680a91e0a4e26d94ba745cc010503d7",
+      "url": "https://jsr.io/@std/encoding/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-sD6P+UyY1ragLALFz45dIDQAFVUWJIlk/EVZq8BGadw=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/135b9a00d2ba3c9e2bd211c449b86e35dd1d829f1e0256c2944f63e37599bdfe",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/format.ts",
+      "mirrors": [],
+      "hash": "sha256-RzGOVKyM0unDXvKhQ9AsGYzgk+Mfl4m27LlcvGD+xxs=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/13ae08c556a46a99771c0365f567a782e251cdc57f215b189b5cdc102fd039b2",
+      "url": "https://jsr.io/@std/assert/0.217.0/equal.ts",
+      "mirrors": [],
+      "hash": "sha256-Fm2Td86N9NU/Z22aVooTkUwjI9nTsv0Qlqr+tZ88Ht8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/150e42cf6f98d8668e7115ff182e3914bc7e168c49585c8a5d300d6392eba552",
+      "url": "https://jsr.io/@std/dotenv/0.217.0/load.ts",
+      "mirrors": [],
+      "hash": "sha256-WHs0Lw9qPfBxMx/muhyCNymraPfVOAWAlHXkht1BYdc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1577d3fd170cfe1a8e3854ef66f4fe8e7ae643e8d4f73b3eafb5bd6df4d4ae6d",
+      "url": "https://jsr.io/@std/async/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-FNrJT1lZXjnlGd43nEcXDYu+3qJTgkxLFnEIqpQ922k=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/15df7cafb4bd43a81ce4227b2eb9e6e94d4a06c0c52ef19939a7acf0ada2b3ff",
+      "contents": "{\"scope\":\"std\",\"name\":\"flags\",\"versions\":{\"0.217.0\":{}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/flags/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/1752136f45d58f427674060e5ae440bf1382d789a01c62558c8d9c5a46e9a57c",
+      "url": "https://jsr.io/@std/path/0.223.0/_interface.ts",
+      "mirrors": [],
+      "hash": "sha256-FeKbhezKs3W5jgtMN3LDCQuB/t8rLgGvAa/Pz7eTqnY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/179166906a6608319efbc9c865a135afaecdcba360dbbdf76a8368ec641a3542",
+      "url": "https://jsr.io/@std/path/0.217.0/format.ts",
+      "mirrors": [],
+      "hash": "sha256-mPrSXxr3uWpI77W2c3j8yO13vold+LnHM7hkEWMhYq8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/17f4548afa0a68bcf6347fd4fff88a89fb7be75393445c8c7639b6153ce45eea",
+      "url": "https://jsr.io/@std/path/0.223.0/constants.ts",
+      "mirrors": [],
+      "hash": "sha256-DCBhacoQSTjt6dpIrJUt4ojyM0MwShw8tux2JecyXzY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/182d42a70801e0e5ea592f822fb235b491bf0d881940779b5b1cf4677d4fd71c",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/constants.ts",
+      "mirrors": [],
+      "hash": "sha256-WvqsCh9ntosKOApO85G/Wf61WFaqjGDfwBvTtqu4E/U=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1972807370e10c19d644f2b23abf153968203d15a807938e7e3e5eb7b2e93b69",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/relative.ts",
+      "mirrors": [],
+      "hash": "sha256-+qJ1PZsyMg7UraBzMmHjNXwYblcFZ42d0IuXUn3q5gc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/197a501a3833f2e5ca470fa8d36887d4e21527b8cd5ec9e84e165ea0c5f618f2",
+      "url": "https://jsr.io/@denosaurs/wait/0.2.2/spinners.ts",
+      "mirrors": [],
+      "hash": "sha256-KJNG1U+NYVKl3NZ7Z+R3hM+beoqPbwttwEHrwu9rt2w=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1a5dbaaea3846514c03c8131558ef1832d64c111b0005463b541b7dd1d52b1f5",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/normalize.ts",
+      "mirrors": [],
+      "hash": "sha256-eBJhcKuRfwyjVamvnmWta/pb4U1XTF+wm7GSD1JXd4A=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1a864ea0c3e5151b8e73175567ce41463171afe930e295edb64ab11e6afe1488",
+      "url": "https://jsr.io/@std/semver/0.217.0/is_semver.ts",
+      "mirrors": [],
+      "hash": "sha256-V5FAJ9YUHlk+sEQYqqu/1vRWKhxTxsM6F0P6UK2o2Ek=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1a9be18201d5641c6d7ad7a2f9d54d90404f57300908e1e9e05c9c786914c9b1",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/constants.ts",
+      "mirrors": [],
+      "hash": "sha256-3F+AVxWfS0jNME6zAn5C8RSM9N8ftCQHdNNJK10SrAw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1c5e59099d6c89d9c0d0138c5af1eeffc926c33e99a0a6d8da4b69e5870b6060",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/from_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-rkdZ15aPhDgt0A9jMoj7OpLLZd9f5Ta2GMM2Nq7Z6Ls=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1d4e2863052e9db863036a3e17a69102c400a67e11cb4be3bbdb8ca41d3871fb",
+      "url": "https://jsr.io/@std/semver/0.217.0/try_parse.ts",
+      "mirrors": [],
+      "hash": "sha256-omOexYjDdDMdX2Vb+9+NWi8sxwTItWrJTNB3lE3hUMc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1e0bd5adf875162c63601a635aee1743f25fd2bc5810e1edbfd86edd657f0f44",
+      "url": "https://jsr.io/@std/io/0.223.0/buf_writer.ts",
+      "mirrors": [],
+      "hash": "sha256-uxgnFmHWrIQIMoJzr1QgPDHSklo8hjbJuSELvMzmZ4s=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1ee67a9551971ed3914879f59d450462cd715eeda0c76215535efdad957b544a",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/common.ts",
+      "mirrors": [],
+      "hash": "sha256-YVfH7B9NsrSpoYfv1s523K8eYc/Un4fkDU6hAoGN8DE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1f1bbb5988e87bd72faa85036d1b3fa7881b4571907bf6660e33ee03753f680c",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/dirname.ts",
+      "mirrors": [],
+      "hash": "sha256-7NruwX1f3QDaibsFli4gnHqkGtSWcnm8hmLAuzokOy8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/1f82758882d5f6430ea841aca120ce811f985b0734e820a6eb20f13fac3684de",
+      "url": "https://jsr.io/@std/async/0.217.0/deadline.ts",
+      "mirrors": [],
+      "hash": "sha256-013To0FumvXyU71mFT4xXeXP5OyDsXzddiapJ6QMKx4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2074ee8a3f582648384fa66a1d9c24e854252585132320a95f640772d6e5685e",
+      "url": "https://jsr.io/@std/semver/0.217.0/_constants.ts",
+      "mirrors": [],
+      "hash": "sha256-2R/MY0Te2k9UjASLfkE3Nf+NQt2+WkdW8wTUOD2cQQ4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/21389945646784d0dc9d1da12d8ebedb2fed551e7d55d13a9d0dc75a9ca612fd",
+      "url": "https://jsr.io/@std/fmt/0.223.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-bes3eUEn38fXve0lhrn8b11Q5iqBNIRmCLr3H/waUgg=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/223a799f4b4c62b6eeb5ab915892c62730a71f5b0795e848b87ad59d1a2b664e",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1_meta.json",
+      "mirrors": [],
+      "hash": "sha256-8fxlHMkCHJC/IwpFxuuJPCalT65qhV6c0mqtAIPXct0=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/226c3d3bb4587e715b1863869525e9a736cb0b7d763c981943166f859609bbd7",
+      "url": "https://jsr.io/@std/semver/0.217.0/less_than.ts",
+      "mirrors": [],
+      "hash": "sha256-sMeQLFTOytzHwcgK/C9qDxvws/U8jSv9EfAaOkFMzP4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/22e91099528d88975aa102630c1a81320f97d34fe47653dc0966554cedeb0a50",
+      "url": "https://jsr.io/@std/streams/0.217.0/byte_slice_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-19xwGnGtXg4qAc8Q/C610YW2j8Qxyyl1t2nHw5IQKh8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/240bf5fc71a5ca7a5d8ff41a9adc4e29f138b1f12c604db1131dddad44bbe78f",
+      "contents": "{\"scope\":\"std\",\"name\":\"async\",\"githubRepository\":{\"owner\":\"denoland\",\"name\":\"std\"},\"versions\":{\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:34.518615Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/async/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/248e9a20f74eb95d8c0669f32b0392f11a0b9b8f2cb07f3d6d3b3a8e45030b1e",
+      "url": "https://jsr.io/@std/io/0.217.0/types.ts",
+      "mirrors": [],
+      "hash": "sha256-Wt00nU01m3heLqaa5XB0bRGEty7KGubvZF+7LtJRhw0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2519159089d3827296bea5b5e3251dea7e02cc8320e92e6481df650eac90aa78",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/basename.ts",
+      "mirrors": [],
+      "hash": "sha256-VpdEhVvIRF86Vgh/0q7Va9rTnalxqNkrE4yZE67MX6I=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/26886c3a740f3bba81701903d0b267bbfd25970bccc59581b29554502cb8ae8f",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/constants.ts",
+      "mirrors": [],
+      "hash": "sha256-k0ge+5jN/6THGcIqAYK5lOWmrtMEfhli9sLHW3WSvvE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/26b415c70e4a18cfa835aeb44f5aa4d8549279d85e1fe8f823b664258bd4e018",
+      "url": "https://jsr.io/@std/io/0.223.0/_constants.ts",
+      "mirrors": [],
+      "hash": "sha256-PHrUaVgy5uSjLjXyGMcDdrYrx4Yh7waaSgo9VXOfiFY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/26e3e360f326268ffed6fe8e02516095994e9b284d3b9e59e43f369311ee6a78",
+      "url": "https://jsr.io/@std/semver/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-wbpCzcqs9hDxpi7CJWqyl2WnP+3mUSAhTDrLnIXtPTU=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/26f335fdb784fd943e03f7848c50c19b05f7cf06deb4e4ff8f5a1b8ca65571f1",
+      "url": "https://jsr.io/@std/semver/0.217.0/range_max.ts",
+      "mirrors": [],
+      "hash": "sha256-uZRpXohQRVGOFlWixRnXJgA8c4Gz5kviCQZjN4pr/iA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/275fb5968c5a22ab664ecfc41b9c7c5e217c6d700006bfc29e59155cdf7e1606",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-KWH+D0zzEIB//feR+U0XZ4dgpI6fCXYQIB1lgQ2ycDA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2880309d2513f09c1dbdd830cfa17afa8b767d82eb9d7aa7b48f49b9aec4a948",
+      "url": "https://jsr.io/@std/assert/0.223.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-641th5124cxDEgW9NG7U2I3AUcY2Y2Wxr0cDSwZwviQ=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/28f7d702e157aa897cb36c33276aff19cc90b107707c1725c3831ae960b3fb66",
+      "url": "https://jsr.io/@std/path/0.223.0/parse.ts",
+      "mirrors": [],
+      "hash": "sha256-NMH9aVayQ5UUy+qGIpmKrQEvH8Qj5LZeR7tCUMzQI9k=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/29b71bbcaff0e2e743d6aaa8d78ab545f01f47e40ed47df816b7a5bfe1530abf",
+      "url": "https://jsr.io/@std/io/0.223.0/_common.ts",
+      "mirrors": [],
+      "hash": "sha256-NnBc20380zjWExvKGxbkik1b8NHa2mzjlyaOiMF6WDU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2b1e807fde54cbc5100311224527a03a7998b9c5537722581d5e03af298471ee",
+      "url": "https://jsr.io/@std/path/0.223.0/relative.ts",
+      "mirrors": [],
+      "hash": "sha256-q3OdcnGA7Ycn407XHZdpEkYdmOK3bePT3oNMEGZmet0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2bcb19225b595eabbe5384f7d9e640fb0758fd7ca7e55d97b70ab6c6f8117a41",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/parse.ts",
+      "mirrors": [],
+      "hash": "sha256-Cx/Ey4kNu2mewdLCMtJ0hDtKcULhrZdraf5RyVTrYIA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2c82aa8fbec130b8cdf7186e752f52f56fa24a239e37648c2ba4788844858932",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/to_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-fPUa/WCMsWe6hXtlbwPvq+rY9J+P1cs/Gt6L9ijHASw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2d549a403c59ee1151b53388a7f8dff824b6763c57adb8b6c11675fc7152a2d0",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/resolve.ts",
+      "mirrors": [],
+      "hash": "sha256-CLaZz+7hDLaFfMqzj6Sy7HA7DqM+jmmWTynQKi1SV88=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2da16c5d32e59fb3f90bdb0d76e39add1b2fd455553faebe1ee00675bc731baf",
+      "url": "https://jsr.io/@std/io/0.223.0/copy_n.ts",
+      "mirrors": [],
+      "hash": "sha256-3Vq0CgGL+wf2mPcQjzjJMeKDHe86y1pqIxK9ONE1LQg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2dfe3ec9e26a15181f2a19843a9799da1fc1e9fe3ddbc218f385f217eaa84f37",
+      "url": "https://jsr.io/@std/semver/0.217.0/reverse_sort.ts",
+      "mirrors": [],
+      "hash": "sha256-QIJEVx5XLn8vlemVVHpH/DT6vf3auElb6W/HlVbe+ho=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2e3610753a89784324106828708f02a1bab42675ae903544cf273b527bebfc82",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/normalize_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-nIeoKbbA9EXQOz7K3BRJLihkw+u5ZvTOpB6YMm5ENcY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2e535782e26a754643fbc2296f9225b1dad36f7bd6b8d1d9cc4c786144c91436",
+      "contents": "{\"scope\":\"std\",\"name\":\"streams\",\"githubRepository\":{\"owner\":\"denoland\",\"name\":\"std\"},\"versions\":{\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:45.722488Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/streams/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/2e9c7cbf9cbbaee66c56077141f8fca47830aef067e715777627734c123efb67",
+      "url": "https://jsr.io/@std/semver/0.217.0/_comparator_intersects.ts",
+      "mirrors": [],
+      "hash": "sha256-FLRIlw8JmOuyClhOiJXFOKR376IDzJ7fQi4sVRnHCwE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2f58ccfb54f256faac429299cca2f55bcad86997481e04cbd3e7ab69340dc2a4",
+      "url": "https://jsr.io/@std/semver/0.217.0/ltr.ts",
+      "mirrors": [],
+      "hash": "sha256-TBR4MERMkCDszBfNjU2aztWw9s+zyLmfuc3MqP6QNW8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/2f7c7573a1e0fbd0691c3532191ba2a97fc529de2ff4a19c7d76bb5d7c958f35",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-QxERKMk63S9hUD2v1ByX6bPlranxX8Xyb1x3nxYV3ks=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/325a919eef314b3b7858126f12de64fb339b5e5489b7019cdb861fc10519c64b",
+      "url": "https://jsr.io/@std/fs/0.223.0/ensure_dir.ts",
+      "mirrors": [],
+      "hash": "sha256-BmA0q2P2w5H5oS9X8ERZ0ux3W1hVbACFOhcICP8iUKQ=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/33c40991d419c2a0abe73b39b805bdc3a00001435a6c7139b570f125ec5b6598",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/is_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-iosIwIv3MazywSMiGPH0WhETG8Ad6B5fgDRQpZFENLk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/34fc5f163d432ace8b43c2a65842990b9b7664a69ac1ffc37dd52c05d45dfa1b",
+      "url": "https://jsr.io/@std/path/0.217.0/relative.ts",
+      "mirrors": [],
+      "hash": "sha256-q3OdcnGA7Ycn407XHZdpEkYdmOK3bePT3oNMEGZmet0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3511989f1ead35423739760fa381441b5b7a0eaa080394a5c38aff7362b33c2a",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/format.ts",
+      "mirrors": [],
+      "hash": "sha256-7wRCP9WdBtwCekzL6eqntZwy+dduQ02d6+xDtyg+Io4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/352caed95a3e6ffcc550bb6ebc40119988f35c6d8ace7f828080f194db25998e",
+      "url": "https://jsr.io/@deno/graph/0.73.1_meta.json",
+      "mirrors": [],
+      "hash": "sha256-zWljnScJ1HkDfVzhkaQi6r6NcbtosAmDRPawdBHITUE=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3579ac7c6b9df061ba0ea8f84ce65d1714515b64e72fca70b5dfcf8c836499ed",
+      "url": "https://jsr.io/@std/semver/0.217.0/parse_range.ts",
+      "mirrors": [],
+      "hash": "sha256-1wRrIlkdzKiql4d49/9z/bahwcw7LLoXCeW/a9VjhqY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/365af648bdf9a3bb73aa5f404ced84eb9840f16cfd176deb5b6f016e713b8e33",
+      "url": "https://jsr.io/@std/encoding/0.217.0/_util.ts",
+      "mirrors": [],
+      "hash": "sha256-vqzvMWwSVdqbyOla+x+lbtabrvkZyI3AaubLemED03Y=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/369ad6b36fcf6b3efcc2380f1f31241e8a1642782e9fcdc7fd9f46ed3af693ad",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_not_equals.ts",
+      "mirrors": [],
+      "hash": "sha256-sIrBA05Lmu3/C615jfeIDI+XcBmpDpil4OT4jH36Y1M=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/36bd7c7018841352939b926bdf659991e5969836900b590067bdc135d1e7273f",
+      "contents": "{\"scope\":\"std\",\"name\":\"io\",\"versions\":{\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:40.651279Z\"},\"0.223.0\":{\"createdAt\":\"2024-04-16T11:36:10.838134Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/io/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/36e5130ca64ceada9f9ed10d5fdd5dc0cc241f4a10c0aa44da683e6274e521e8",
+      "url": "https://jsr.io/@std/jsonc/0.217.0/parse.ts",
+      "mirrors": [],
+      "hash": "sha256-/ePDXREYLC+rMjdiaDNDWQk2/aR4GmgIU2sz6JWMrkw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/38c9ac6234c57879c247f765fa66f73d032fdb2caccb30ddafead9a3d4549ef6",
+      "url": "https://jsr.io/@std/path/0.217.0/normalize_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-zImnen07HQEFO53NWUYrdUgrEekGiubHVLXPXXlLN08=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/39b67eb4ea578e7f819a9a9779966200a1918b61c79b5d4ab7533d080b95a3a9",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/join_globs.ts",
+      "mirrors": [],
+      "hash": "sha256-UlibJiFdE0ptlbWSrhwc81q2cOYslwU8YyADwjxaoOk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3a9a0b6aa8fa0e732923b8ad0459ae0948b80d48e9657fd1dc8e30817d9a86b5",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/relative.ts",
+      "mirrors": [],
+      "hash": "sha256-+qJ1PZsyMg7UraBzMmHjNXwYblcFZ42d0IuXUn3q5gc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3ab3ba664f6e7571e4373675cffc4260266f1522b2c27284d27e52c5882033a8",
+      "url": "https://jsr.io/@std/semver/0.217.0/_shared.ts",
+      "mirrors": [],
+      "hash": "sha256-drD0IaXOkUe2M0j8/9obIwYERyVzKB5YMxgXuSF+HGY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3ac3c7fa4a05cade7b94c6fd08b25f0b61ebbe01e1285e8bb94273e520f5e202",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_object_match.ts",
+      "mirrors": [],
+      "hash": "sha256-nwL9QJWVqLZW7J9Db+ASky43KaWOgpLnxMW5tQJm2l8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3b47c01da16ba658d7c70cca3f9dd5623cb6d5c93ad098e51fc7c470bbba0cf2",
+      "url": "https://jsr.io/@std/path/0.223.0/format.ts",
+      "mirrors": [],
+      "hash": "sha256-bOF3mwmAKWzyvCDWZDaxJ5IQK4Mf0oGrnrCPqKPm9qw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3b6e21fae1f8fd171abdae1ef836f5a91a677c3f1fc23faac14ed99de2a7773b",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_greater_or_equal.ts",
+      "mirrors": [],
+      "hash": "sha256-2EFlJ0G4CHI18zkqvW2zh8xOz+kcvZ+8chk3eJ8yX6o=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3cae9f880c26ee8a2809960c27519606afd024c6012da9aba364a05b7b95fbce",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/lib/deno_cache_dir.generated.d.ts",
+      "mirrors": [],
+      "hash": "sha256-BDcQ6h390rYJHwC+fOU5YeICPQrv1UmKyb5xJ9DW5Jw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3ccd3baf4e2a24b68d1279ef867431f2034dacf4a8192f3978f51e066ca9466b",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/_util.ts",
+      "mirrors": [],
+      "hash": "sha256-1fRzY+UpP87SLJhFUNXnDpjiZsw/MXaeFxBRGAPQSAg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3cf4f197afc8f37b2420ee17eb34c95aa56b4a1ebad8eeedc7b3fc3585b8556d",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_strict_equals.ts",
+      "mirrors": [],
+      "hash": "sha256-co9nLUNEBm+QVz7MceY3KTQYTU6CMHsEglz/+QKJNoU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3d2b6cdb828de876a05f68d12afb0667c44f4ce8a362e21e7b347e66da72c86e",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1/combining.ts",
+      "mirrors": [],
+      "hash": "sha256-phXpR52LyQHjpyflyug8CqHUyh51+gQIYdmQXRazD/w=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/3e044965d0a14209a5ebe19116dbbdfa5450eeb4e7290969039bb734a657c470",
+      "url": "https://jsr.io/@std/streams/0.217.0/text_delimiter_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-/s+je4O51XKW7GyDY38VyCt20OUs2bRjUsyYYspFTwE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/419db91c1a579639208f91b1da65fe1c4a7a6d63c766c5f622780e45746cb2af",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/glob_to_regexp.ts",
+      "mirrors": [],
+      "hash": "sha256-WpJR6jV+xhn4s3Cofj7AEPNs65oBEpc7ahEiaEtyzNs=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/425c1ddc2b79931265cbb8d00b68c4d0fdcffa72a1cf37f954fd42f0e09356cc",
+      "url": "https://jsr.io/@std/json/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-Fz8RVtI9EQlbb/ffYmbIDo+Dr82aavFzHsMB9IWAaYY=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/42ac90b6420b87f63323500d11b7caf6bf17816349a9602e406571b14a01691a",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_throws.ts",
+      "mirrors": [],
+      "hash": "sha256-QglijE+j5Wm7KSSyifrUhvnl/rCRK8pvYLSE3b+tcTY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/441f360a6fc736f657b1c6929536e93237a215d80d86006c878d4de8cb941265",
+      "url": "https://jsr.io/@std/path/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-EhfMJVNLypovZy1/58bzVuQCffQAwOhcDvPkNDvGfRE=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/44718a6177b1e187e847eecceb8ee884eafeb3f3a0d36cab20cf433563271eb9",
+      "url": "https://jsr.io/@std/dotenv/0.217.0/parse.ts",
+      "mirrors": [],
+      "hash": "sha256-wUdw2yEFsiiQEvfvH8grcXltNgCRM9jtylOHGxDhBkM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/44b2d1ab8535b8d50150b9439a6f3e51f5e0a5ccb51da09a796bee1c9cf326d3",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/is_absolute.ts",
+      "mirrors": [],
+      "hash": "sha256-01NNn9VoDUxolbu1kZMzXldTze+HXwlSl75m65by9TA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/450da9362d6e0b5524792be059f561434106e3cbbb6b298835d3b51d5f90b0cf",
+      "url": "https://jsr.io/@std/path/0.217.0/normalize.ts",
+      "mirrors": [],
+      "hash": "sha256-QVV0PMzu7TGbNQweYukxYAJy+titAMQXuR3wk4Z6g1I=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4556e214aef2bd9cbdbf649868e0700cbea114d3f78cb10f9f38a30c2f571d99",
+      "contents": "{\"scope\":\"std\",\"name\":\"fmt\",\"versions\":{\"0.223.0\":{\"createdAt\":\"2024-04-16T11:35:44.055681Z\"},\"1.0.2\":{\"createdAt\":\"2024-09-04T10:41:52.892966Z\"},\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:22.970365Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/fmt/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/45b92ff550bba1f6fda28020f8e736870dfaed68ccae3a0262a4999df1146c5e",
+      "url": "https://jsr.io/@std/io/0.223.0/string_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-evEr7Y8RE/twKGG5Nn1KXE9C1CWBwInJ0DhrVUgSkjU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/45f152da1a2b7c7f19262f9e16f8aaa15f482ce9b530c635bc740eacac7d8da4",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/common.ts",
+      "mirrors": [],
+      "hash": "sha256-lMRjaZL1Qwl2f98u3XZHFCpMINBvcS9N7N1DvePiCHI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/47c4ddd9dfe805de68a22020ecb70ce2517525d710dda23bc09d720fd244d826",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/normalize_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-W86WIaNWImW9Mnn5s7OIYR4Zz58sNSGw2NvxgmfjsFA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/47ce0c529917528dad872697cb2bf031aeefab701f2c56ea5aad06a599b071f3",
+      "url": "https://jsr.io/@std/path/0.217.0/constants.ts",
+      "mirrors": [],
+      "hash": "sha256-DCBhacoQSTjt6dpIrJUt4ojyM0MwShw8tux2JecyXzY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/47dfa4c0d4001228d6a05bc864f94a9ac69a9ed6d87242c44fe4a16ba4077c9b",
+      "url": "https://jsr.io/@std/assert/0.217.0/_diff.ts",
+      "mirrors": [],
+      "hash": "sha256-aqHIUel0RxJeFAWraPMjmEFbo+XYdqOFXw9JyZgqnaE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/486e4f7d7f612bfc2070a5f52e4d532a7495848d2590633a5fe60917d54c4ba4",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/relative.ts",
+      "mirrors": [],
+      "hash": "sha256-8GF79WFKxFRi1x2NA6W749ufWqrcnkcKVgAT0EFtTMA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/49535b240d4370a8678216add504066f1d4767f2c2e49eed635f694c336a4bc5",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/dirname.ts",
+      "mirrors": [],
+      "hash": "sha256-V4+DIc324ws7CBwlBtYDfvGxQMC7kvvqol1lCK9sGb4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/49560274f3808b79014e7d01a326e89702b9404d6a3608d555dac2d647aa341e",
+      "url": "https://jsr.io/@deno/graph/0.73.1/deno_graph_wasm.generated.d.ts",
+      "mirrors": [],
+      "hash": "sha256-744P+nGZwQk85HnB7n/we5zdxA138WeKX0BznMb4OmQ=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4965a59dd648a93d5e65326aa6a38543a22888336e3391a76be1b09c8535ae39",
+      "url": "https://jsr.io/@std/async/0.217.0/pool.ts",
+      "mirrors": [],
+      "hash": "sha256-rK5/R4LVGNhV9AADrnvVJaKgyZihwWo2DZL63375eBI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/49f9be2834463b62d5b24afd0cb0949d5f0bbc0e356dc2b196e6651d76cb733b",
+      "url": "https://jsr.io/@deno/graph/0.73.1/media_type.ts",
+      "mirrors": [],
+      "hash": "sha256-j3HKq9wpOgqT5pe0IzZoF+4+ru9aDt5ed99IWhMzp6w=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4b65914fd79d44d864e15c6435a91c66b50ddd0226d6ad9452a04b326b4e801d",
+      "url": "https://jsr.io/@deno/emit/0.46.0/emit.generated.d.ts",
+      "mirrors": [],
+      "hash": "sha256-ZgATBkiw0LpG5j7Yl8PJGi3BadgwigMBlrIrGIYNk0I=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4b9fc49bf7a21ab7c4230818658a052ae1d81c0824f7374a5f1b224b07cea1e3",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/dirname.ts",
+      "mirrors": [],
+      "hash": "sha256-aE30qnGgS7zDRsaSyEhVlPyKkLlAjfvCb/Ms8+DJjMg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4ba07912a3508d83aef89f6017235a4d14d6369cc910691860a840d28b4f6fad",
+      "url": "https://jsr.io/@std/path/0.217.0/to_namespaced_path.ts",
+      "mirrors": [],
+      "hash": "sha256-twakEDsQTPrcCWAKX4OMK6lNvNtkI0RVcSLdpERSbkA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4c5aa105052d46f5853ea6c7b4713ab1a07f71d098ede243dc4a01658316aaa9",
+      "url": "https://jsr.io/@std/io/0.217.0/to_writable_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-81ZMWfVNvjuablPfk6ZApb+DW58W0UvbarSJ79ME3ns=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4c9b5004cc5ee03e37fc124bf019f24080dc060860618ded81598291ac543c12",
+      "url": "https://jsr.io/@std/io/0.223.0/buf_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-ufTqzoYPmzfQ9paPPeUHcTtw0WKT27vtoWSIdpA5jMI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4da7913b454fff6229434d70c3f78595849ef0ba3d12f581d1de799f5cefed02",
+      "url": "https://jsr.io/@std/path/0.223.0/is_absolute.ts",
+      "mirrors": [],
+      "hash": "sha256-R5GvyL/QyH8FJuqmFrDRbns6tqZbYpQuUOrGjeTvZ9c=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4df58ace44a5cddac20489245d2f3d276b024073fed625ba6b492dadf71a4cd0",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/format.ts",
+      "mirrors": [],
+      "hash": "sha256-klAOkepd4hyX9f6R4Xi65ir1JLctX80kbW1grkvK2os=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4e4a38185b618022388fc4968d10035992a51208e5844b74063729d40dceb412",
+      "url": "https://jsr.io/@std/streams/0.217.0/limited_bytes_transform_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-lrX4du3tRwKVXc61rQaeFkaTrY9p5Le5UQyXN4mF9yo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4e92adbd91d767bec556c0169aa5a74bdcca587cb94d6f26e759c89dd7fbcfe5",
+      "url": "https://jsr.io/@std/semver/0.217.0/gtr.ts",
+      "mirrors": [],
+      "hash": "sha256-EQHs9vQn3pumNIhg8xLBW1X5MB+X0uNL2eV5VxhFdOk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/4f037442b5e7f7a40196314866b8e5b8185f4ed551f2ad191c37cfdd5cc5728f",
+      "contents": "{\"scope\":\"denosaurs\",\"name\":\"tty\",\"versions\":{\"0.2.1\":{}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@denosaurs/tty/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/4fe3029f27d8501e725c53d209c74ae7ddfee4b22e1e17e01921f60931f2f418",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/extname.ts",
+      "mirrors": [],
+      "hash": "sha256-FlphsA14Elf9oelgakjHiwaBU4Xn1wMjJUjb/JU0a+8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/508bb525a71f12cd1f01f484e7ff570b23b61ad5a3419fb157c9565dab8f3bf7",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/lib/snippets/deno_cache_dir-ba33e10a7a030c61/fs.js",
+      "mirrors": [],
+      "hash": "sha256-/9UHKnS5puJE5tf+WThBEWwc80fNeKlRlLm/OYLwg/c=",
+      "headers": {
+        "content-type": "text/javascript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5334b42bb2b7dc27810790aff54c17b2c9c97486dd43fc5c5524866460a81632",
+      "contents": "{\"scope\":\"std\",\"name\":\"path\",\"versions\":{\"0.223.0\":{\"createdAt\":\"2024-04-16T11:36:08.884192Z\"},\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:42.790539Z\"},\"1.0.1\":{\"createdAt\":\"2024-07-19T11:25:58.680433Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/path/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/55bb02160f10a04c3114448e5cb837789aac02b03c683c1a8a5eb2edf0bd10c8",
+      "url": "https://jsr.io/@std/path/0.217.0/dirname.ts",
+      "mirrors": [],
+      "hash": "sha256-hb2VW/MdYsmq/df/VhxLX7WH0RqaWkXisBrt/6Qjinw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/561ced89e01a307fb5a6b6c3a37ab74efd1c51c630ec6cdc84527d188fe593b7",
+      "url": "https://jsr.io/@std/path/0.217.0/join.ts",
+      "mirrors": [],
+      "hash": "sha256-ri7FykTH6EojX9Uy5KARa/sfI2izlNscT7dePA8mozo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/565a21196b00ab75fc7db8e6ee419a4ea20823b7de0920c86d691c79cb5154b7",
+      "url": "https://jsr.io/@std/fmt/0.217.0/printf.ts",
+      "mirrors": [],
+      "hash": "sha256-P0RDV4gMj9EDI0JSDm5BlzBL3ZFNnFSHEOyURrYV8ww=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/56bf4836bb4097db12025d3697c318384a91064f1bccf3edac08baeaa9255299",
+      "url": "https://jsr.io/@std/io/0.223.0/read_string_delim.ts",
+      "mirrors": [],
+      "hash": "sha256-ph1OyOUiJZkGkXVUxSEJs1teaAhJBR7v7O4vz0C0DHQ=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/583a76106d130ecb8fc0aa9815bca205e5ef2922ff5ed3a4a48b344ff9d03dd7",
+      "url": "https://jsr.io/@std/semver/0.217.0/is_range.ts",
+      "mirrors": [],
+      "hash": "sha256-TOpAlkNuoCVV04zHWO/9l4ynfYrmPY2xXykQsf8ErsI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/588392973a99750b9c905e6f3de863e03690c7186bb9bf354cda98547d775d69",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/deno_dir.ts",
+      "mirrors": [],
+      "hash": "sha256-5mv3yGcmp85fuizC7OcYMsI4Cpf+XcNZ5t7q3MQbICk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/588512f467771e64f73fd68997a6e501b0739a7b4bca1ad36092ef08a2447408",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/basename.ts",
+      "mirrors": [],
+      "hash": "sha256-Jl0zYMScGvNyoQiRUYt4X8KuE48BmJLIlkLh8cUjstw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/589d2d19b14541ae23b447fc0c7033fe92b3ca4e4a1d21fbd7ac2e209d548c71",
+      "url": "https://jsr.io/@std/path/0.217.0/basename.ts",
+      "mirrors": [],
+      "hash": "sha256-XTQarbetombiKAVhaSwWV3HQccmHRvy2bakohwzUdmg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5907539ab55d47ee8258088bd907e2816bb8a398396c9b118eb0c3dc7741921e",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/http_cache.ts",
+      "mirrors": [],
+      "hash": "sha256-79zxo3Jya2dyzHpnUTOHhV4828K3rYJeReV+kYxgrSc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/59930e0927e5e2df8aec5a61631849a29f7cf3870186083730313f8f33d1f291",
+      "url": "https://jsr.io/@std/dotenv/0.217.0/stringify.ts",
+      "mirrors": [],
+      "hash": "sha256-mHiuMf47qbEbXL79oYSmZwV2ETy+gsQqMRs91Y8LIkQ=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/59ead9280b59a5cb8d1607b003dbda2fe8817efb529efa7e746cface33c1c1ea",
+      "url": "https://jsr.io/@std/semver/0.217.0/range_intersects.ts",
+      "mirrors": [],
+      "hash": "sha256-p4sSzjd7GM97+8sQq2v+A/7kcY5NRA1WOOqt5MXv+W0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5a0aa88968b39ea8f189bb126d4252c631f5b7fc7fdee489b23318c81a35c5dd",
+      "url": "https://jsr.io/@std/semver/0.217.0/test_range.ts",
+      "mirrors": [],
+      "hash": "sha256-MJK6UWLThm52qNHsLcNdXqU4WqAElWHHtG2xXDs5m5Q=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5bd42e92180bc6445211bda14f59ecebcb96e248720639a6089dda2dfc351778",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/from_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-1nK97rwRv4Dpm/Jm+IbHCWMQe90xE0xOJJ7vURM87M8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5c0fb6042b9f50e43961dc844609a23c1d47afb560f6befeaf26de5be8150a7a",
+      "url": "https://jsr.io/@std/semver/0.217.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-9/E0jeBo3meN7CFDBOvUA/lfiq5Ukm/t/WVIjky5zJY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5c6d6c939799a1a5b8fb52f9cc164213db6a5a69ac1c0fb0b4ec3b822266449f",
+      "url": "https://jsr.io/@denosaurs/wait/0.2.2/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-tHGgnW5oS3uDanUCZOXBhE6veH6ZNxeTm4oaM3G1jkY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5c95120d59a045dde594e370c85051063f584f8ed510693fa87e0fa59f2e063e",
+      "url": "https://jsr.io/@std/io/0.223.0/read_long.ts",
+      "mirrors": [],
+      "hash": "sha256-8gN8Gooy4/an9NHmqcBELCASMxycbdjCPer41LswpdY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5d3402bc72b1c3f5861fadfb302479d825bc67dc6ecd6d0aa7fe4a361683d6c6",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/basename.ts",
+      "mirrors": [],
+      "hash": "sha256-47aF4lFTe37iQszQMgXH5gSxM0p3lmv/wVXDI2WmTqg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5d5302cee433c33118a6f40bb36f6e6c3ef0436f62243412fbe0e51f117ed205",
+      "contents": "{\"scope\":\"std\",\"name\":\"bytes\",\"versions\":{\"0.217.0\":{},\"0.223.0\":{}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/bytes/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/5daf8e68517d24a600ea56dc99897b55ee07308ba7675d3cf276bb942c6c503d",
+      "url": "https://jsr.io/@std/io/0.217.0/buffer.ts",
+      "mirrors": [],
+      "hash": "sha256-ZZcU/3smYT4O3iSc9mcYked8WM4PdHwVq/2ppRU3GbE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/5e2d4590de65d837f145d9d09c968c07b10d533590fe3c8cb230ddd5b5039e02",
+      "url": "https://jsr.io/@std/io/0.223.0/reader_from_stream_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-swvZ/F5BraiUEhgyLJ5Y7MA/joUduYkZcARGbpS/tDc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/60322adc377104d8a4909eb8b875ee056c58040ae04bc9bf85b7d7c3388d8116",
+      "url": "https://jsr.io/@std/semver/0.217.0/range_min.ts",
+      "mirrors": [],
+      "hash": "sha256-JprOBSHgVf4Q74w9NC3fLPPrnFOo77LuysGYCFzHicM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/603462ca13ee261a83b2b3bfbf52364fd82f124f3c82bb388070bde6dc1e995a",
+      "url": "https://jsr.io/@std/streams/0.217.0/delimiter_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-E+lsZjL+FC/ue0bRyRKSl43PpNz9BtnDq1lBzDyd/aY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/606c7d19848262caacb62a63092a9b6f3ea71c370a2a8dd2e2aa152ab0cb17b1",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/to_namespaced_path.ts",
+      "mirrors": [],
+      "hash": "sha256-KLIWs8dviSpNypc0/xzABF0TVTK/2cQ1rkhYv6Wi6/A=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/60cdf0cbf24987d6f4ea514ca98a35edd82f4ccb50b7c1faec8a7632e4389acf",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/normalize.ts",
+      "mirrors": [],
+      "hash": "sha256-aE30qnGgS7zDRsaSyEhVlPyKkLlAjfvCb/Ms8+DJjMg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/60eed1ad920c58ca654f1cb0cefba03aae61ce6efd44463843092b5ac12349cd",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/normalize.ts",
+      "mirrors": [],
+      "hash": "sha256-9di5cRYe/3tPjkXHUgy7DGVTzP98SzztLf4NatRqIyg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/616901d0f5eed9cea04d62149ebeecfd24adba6f9b11cfc5a8849e9cf54bbc74",
+      "url": "https://jsr.io/@std/encoding/0.217.0/varint.ts",
+      "mirrors": [],
+      "hash": "sha256-7Mkv/q4QgWoHMUPAllzgI3wdShyz7dnVPVcBN2Rd9y0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/6196436cfc7b94da817b263b03926f32be3d0255fccca602ecfa36486d9d4dac",
+      "url": "https://jsr.io/@std/io/0.223.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-LYw8KrOlFWGbkNosb/Xqe3WpQ4MlnvTQIRayKDk/hPE=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/6272f17ec40771da1968931a340118fc6869a3e62dd0daddb1f4325774e8c689",
+      "url": "https://jsr.io/@std/streams/0.217.0/reader_from_iterable.ts",
+      "mirrors": [],
+      "hash": "sha256-I5QhVXfz1o/kIU19aP6f0uLNwjYLPrwcr4a7dhn+BLo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/63cf28515fe6d3f3e53e9886a36d7608f17e73158b3aa9cac136f486c07a560c",
+      "url": "https://jsr.io/@std/fmt/0.217.0/bytes.ts",
+      "mirrors": [],
+      "hash": "sha256-zKCSvTZiBWwVC025Dp74J7V06vp72SmmyhLHAvJGSE4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/6404f3f6b3f1b5b24ea8547d29d0d9ebca52fdb5418852cc744feab49cb52b4a",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/resolve.ts",
+      "mirrors": [],
+      "hash": "sha256-6eN6alZMCdsBUVLob9r0UMk2GTCrW4uAFjBtfRInLQc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/6411adabd17a7ab14b3a211e23031db88d316d8436566222ad1adf933f48d2da",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_instance_of.ts",
+      "mirrors": [],
+      "hash": "sha256-q5RdCalMo4KsTpBEQSqUFO/jAa0K42tywCFZ5xSDIe0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/642c2d75d9af2555c4c5bd2b0b048a5fcae3bd40658dce0c28f8c8c03f10b8e0",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/file_fetcher.ts",
+      "mirrors": [],
+      "hash": "sha256-m3CKUYogXnEEGMxdLzw+CnHFqGMlE8N/2xVmdPJ4oX0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/6466635c63acef8022f9e8b63e76c9a71593e8a241d70137a6a5af0efc55610c",
+      "url": "https://jsr.io/@std/dotenv/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-5ly79mn0gsMgsvlNCi/FNvH80Gr9z6T941gSmhjR1Cg=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/64ae89f42f0564fb937b9985349eab51c78518733ceb7446fd45b9316364c6d5",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1/wcwidth.ts",
+      "mirrors": [],
+      "hash": "sha256-q3Eq275KB8J8wKuJuZw6d9KP6RHA/RyM69hn78H7RBY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/64e0acb2011e868653436d72b41d5b149b706c6f87fce8a791b4029fae348db0",
+      "url": "https://jsr.io/@std/streams/0.217.0/iterate_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-FsUvin/KAd64dbsFc9zjet8b8y1LBU3w76y0Qc6q9is=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/64fdbfb292d4fc1cb5c85b76fec4e5aa279b4e9d321c4e06ad1131d4c58ab8ac",
+      "url": "https://jsr.io/@std/path/0.223.0/resolve.ts",
+      "mirrors": [],
+      "hash": "sha256-pvl3vbQnLnnY0O1DM+PXE2fMOSas8VrCcfHQWchJTY0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/655360f6eacc964318ea544834938b9b056cd1adbded53832e8372e6dcb32ea6",
+      "url": "https://jsr.io/@std/io/0.223.0/read_int.ts",
+      "mirrors": [],
+      "hash": "sha256-6h4pp9vDpr++5yw13SEedHDszz7mTwHVFhzWWwrmGcg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/65a31f4d95511c110c640249fc865f92e3b618fe2fe07250d5b861d690b2e815",
+      "url": "https://jsr.io/@std/path/0.217.0/glob_to_regexp.ts",
+      "mirrors": [],
+      "hash": "sha256-XlH3igJIx1Rkvx1JFz3j7CwDKIClMFeOVrP+0qV+adM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/67310d7d52824d22aff4a4572683d12746f176426353c845cebdf0819132e0e0",
+      "url": "https://jsr.io/@std/io/0.223.0/write_all.ts",
+      "mirrors": [],
+      "hash": "sha256-LXfOl6eVaw8fuOL7hjryYKXXst/tXoxM93qFzCMRznM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/67d05d75595ec4cf809cc14ec982a0b0a3d791e032d1844e248eef8e0abcb1c9",
+      "url": "https://jsr.io/@std/path/0.223.0/normalize_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-zImnen07HQEFO53NWUYrdUgrEekGiubHVLXPXXlLN08=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/67d8f9d7d5c17c81a064c8296b0ba775031207b52a0a75b0ca22d60486e0dcd4",
+      "url": "https://jsr.io/@std/encoding/0.217.0/hex.ts",
+      "mirrors": [],
+      "hash": "sha256-Guz6UE79D/zRdgN6vH6313Wns4qed12ecmC1g60TAec=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/68b27afbc5202db2e971f3d8b9c31f02dde711eb1da2c875c5ed617a9de04f06",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_is_error.ts",
+      "mirrors": [],
+      "hash": "sha256-0enq22IcYTzRCrCon5X0wFPISuToIG1/Q9ZD2cRzghU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/68cbc36d8888ac5d457d1905810497899d7c495a901d7fc179b49bab1e3ddb7f",
+      "url": "https://jsr.io/@std/semver/0.217.0/format_range.ts",
+      "mirrors": [],
+      "hash": "sha256-7pbMHzACz7YrghR38akDdObAIewTBFw0oGIAIbHYYq8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/69ad0c12064d380818e970b73dba1c4b653ea1430fb1b53ec604886720aa74fd",
+      "contents": "{\"scope\":\"deno\",\"name\":\"cache-dir\",\"versions\":{\"0.13.2\":{\"createdAt\":\"2024-10-28T21:17:02.947116Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@deno/cache-dir/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/6ab9a2bb76d1d5d6bf6016350c4c136991fa72887cbfc14ac524e4dff3fb7e3e",
+      "url": "https://jsr.io/@std/jsonc/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-ElxH8274Fg4bT9W/8Jbo8Oo/Sb6hl95bGC6xMLuKUnw=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/6bc70be65fcece592085b882a201fc2705029091fd703a62731632b42772c67a",
+      "contents": "{\"scope\":\"std\",\"name\":\"semver\",\"versions\":{\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:17.150040Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/semver/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/6ca55d6ef6aa09a90eedb260bc9699e7068dac2f6f7d09204402bda27a7339c6",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/join_globs.ts",
+      "mirrors": [],
+      "hash": "sha256-qUdbRGRf7dzrSE7gSY5Fb0rdES4YHLlAQs3G1H0c3SU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/6deee12e8ab85c0bf32c3ea506f85dcaf5c606544ad232f6281bd3677fc1b3ed",
+      "url": "https://jsr.io/@std/assert/0.217.0/_format.ts",
+      "mirrors": [],
+      "hash": "sha256-C6gIlhv2eEN/tIa1ZAW2/vrSz4e1gJZnx4Hd7owyr/Q=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/6e93eacee453ae985c9af5b017821e0621908a939b7f2e0907574bba27c31ed0",
+      "contents": "{\"scope\":\"std\",\"name\":\"dotenv\",\"versions\":{\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:21.056741Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/dotenv/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/6f7d5f59b849c836cf2bbe66e9a8304fba926084af5fdf725b03c7b8df998704",
+      "url": "https://jsr.io/@std/assert/0.217.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-Ml34wGg62DqHO5aRqma4EtYnX8n+wLLRgKxoosXv7Ts=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/70a0c8a610d5f0da75fed50786f45574c393d0af95406854a2f9856922912dc0",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/common.ts",
+      "mirrors": [],
+      "hash": "sha256-TIlubpNX8zw//gJ8sTyyzPXb41dWBLQ8GVvv/7D0Cys=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/70bc456d21b67aa6e53a0d7e431a8d3efe4193121d2a351bfc9576e97812c9fa",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/assert_path.ts",
+      "mirrors": [],
+      "hash": "sha256-2911ekZbaQssxy/F+3aYxRUH3sa/r85MpQDEa3b/e9g=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/70f45e589bae2b3acbd96fb0cd9b2ff13cfead2f2f80b43c17ccbdd08331a4c5",
+      "url": "https://jsr.io/@std/semver/0.217.0/_parse_comparator.ts",
+      "mirrors": [],
+      "hash": "sha256-sS8rugnPtK4sRD15/FGHRAw9nwM0PY+Otto0FbaOgqU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/70f5d058bccaed9789b3dc7199bbc3b149024d6d9e2dc379a5ac16d125d2b92d",
+      "url": "https://jsr.io/@std/io/0.223.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-8KP51Bk5TOwnCZuhWrDIEA2h5wko+V6+ZGyq9mfGhww=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/712f8e9fe19be4ee3dc6866558fd254ea9e9737f4b129f839e91fcad05182fba",
+      "url": "https://jsr.io/@std/io/0.217.0/_constants.ts",
+      "mirrors": [],
+      "hash": "sha256-PHrUaVgy5uSjLjXyGMcDdrYrx4Yh7waaSgo9VXOfiFY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7179fc4e72f0f876f08e71251ce5a47277279d8184427de982d9381d23742aae",
+      "url": "https://jsr.io/@std/fmt/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-y5n4JQC42iAgL+36i7lN0CIugfBJTtkIfeIO49ijmo0=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/71e7513c1712afc77bc0e27473942f055706802c500b389facf7f82402cfb0fd",
+      "url": "https://jsr.io/@std/path/0.217.0/resolve.ts",
+      "mirrors": [],
+      "hash": "sha256-pvl3vbQnLnnY0O1DM+PXE2fMOSas8VrCcfHQWchJTY0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/722604bfa2c153ef31a6a7b028e43e5b42e8178fa854306493d1561ec9fb6d58",
+      "url": "https://jsr.io/@std/bytes/0.217.0/concat.ts",
+      "mirrors": [],
+      "hash": "sha256-gUKhc0/URVgr4NIJ0N70PCo8JzcKD9SzJxh900uY1us=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7393be9e05dac3cf3aa8352474cac61de2ecdf23f015fcdddecb4ff0ab61422a",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/extname.ts",
+      "mirrors": [],
+      "hash": "sha256-2Zc8P1Fgh1Dzr+ds3+sEioob+5pn0tcI2jjB4zACbz0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7436dd21da9d63233aaa15a54c8c3e3ca7dfa6103db0443218150d3cf1f322d6",
+      "url": "https://jsr.io/@std/io/0.223.0/slice_long_to_bytes.ts",
+      "mirrors": [],
+      "hash": "sha256-lwi5wbq2Y4UBX2mcvEPv+2woF5e0T5GgYshlvOOCRdg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/747a3db67618978ab2a7c7951957b238e2de9032d20799e5db6947e8273bb384",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_not_match.ts",
+      "mirrors": [],
+      "hash": "sha256-8J2UN3pkA4APfYYCpwvOJ9PW/2mc2V4UG0PDXDsOeY0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/74c40df24925c89e19a78d8e3e87925f24c1838c9443adda78d34d23691bf1ec",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/to_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-f3atvIPs4buhc+bpiifGR3Esq3c9P4y+A5i3SvyBeIM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/75aad1e813d62defef2637c9a38bf4600c09b43f8bf419992057f4ad27e52cd2",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-KWH+D0zzEIB//feR+U0XZ4dgpI6fCXYQIB1lgQ2ycDA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/75bce50a16b38e236c9fc752ac08c0057e527ad991c9472b0e8d770fba4b364f",
+      "url": "https://jsr.io/@std/semver/0.217.0/less_or_equal.ts",
+      "mirrors": [],
+      "hash": "sha256-fb+BkPN/MoEEjDDPEeByp68YaFU0rojSlbqhcLSFvZA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/75e5c8f024948effecae131f3844cc7dd80ac7ebcdc4586d8f55801059794b93",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_exists.ts",
+      "mirrors": [],
+      "hash": "sha256-fqaly6884mda3IY9EVRLoPDW5hZYxfCoO1qpmeSJYfA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/76229771ab75cc8d4fc05e9f3a0964632e8199ec866177829e16b025d65f412a",
+      "url": "https://jsr.io/@std/path/0.223.0/join_globs.ts",
+      "mirrors": [],
+      "hash": "sha256-WzvySLkyRxlPlPppR7YSq506vVccqDhs93iQOFReVKA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/766b4dc51235cb14593f6b838d9383ca53df22b296e3521c2cae771aeb6b85ad",
+      "url": "https://jsr.io/@std/fmt/0.223.0/colors.ts",
+      "mirrors": [],
+      "hash": "sha256-hfq5RS7wjV23I8rlICuVs+By/nY5z0YIQmtmXhNq9No=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7680ae3e60c77dedd4f24140c0cc6e4744436fc072385d2276977daf545459a6",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/_util.ts",
+      "mirrors": [],
+      "hash": "sha256-Hjk32jDwgL/Jn+RdftI8R92FhcXkc7LXcTgNOmk3z50=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/770adb47ad3b7561ce10883bab62e894c779c5e15c4b25ac3442b0da24eefae4",
+      "url": "https://jsr.io/@deno/graph/0.73.1/loader.ts",
+      "mirrors": [],
+      "hash": "sha256-4TkgeqwwmN8lQ8Qe7+iB2Iiu6OPjqmupDCDu5GgbqiI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/786f8af539bcd09d444c2f139be2309e16d667de00080d8c8198fb403af49a01",
+      "url": "https://jsr.io/@std/semver/0.217.0/increment.ts",
+      "mirrors": [],
+      "hash": "sha256-QnoEO+cdZIHkXBo5OblV6ACSTXB3nLKXuHLZy/nw5G0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/792da5f10a65c465abbbabfc68c791b9718fc74e376b92e5b3524d498275e557",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/strip_trailing_separators.ts",
+      "mirrors": [],
+      "hash": "sha256-cCSpNEfvzc/qqTOamPpj751T3jY/H76YWJcPG7oCZVo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7b97cf980d2b4ab71b44b6d09cc7e3113c096a132f63ef458e76f2a7d0b6da85",
+      "url": "https://jsr.io/@std/semver/0.217.0/difference.ts",
+      "mirrors": [],
+      "hash": "sha256-vk8Bt3RUBkCKFrcIGFpIwcZSzIfgJEsSpcp1xVhdtmg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7b9e489ae9b36cbe392c5f969d7746ed3a143dab826802696baf5609a0ad9815",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/join.ts",
+      "mirrors": [],
+      "hash": "sha256-FZvIDH0od4tIQnOYv+BDFbEJ5B2psOdlNnSPre/CIqw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7c03bb734c04b528ce5cf14dd593cc28f45d07382a101d8db84dc7da8b2a6df4",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_almost_equals.ts",
+      "mirrors": [],
+      "hash": "sha256-d6IKIDq/83FG3AKa/RTnzOnJwIXCWhB6Xwde1JtkbbA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7cec1433e10763f57b4a07fd017a0b0d0204860b76165ec75e100fa5823c569d",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_equals.ts",
+      "mirrors": [],
+      "hash": "sha256-WHNJwm2j2ktwmDvZ5suIM2lMgy1vGF0l10eYdNj2/Gw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7dc5b208c03c0f2a3336332560d2e71891b57d53f766cbca935a38bd8dfb8d80",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/basename.ts",
+      "mirrors": [],
+      "hash": "sha256-VpdEhVvIRF86Vgh/0q7Va9rTnalxqNkrE4yZE67MX6I=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/7ee041a393a86dc395f475d23de9532ed96dad1f8af61a4fe97f7b30e43cf424",
+      "url": "https://jsr.io/@std/semver/0.217.0/_is_comparator.ts",
+      "mirrors": [],
+      "hash": "sha256-iZlAkpDTq/4+VAmamd+eqbLPEU42AbHXj6pcm9FpwPg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/800d71e040d7a15ffe4b60c92346303ee910d0b16aa7e4b996101771c017eafa",
+      "url": "https://jsr.io/@std/encoding/0.217.0/ascii85.ts",
+      "mirrors": [],
+      "hash": "sha256-9ZzfPhiWUY0EAXDUYWeEtL6h4U/sfb+33Vx63ScgbZ8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/808e4612edbd72b8e3a9f952d6d9eafa780aea3059577fad33037d9ca1b62c2f",
+      "url": "https://jsr.io/@std/streams/0.217.0/limited_transform_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-ECr6Thugm86qTij498RoExnUFjEWl5Om9IR4x9U5F9c=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8284340c6113edc87a2bceb0863c8abe78d49df1102daaf0492e469c8c6813da",
+      "url": "https://jsr.io/@std/io/0.217.0/to_readable_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-aTzX/9CwP53IDansxeDCzth6Y49ItVUEsg4narlduKw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8308b8880f15bce1bccc073a0231d9c468bc2b9188a8dcaad70488268cacfeab",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/resolve.ts",
+      "mirrors": [],
+      "hash": "sha256-17f4vsDgLMxKJHebxn2ThBU2uBV34LIOtXz9cxXxrp8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8311d388864d693049ff0ab4957c5485a58811394fa91ab91c03f8cbf1db897d",
+      "url": "https://jsr.io/@std/io/0.223.0/types.ts",
+      "mirrors": [],
+      "hash": "sha256-GRgUGEh50BKHiCGIE8CKBbFrnRpnJhmJG2J5uzKh3Lo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8370e620c1b52d197b98cfb536ca56549537291f124cee0133c9329de0b6dabc",
+      "url": "https://jsr.io/@std/path/0.217.0/from_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-fIckTKB+QGXLAkAWsD0BL6y4Vsx67Qidm28eTqYVIxY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8374df57e0afcb883de336fffb6729eea1b2ae4bc399e7f3b325bcb1ab2a4fab",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/_util.ts",
+      "mirrors": [],
+      "hash": "sha256-j0kf5ocodyzpjTvfVNzYnII9Xs0r7GFTw0OpWEP2Jco=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/83e07c0979acdca4a31286ae4562712429c2ae8e91c48d1792c5c8c57e38fbc5",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/dirname.ts",
+      "mirrors": [],
+      "hash": "sha256-M+QhvlpVWKE0akjnTDMLjlYL50JO12hOoDwSwhtie8k=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/85f207cd711df6e7f214faa8fcbe9fe1bd1544d6dcd27edc7421013fb16ba704",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/glob_to_reg_exp.ts",
+      "mirrors": [],
+      "hash": "sha256-bKwW1cLcI699ZjSKfOQw5d5OcLDu3gdL289JA/Q3TY0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/86138d648176ccdca3008fd36761d6e6c6e9cc08010d71cf38a9afee3585b22e",
+      "url": "https://jsr.io/@deno/graph/0.73.1/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-3/PTO2NMB4uOnbc5c3kgIncqQkWOQPi6JRaqfuAw7Eo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/868217ffc6eac088217d0fe73b9de64f23157392245aa48a8826c5d3650da89e",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/from_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-1nK97rwRv4Dpm/Jm+IbHCWMQe90xE0xOJJ7vURM87M8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/86c070a999209e32df0c1388cdac0d4275e9cb2bc7c5bab2e45d9562eb4030af",
+      "url": "https://jsr.io/@denosaurs/wait/0.2.2/log_symbols.ts",
+      "mirrors": [],
+      "hash": "sha256-03/S6/WPlsU1nZARyvlKlk1bC+kCB5z8h/MXlbWxQ3k=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8746d3c4907ea715cdb4f89b1cf336219d5f468e59649b8ffc8305599edce80d",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/dirs.ts",
+      "mirrors": [],
+      "hash": "sha256-dvSqarGDMHqvhf/XLgenWRV+twD4o2lNpEk+/JJIMt4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/889637703f86958506b3a169caf05cc370a39347c1fa747e1bbfa582b77b3ff4",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_array_includes.ts",
+      "mirrors": [],
+      "hash": "sha256-n1Ebm1fUjx/2QyWRkqZvhVuAdaj7nZ883vwOAIz+NGY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/88bd9c2d192482923c5dec08b8a66eb2a7bd30a6d947c7ab6e59865a1948ed1d",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/is_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-iosIwIv3MazywSMiGPH0WhETG8Ad6B5fgDRQpZFENLk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8942991dd1fc709421522b76984da8d0ec64c05ed02d7263e1573ce1869f1cd6",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/common.ts",
+      "mirrors": [],
+      "hash": "sha256-TIlubpNX8zw//gJ8sTyyzPXb41dWBLQ8GVvv/7D0Cys=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/897422b33b1d0c2d0175c01d899905a2694746c1c637211eea98513fa6596025",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/common.ts",
+      "mirrors": [],
+      "hash": "sha256-73PChgaUd1/o/8vN04f5+Xx6ZW/r8NqoxztW9NinvUw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8a189924280bda93a8ce0ef9e2f69ef72b59611049c81cb5ae807a384e7e2c85",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/constants.ts",
+      "mirrors": [],
+      "hash": "sha256-WvqsCh9ntosKOApO85G/Wf61WFaqjGDfwBvTtqu4E/U=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8b5379401b3e6d125e991f24ccc8af39a9defaa831cc054774161e1dec90c939",
+      "url": "https://jsr.io/@std/semver/0.217.0/format.ts",
+      "mirrors": [],
+      "hash": "sha256-JtOjV6xavXPe4P59u6xhB/vc4KhENwx7G8tnPJLka/Y=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8b5e9871334abb8decab81962f6e98043f91595813190c84f50c6e06848e256f",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1/ansi_regex.ts",
+      "mirrors": [],
+      "hash": "sha256-HTsMcokWT5PJ66/ju9BacjVoolDMXCnAzJIv9Vr5ojg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8bb3fcc0dacfff872642cbb90cc44e46238e09cb0d01a40cf65fef9def040d91",
+      "url": "https://jsr.io/@std/path/0.223.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-1ASnsr4u4OHE8NuAy2qW9pAdp+Pv2UGaz7yJ/tLIhtg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8c33b05c601769210a175c073eb29dc61962e9f6f3120f5ce3be4b93a3c60bd8",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/format.ts",
+      "mirrors": [],
+      "hash": "sha256-iYb56bHNSLQEqnw4c7+5dqmvCO60CljxABqNiH0N/hQ=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/8e726fe82f3f20c63e513d8a28088391219ec5f24ecfd5671095efccfcbc7920",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/auth_tokens.ts",
+      "mirrors": [],
+      "hash": "sha256-REqPPTwvnPT/oq5IqRA8SEHkHiyIkNfv1g4uHXxbqA0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/907b0c92f4d11d0168c7756a0df76e2070cc927d392f46a9fbf7a365cefc3ed3",
+      "url": "https://jsr.io/@std/semver/0.217.0/can_parse.ts",
+      "mirrors": [],
+      "hash": "sha256-1KJvdL4HjzqxApOwe/AiAhovNis+IbWEIsIU5yaBELI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/909228202437d978adbe4b54622e8e2d30adb49863415413f6890b1091c435b1",
+      "url": "https://jsr.io/@std/path/0.223.0/_os.ts",
+      "mirrors": [],
+      "hash": "sha256-j7m5D7a3U72Md8/Yozwv9sX1vBhfUN6MpKxqBXELLBU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/91978cbbc0105a28960eac4c07ea7cf9a438f81dc1e8d58cadae147bfbedbb1e",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/to_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-4cL3slYQBhCuhaRD+JQE9LXXMNiCw4ina45Poez8Wsc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/95cd12d8081030e586b527e3330550d85f5c857bec540ccdbdb55e7b4fc0e9d3",
+      "contents": "{\"scope\":\"std\",\"name\":\"jsonc\",\"githubRepository\":{\"owner\":\"denoland\",\"name\":\"std\"},\"versions\":{\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:55.546880Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/jsonc/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/979167a852a67aacf7e21b56aaa720aa59e1c4a1503637df478098f60af6b766",
+      "url": "https://jsr.io/@std/semver/0.217.0/compare.ts",
+      "mirrors": [],
+      "hash": "sha256-6IcYRKNcyP4W6IPBblI34GqTqkgwrhDQZQGr5jWG/Fc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/97daf79664a8ec8051476a4cced886a1f0ee87e2208790dbe7e8ad3fdbeb8f13",
+      "url": "https://jsr.io/@deno/emit/0.46.0/_utils.ts",
+      "mirrors": [],
+      "hash": "sha256-k9sGUKdqTnlUVD2qVMMpF7a4iuUo40VhmbJ0JMWjLts=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/97f50915872a52fb0cdce64e09f7386267377319d2dc842ec8881b6a059d6c0d",
+      "url": "https://jsr.io/@deno/emit/0.46.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-EOF8ZEqHtWnxZeN5ZsP2jKYTy5qNS5amyHyx0c45UqY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/98c1048dafe2c1742c81c1c8d9f32a9bb669f76696b4609e691ddc33d5888829",
+      "url": "https://jsr.io/@std/path/0.217.0/is_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-pl9hldMFjDBQq5BXBYkbQS/5QqKSvLqhqAenRDmhQUE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/990720acf2843a4dd93cae1a20484da4b022f60ae8b7e8571a36d396d0ab14a8",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/normalize.ts",
+      "mirrors": [],
+      "hash": "sha256-aE30qnGgS7zDRsaSyEhVlPyKkLlAjfvCb/Ms8+DJjMg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9951775ee9c65845272a333dd73fa4ca8982517b2ef6291b4697817a82b0c973",
+      "url": "https://jsr.io/@std/fmt/0.217.0/duration.ts",
+      "mirrors": [],
+      "hash": "sha256-ruBork8E9wPUtenvpaM4NEYL/bej4+iyr8srBSkXXgg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/99c2eaddc3f5d1f0f57d672eb1d19e06e1570618cc2a49352843be0886d19d5c",
+      "url": "https://jsr.io/@std/flags/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-LWdQJpLXbP43+6HEqS0KX+Cm+WAZAP18UQk2sOTgJC4=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9a4c57ebbe20688216aee6859350407f88feaaa59db06851254afe82107880f8",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/glob_to_regexp.ts",
+      "mirrors": [],
+      "hash": "sha256-TbeJVAA56kx18bqBgsQ/wpZaAZ3zwmqCWUVkJFLov3U=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9a90da94d4300ecd6e8a41685ef7bf15852b7b9bab0f1d7234238cda4c011414",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/to_namespaced_path.ts",
+      "mirrors": [],
+      "hash": "sha256-lt0NVdSEkF4GVT/X1f62s+TAyZwzf9pBmbbDK85Egzo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9aa62dce7930b45dc124292e2a1b4d5e341b342a3ce38b54778f008ecb96a178",
+      "url": "https://jsr.io/@std/path/0.217.0/_interface.ts",
+      "mirrors": [],
+      "hash": "sha256-oUGfz0XAzris3MyUOU4+lPmeGM/TLVCaq1FMiEF5lgA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9aab64637afad112ef69be23cbda46322b6d324466024bcf74b120a8311300b7",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/disk_cache.ts",
+      "mirrors": [],
+      "hash": "sha256-RZrPieFSC3knJvHxyOhc4wsKwDSubc83GXMTU0fkAFA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9b76aa5ec109339fa72412a5ff650422c6f269c16531dd2eea86e41d1a3e530b",
+      "contents": "{\"scope\":\"std\",\"name\":\"encoding\",\"versions\":{\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:21.888828Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/encoding/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/9b8b4aafd4cba00e153b09b04d9f103a046667f0b823a96dd030e27983f5776b",
+      "url": "https://jsr.io/@std/path/0.217.0/join_globs.ts",
+      "mirrors": [],
+      "hash": "sha256-WzvySLkyRxlPlPppR7YSq506vVccqDhs93iQOFReVKA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9bc5babb0f5372bf229323fe40a7164102cb14a442a59e57113f4429ad3b2947",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/from_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-3EoJLeDRF9lL/VQ5C0vDYOocaNSh5C0uqU1v51tIPDc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9bc83a444ec5e10b15e11e2c63be6a365bcd3370c4aab37211eb1ad5821283ee",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/constants.ts",
+      "mirrors": [],
+      "hash": "sha256-3F+AVxWfS0jNME6zAn5C8RSM9N8ftCQHdNNJK10SrAw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9c39f0ed9bb3e9bac6a29c7ea43800401a252f13a7968ecabaf1a2ff37db5f82",
+      "url": "https://jsr.io/@std/io/0.223.0/copy.ts",
+      "mirrors": [],
+      "hash": "sha256-V4xolZV1MztqqsUmhuku6XqbzGVa0tQIMMdvojPZu4s=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9d5b9efd0686fc04f7ac6bf04434901756a29e9d68d5d2acb6b0a2dec93d9599",
+      "url": "https://jsr.io/@std/path/0.223.0/is_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-pl9hldMFjDBQq5BXBYkbQS/5QqKSvLqhqAenRDmhQUE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/9dd215d59b9beb9f526804f12283feceaccff87272c3951919de14c5e61eb961",
+      "url": "https://jsr.io/@std/io/0.217.0/_common.ts",
+      "mirrors": [],
+      "hash": "sha256-NnBc20380zjWExvKGxbkik1b8NHa2mzjlyaOiMF6WDU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a0194bd59ed21d905d260c163d7ce58163be02f7df7fe77c7888ae14f32ef331",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_false.ts",
+      "mirrors": [],
+      "hash": "sha256-iUH4neA4ZgnrF0nzNEg9VkIDB5l7u7p3pVnF/nCDplc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a0d12280272e93e710fa9284c67d48c6922e681cba9d00d1f19e96fe8b428c92",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_string_includes.ts",
+      "mirrors": [],
+      "hash": "sha256-wXi9l9oD4iFUlOcpsgSK5o54C/C1g6mYo7+Aj72x66I=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a195cd5a49be26b032befb6073462b7b24268ef9f0503cc3dcb48bb4431b3d4b",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert.ts",
+      "mirrors": [],
+      "hash": "sha256-UBtBZHPsJ8cYhar4GeNjyN9hf4nOaK5X/ses+dYnQ7I=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a20301fb25ea6582680f42b88321281144dc7e367d7ce98fe66b32229058059d",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1/util.ts",
+      "mirrors": [],
+      "hash": "sha256-/VDrAJtG8BRh89ON7K9DZsSXC72Bjtw5tYpXTv5n27c=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a277dcabfe3752efe5169a560836207925eef920205bb94d1829d2d8c67bcae5",
+      "url": "https://jsr.io/@std/bytes/0.223.0/copy.ts",
+      "mirrors": [],
+      "hash": "sha256-4zMdyLkXXxAWue9sGJDxuAdwdi4Be2ygi5t2SVTSbe8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a29f8538650f3b02112905aef7686c60dd9bdd9f39b54ac5d6c841f695278d5a",
+      "url": "https://jsr.io/@std/io/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-CNPdfBCVbRQzvpUwbsFRec3r5JoM5adCOPq/FAu3Q4I=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a33497604558d88c5c21301f5a7082ba366b4d504241bb205d28a325dd922536",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/normalize_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-W2+oJk8PNmPuSzADT3g5c9elML3QrY7jelZvKypl7nE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a389044ea846cd94e66088d94e4d8bf714b4b98ed9dfc7d3e3a990d2cc55e307",
+      "url": "https://jsr.io/@std/path/0.217.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-AzGmO72Q72gbmat+ninbKEEkVxyZ7jDMt8qWyyW/u2k=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a4722573e2cc066f0e362998c8861d43a9b75d138f64a7497205f679466b5f28",
+      "url": "https://jsr.io/@std/async/0.217.0/mux_async_iterator.ts",
+      "mirrors": [],
+      "hash": "sha256-YfzqzSkGeMsF3HryqIO/HuydkeQWLlFDiYnCzo/39Dc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a4e0f8e645068213a11b6f2122c48f466a162025333f68fe4b8d75b6ff9448b5",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/relative.ts",
+      "mirrors": [],
+      "hash": "sha256-OQfW7aQfD/cj0zYSWhrUNJESzU1I9pOFmYAxTVudoxw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a583f8fdfeb42fbc7b5bc53413092193514e7cb7fab0f742a9c710a2ea230104",
+      "url": "https://jsr.io/@std/path/0.223.0/dirname.ts",
+      "mirrors": [],
+      "hash": "sha256-hb2VW/MdYsmq/df/VhxLX7WH0RqaWkXisBrt/6Qjinw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a6c77fe297f78b26dbd9180cde1754d9f3f62d323f0cc0f80fe616f58491fa6d",
+      "url": "https://jsr.io/@std/fmt/1.0.2_meta.json",
+      "mirrors": [],
+      "hash": "sha256-h+nfzdPKfAZuDDxlfB+YfIKIjrgQOjo7qmJoT/6w96c=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a722728e56b0099de771ce4c2cdb9cdf44aa51d2016c222319f614026bb2a329",
+      "url": "https://jsr.io/@std/encoding/0.217.0/base58.ts",
+      "mirrors": [],
+      "hash": "sha256-YbXFQV7Zqvod0tsviB4utpAELkx/m7GsX+UbQrexufk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a7361aaedea2c16e999c9b3e10573171d6765b63c54118f270853d215728c37f",
+      "url": "https://jsr.io/@std/streams/0.217.0/buffer.ts",
+      "mirrors": [],
+      "hash": "sha256-WbgZjNAjCB98q87uD6PNTzcZPy47CcBZq+XxR3JMK2A=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a7b474928905206a6b212359a02fde79a941f71c79ef9ae9ed3cf22f8a05eb5f",
+      "url": "https://jsr.io/@std/async/0.217.0/_util.ts",
+      "mirrors": [],
+      "hash": "sha256-ZPjQ2kj5CMZRc2MXo26XiQ6p6iKl4oHIrPnubK+7bek=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a85616ff952c931760a2923eb48a2f7695cb7a70452ad115c1aae3636d9e7699",
+      "url": "https://jsr.io/@std/semver/0.217.0/_comparator_format.ts",
+      "mirrors": [],
+      "hash": "sha256-gi9MCaVO0pL9Ncb7hOtPgnKkMGV2yTqXMM15vuH0qoo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/a902ac475fa704c753e32051adbd1a597fcc2ad975a27c77d26b3373be032a80",
+      "url": "https://jsr.io/@std/streams/0.217.0/writer_from_stream_writer.ts",
+      "mirrors": [],
+      "hash": "sha256-HbLByyfDd1w9/1ZA1rAmC+ZaTWylGhyqS9wayHLlJQY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/aadbd3cfc4144ab83c800e93f2ce8b1192934bca42b7126346561b90ef7b4a67",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/is_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-E1rIseZH9nPqZQ+3E+LZxC0BCMKcrjordzmf7A2uiGQ=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/abcd529571a88b14046237008e93159b6c577aebb5356e07def6ddc001b5c7e8",
+      "contents": "{\"scope\":\"deno\",\"name\":\"graph\",\"githubRepository\":{\"owner\":\"denoland\",\"name\":\"deno_graph\"},\"versions\":{\"0.73.1\":{\"createdAt\":\"2024-04-18T22:06:54.901373Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@deno/graph/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/ac2e0147e04914d1637ff97ebed44bbf61f66e3126e7279cbebde7e4374e2718",
+      "url": "https://jsr.io/@std/semver/0.217.0/_comparator_min.ts",
+      "mirrors": [],
+      "hash": "sha256-K6aWLKvlFKFt5nspu0P9y/lUTPP/FLEQb4kPAWgPaO0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/ac8d73fab97ae414c2ff19af1c3bc3effc91d8f4d4c6d793018cf5c539dbbf14",
+      "url": "https://jsr.io/@std/bytes/0.223.0/concat.ts",
+      "mirrors": [],
+      "hash": "sha256-gUKhc0/URVgr4NIJ0N70PCo8JzcKD9SzJxh900uY1us=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/ad959f1f21de6e7db37a78405629e598846091356d9757fb849fea5d28e94699",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/relative.ts",
+      "mirrors": [],
+      "hash": "sha256-Phq8eXfubMDbJzDR+cs4voewzkgGdZ0nGnDkmX/GONc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/ae1543d1dae46ca26b51b2c2a9c4167bc03912ae4082cda28fcbfb5afe20a7ca",
+      "url": "https://jsr.io/@std/streams/0.217.0/zip_readable_streams.ts",
+      "mirrors": [],
+      "hash": "sha256-UFDF8s2mLT5ew+PIJOIam6ySzk7vRTkNpueA9yKMcCA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/aea3ce14dfe77fa90c3412ace6aef2f6a4028fa53c1867c27b2231b727a83ced",
+      "url": "https://jsr.io/@std/io/0.223.0/read_lines.ts",
+      "mirrors": [],
+      "hash": "sha256-YK7zxFMx4wXiAj1jhiWhzfz1iFccj/YhyBxkiALoWY8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b01fa45c211032979262bbad26e20ed37ad596b5d1ba4db6bfbdfe8aa9cc7339",
+      "url": "https://jsr.io/@std/streams/0.217.0/early_zip_readable_streams.ts",
+      "mirrors": [],
+      "hash": "sha256-WL848rGQJTuxGoL6ot4TdDfnpctuEw6HubSRfm3G8lo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b033f3d28d9ffbf52cd80fe1e58bb4031f46f6b37143656cb01000e64dc5ba37",
+      "url": "https://jsr.io/@std/async/0.217.0/delay.ts",
+      "mirrors": [],
+      "hash": "sha256-FJLy+eKwOGLl9LOqt4Fgx1seACNATSANcVGug30hhyM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b062b9f7493ef22cc623a3175fa63871efd3f994392b313e00a7967dc0378b6d",
+      "url": "https://jsr.io/@std/streams/0.217.0/_common.ts",
+      "mirrors": [],
+      "hash": "sha256-T58pWNhTuaRWvgM2Mdq7dRnapo7k0CyvU+Lsv/r1gF8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b11b414fe10bd8104304e4aeef7c9445d8f5d2106934000bc6c3297505ef99dc",
+      "url": "https://jsr.io/@std/path/0.223.0/glob_to_regexp.ts",
+      "mirrors": [],
+      "hash": "sha256-fzDwohQ5yt/a4b4b83CIC0FeZ2CX/aWEpjzjGQU7WXI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b222aaa9ce900c0cc3511dab9943b2bf1428225bcea1d236e955c5a41506b3d0",
+      "url": "https://jsr.io/@std/io/0.217.0/write_all.ts",
+      "mirrors": [],
+      "hash": "sha256-GDA95ybRJ22iou2pvKzORAjTVuDrg7o8L1Rdw9HopRg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b2256db2806fc581bd21bfe44569529d8ddd91078836c5a6fb8c0bd11e04b81e",
+      "url": "https://jsr.io/@std/dotenv/0.217.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-OuyO4HfEhIotQqnnolYCO4pGAG9Pi1X55ltFIOSfj3E=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b3f58482fa9165eccda347f23d785da0601504e8c422d1e44c7f62dd7351513c",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/parse.ts",
+      "mirrors": [],
+      "hash": "sha256-xjSIydWBV2+VXqqMSrCcFluNki7DkRswLDEzHIMDlz8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b4b374ed6c1ca31714433770dd32f17bec9cb1ab9d437c4f5382c02b9be5e23a",
+      "url": "https://jsr.io/@std/async/0.217.0/abortable.ts",
+      "mirrors": [],
+      "hash": "sha256-57x1NjpRVvzzNUqCpYABHS+vjXBY85cojHtEAck6O8Y=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b541f8780359ec226ca0e62ca5c806da9646f7b9bf5b4193ae2dbc29c7585257",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/dirname.ts",
+      "mirrors": [],
+      "hash": "sha256-aE30qnGgS7zDRsaSyEhVlPyKkLlAjfvCb/Ms8+DJjMg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b5963b7039bf510771c67a7f321a934241fe5ddc512ed305b2c07ce26e66cc8f",
+      "url": "https://jsr.io/@std/io/0.223.0/read_all.ts",
+      "mirrors": [],
+      "hash": "sha256-rn0TSy18zOgIkHPDeoqVQ25G+cal6wL9lhCmbTGzpY4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b6224792d91c8bf53c0c2ad5173db89ab1d4cf17f14a4100893fd198cf53a0dd",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-pw/uBd/3bgQnFJSbfskJ8CbeZsOP1FRnxfR7CUdD3TU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b63f82a1e96efd3376f8e3fba9d8dd102016a5fc33cd5f1bec19282c81080823",
+      "url": "https://jsr.io/@std/streams/0.217.0/reader_from_stream_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-F7/eHDyRVJfXguJXaUTHCAnRhASFlxZ99keyLValC8M=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b6758ed3f6b9a53be0f00497bc04cf8cc6df404fabb515bd68995e3de0b22be4",
+      "url": "https://jsr.io/@std/semver/0.217.0/max_satisfying.ts",
+      "mirrors": [],
+      "hash": "sha256-A+UYKnQkwwjdu0EOS5J9oNq8TgfUtacvfpsm+xigIVI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b6793867d2cfff78522ee113c5c5d774a88ac79f72d1527200ee4f44035e8ccd",
+      "url": "https://jsr.io/@std/bytes/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-WCCZdXB0eP4SQj0LMnD01AD9E1pO2x9Q7sqPkuNOZYA=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b6ba91e7a9f8ac527e19554b4497fbac04421f466bb5cb41732d6f4b55eda7b4",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2_meta.json",
+      "mirrors": [],
+      "hash": "sha256-wiQZ3+J6uF80W+5IeqqtukmLAFzONkTp0lKNsDXFRU0=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b7d25441fc4c2bac1dd8e6befe4d0cebcf91ae404bab48fa84b35fe17e61580f",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/assert_path.ts",
+      "mirrors": [],
+      "hash": "sha256-2911ekZbaQssxy/F+3aYxRUH3sa/r85MpQDEa3b/e9g=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b82468bb7361dacd3668f643e956758e01c13e87eca4859bda1f0de9070b3e00",
+      "url": "https://jsr.io/@std/io/0.223.0/read_range.ts",
+      "mirrors": [],
+      "hash": "sha256-/zZFYP28+7NhEVJfmNVo4YDtLw/IqZE4wwXtJ6ERgqo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/b9d359ceeb5897d7addc0c612e0987b76c31589ba3e6e6cb88a1dd79b7e1d070",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_not_strict_equals.ts",
+      "mirrors": [],
+      "hash": "sha256-ECjmkHRhV3g8RM0NF9iNF6V+zp04eozI4VrvKRrJglg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/ba5ac57666e7e0a6cd609c2578d786296eb2d14d98c05b381be1231dcd436ce1",
+      "url": "https://jsr.io/@std/semver/0.217.0/constants.ts",
+      "mirrors": [],
+      "hash": "sha256-Ku5as/kjOj/rNLBfsV0Ywe42877jVickR9Yjwkjsl6s=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/ba5c223489a4bceb235cff6ada300b37e74acd622b6b4acd604bd8a68ab8f79a",
+      "url": "https://jsr.io/@std/semver/0.217.0/greater_than.ts",
+      "mirrors": [],
+      "hash": "sha256-2MSiJ80o6oCh3pyAIV1/P5V4b+GxlvDLXskdZWetrSc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/bc1e9052e3f1cf45d8d7815c7ad28b5e7dd365299c65bd229d1d9d38dfc82fd7",
+      "url": "https://jsr.io/@std/path/0.223.0/normalize.ts",
+      "mirrors": [],
+      "hash": "sha256-QVV0PMzu7TGbNQweYukxYAJy+titAMQXuR3wk4Z6g1I=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/bc5b5d47caced01142599e2638383d36942c1f7b8c07465b9b5baa8fc2027973",
+      "url": "https://jsr.io/@std/streams/0.217.0/to_json.ts",
+      "mirrors": [],
+      "hash": "sha256-Ju/RlS7J/AgCsYydytVO8NtQw+PqFVL5ceoLJXys2zk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/bc78962c60109e4e2e66e8793f9adcd588dd334173f88570d05e3cc9195b7990",
+      "url": "https://jsr.io/@std/assert/0.217.0/unimplemented.ts",
+      "mirrors": [],
+      "hash": "sha256-7TEV9vsnEnfgUi87GPAgJZkAw4Xj+phvEJpRmhzyV2M=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/bf53c16fc34da27a6ec1aac74a18020dc7a69efaa9bd3295df1912792a94a3d8",
+      "url": "https://jsr.io/@std/semver/0.217.0/types.ts",
+      "mirrors": [],
+      "hash": "sha256-uReOs/lVUW7B0mBig7SsnC2N0etP9gmVasrvMisoCMY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/bf5522b37bbef23fa062580d08fe7d1871dd1316bb992bf49ffa3db9a75edf81",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/resolve.ts",
+      "mirrors": [],
+      "hash": "sha256-ja4drf7Z1G/0bMM3yVJcDH2Vn7QApjCPNFlcRb3KGXI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/bf8c07de59d7b30b4855ee99360d68cfa38a1376ff2f5c150f7314ddcad8ac30",
+      "url": "https://jsr.io/@deno/graph/0.73.1/types.ts",
+      "mirrors": [],
+      "hash": "sha256-/4C2tptPFnd01ZEKuT2Z6NMP9EsrceRaY8oJdR1eDAg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/bfd0d320784ae582e0fa5f1992901b73a3968cf62186f84b7f05de9e7863f789",
+      "url": "https://jsr.io/@std/fmt/1.0.2/colors.ts",
+      "mirrors": [],
+      "hash": "sha256-F2ldb54JfrXELrqgYRLiAE6ZKvO8Ot6aV5+v2VVuYSg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/bff6ea636e291b5815332aff0d2584f636d6f20741f75612a4fb1aee311b3f27",
+      "url": "https://jsr.io/@std/fmt/0.217.0/colors.ts",
+      "mirrors": [],
+      "hash": "sha256-hfq5RS7wjV23I8rlICuVs+By/nY5z0YIQmtmXhNq9No=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/bffe49b2dad7fcbcf487b5a25e388e4b51a574a3655c24155d236a5a719bd774",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_match.ts",
+      "mirrors": [],
+      "hash": "sha256-c5XQ2ENG2agWlVWdEa/okBN/HEabtcr7aroaf6rxQvg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c04af948f429d340db5266d8f184bf82d227d2d792feff5d274ae4c6f0954ef3",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_rejects.ts",
+      "mirrors": [],
+      "hash": "sha256-ry2H+q/fRKOvaf2eiVLVoHcH0ra4xBP0bsO5AidTmzo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c06953cff8852eb35e50d02b5957e1dd8f78358697cf0b1ccc9a4b1172a37aa0",
+      "url": "https://jsr.io/@std/json/0.217.0/common.ts",
+      "mirrors": [],
+      "hash": "sha256-M/Gk85pF4vnzV4I/0LXPiLY/tHhLjJoo+BIPcKILI+k=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c33933264a1fcfc2a287d7ff88e5b8f15cb36a15edf28bd2de7871b287ed2ae6",
+      "url": "https://jsr.io/@std/assert/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-yY4nk2LKaYLVKFw7iVF7dXweNHfunxTrL9+ApFqqlkI=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c45210605414aacc057d479e5263cbd5f40ae543e6c3e8d8fde1d922bd2b84d5",
+      "url": "https://jsr.io/@deno/emit/0.46.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-4na+LHe6wbk8r3dXYuKkmlTLANotSMorAe2NfLqdCCw=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c4f13c23bf6f320b7816f32ea4001c767009e42026b0358057742dcfd435ad79",
+      "url": "https://jsr.io/@deno/graph/0.73.1/deno_graph_wasm.generated.js",
+      "mirrors": [],
+      "hash": "sha256-TmrAeiR9FoCmY9w6a9RGQoEwhXgy6T2uU8MjMLsFa/g=",
+      "headers": {
+        "content-type": "text/javascript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c5d96925dc225643966e42eafe8382cd1be0780487540c980720e0162b1b52d9",
+      "contents": "{\"scope\":\"std\",\"name\":\"json\",\"versions\":{\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:49.464587Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/json/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/c617b43408f3aa1867f587c80988b9592a9382b0bbd5dadcb61d7df48be4d7e8",
+      "url": "https://jsr.io/@std/io/0.217.0/reader_from_stream_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-vDzssumLhv8qpfgzK0qrTfRJgQOGZESmUpn3QRieIzY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c6a9ed2fd2aecd88fbede4571a9e29228e8466cdec81b8fde3665867572d34be",
+      "url": "https://jsr.io/@std/bytes/0.223.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-hLdQUs2GgJQsOXwmMTGHcrKVAZCY9AqsXDbOrUy6Uag=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c6cd6577fbf445439eb50efbd9553779cf4248653fc9fa05cafb87acf1de6072",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/basename.ts",
+      "mirrors": [],
+      "hash": "sha256-W7tD51NGgdmY0dC98K3TZeJ2t+cPEIJ01f4M3OwHDoE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c6f919fbe2d3d6168b190dd4ce791735cde3e45c487c5cf6204aaf4ac6eb8416",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/is_absolute.ts",
+      "mirrors": [],
+      "hash": "sha256-So9oU/hZjPkag19Bq+1CESzrqwlHiwcuS+sA7IH4yoo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c6fc6b9d4c6fe0ed3cf7de70faab6a51cecc92472c714d2214593279a2c4f557",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/normalize_string.ts",
+      "mirrors": [],
+      "hash": "sha256-399lehsafbeZn3xXXufmsFUdnCDxlIbGw/X/QoOEyWU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c7300a4be0e1b84620051867fa5fca48d41208a14a9c7c2886c994fdbb7531c6",
+      "url": "https://jsr.io/@std/path/0.223.0/from_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-/YyxwjmvFrj7BVMev4jmBHSasxAENliGhAt7/+/mn3o=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c79dbdca275fe7d689aa978a192f6de6fb45be2e5522107f06ebbd19e39efb5e",
+      "contents": "{\"scope\":\"deno\",\"name\":\"emit\",\"versions\":{\"0.46.0\":{}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@deno/emit/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/c7a98c7ae4f9f91c9c27c9ae03fe2eb2bb0d0875a3bd06698a85abdd743c4481",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/is_absolute.ts",
+      "mirrors": [],
+      "hash": "sha256-5xR7JeeGq7Ud2IjsqJ0v03cMQea9VW0Z2ybMo0j7eKQ=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c7c7a3771d0e705091b51111e3cfff1dc9063b6b8ef5a29c06bfb8094f249ec1",
+      "contents": "{\"scope\":\"denosaurs\",\"name\":\"wait\",\"versions\":{\"0.2.2\":{}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@denosaurs/wait/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/c8f7a79a4b2babf631c1b668221bd1a5ab24a28ce58f246570209e1a84bd6bb2",
+      "url": "https://jsr.io/@std/assert/0.223.0/assertion_error.ts",
+      "mirrors": [],
+      "hash": "sha256-kYAwm41kVmPQQ746/w8gKJY/KCi4ru7Kk3avGQPimXw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c93dedb543863b99469d4b153d5ccd11298a9f06532bc693dd8a058c3a8176a9",
+      "url": "https://jsr.io/@std/io/0.223.0/limited_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-qNisTwxO2vnyw0fyFaRutxHYXNQ21e43J8bRcBRlCFc=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c98154b702513831ac5a60ca0233181f7c62a152e7ee2aa032db41def4bc7c67",
+      "url": "https://jsr.io/@std/encoding/0.217.0/base64.ts",
+      "mirrors": [],
+      "hash": "sha256-SzvePA1pnMD65uW9EZqzqLmwUpPgBTFA+qNAowsB5Lw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/c98c1db2fae2202a82f5ce9623edfdf0f549ec762ce8a842216b145489888d6f",
+      "contents": "{\"scope\":\"std\",\"name\":\"fs\",\"versions\":{\"0.223.0\":{\"createdAt\":\"2024-04-16T11:36:16.769902Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/fs/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/c9f9d4328987aaf47b8715edc16f9126e4606753b816c743169c8821fd784fe4",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/join_globs.ts",
+      "mirrors": [],
+      "hash": "sha256-qUdbRGRf7dzrSE7gSY5Fb0rdES4YHLlAQs3G1H0c3SU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/ca87534733c5e5ff3718ca406a7465392350d49ff1c19c4b189a08aa3232181e",
+      "url": "https://jsr.io/@std/assert/0.217.0/unreachable.ts",
+      "mirrors": [],
+      "hash": "sha256-HnSPafc8V/Tem6Hbo5MGuG4K0sCRWXVghRmivPQsJi8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/cca81ae01a6216f8ec3e114fcceb893cd95538a8703bcdd342a9195e98bfe41a",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_less_or_equal.ts",
+      "mirrors": [],
+      "hash": "sha256-pouK6foFZEm2PI0/t3H+ijdH2ViHcJboWDm3XzxYFXY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/cd30c7ff7c90c2e0730574b0c5d1c2813ec004599d28308db15e987a31088cb2",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/join.ts",
+      "mirrors": [],
+      "hash": "sha256-MXfBaTxzq3mi65vlg11BoAQRoTAL1Go8LHhrAFNk/3o=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/cea04075099a65c5b234a246f408d88bde4963a0d6a4a7b48132e663e28cd015",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/parse.ts",
+      "mirrors": [],
+      "hash": "sha256-29/ivG20gtdVtfY/cgfNAZJA/KwCrS76WCrfZ/8QVTo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/ceca17dff8d4ae393a8b5c2a9d07ff12a15038eb924f3079c0006f04317cfac0",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/parse.ts",
+      "mirrors": [],
+      "hash": "sha256-lqrUcz6xCR22s95CPyPCWirD46WymzXD7oCLEj7vc+U=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/cfecf1b4464e4ceb1bfe986ce239867e2a962585115eb4279a59bc0b28ae9dda",
+      "url": "https://jsr.io/@std/io/0.223.0/string_writer.ts",
+      "mirrors": [],
+      "hash": "sha256-ACMmiPjO7xuzxc7B+wMkmYYOvCJTs6AOrJcsTM4bTm8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d09dd880c37f4a149dcb7f67536b2817994732f95638b78ae371963e44c76e8f",
+      "url": "https://jsr.io/@std/streams/0.217.0/to_transform_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-hNysFIUBGLYUA2MkwFLbg+SSRMbOOwNWbvCLxp/07Mw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d1e66efe954cef24f6c4eab7db745be8ce0cbc0c500226f5d65f3daa40489a67",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/constants.ts",
+      "mirrors": [],
+      "hash": "sha256-k0ge+5jN/6THGcIqAYK5lOWmrtMEfhli9sLHW3WSvvE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d25827bf15381a58a827904c50572a083c033ad68560e746aa002bec11f245e6",
+      "url": "https://jsr.io/@std/streams/0.217.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-tKbecD1qpZxHd/ifwALoK4QB2tpE0eb36RZmTB5s/TY=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d28625c24225142d751a48eeebbe0a7f6a8b24eb6f79315619ab53b9ecaf1178",
+      "url": "https://jsr.io/@std/encoding/0.217.0/base64url.ts",
+      "mirrors": [],
+      "hash": "sha256-EOe/NHV9ZKd7JZLDf1qyeeqWw5cRme4dETETWX0hI7A=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d2a68032fe3231dcd9215c84fd87232782b30717f14c195c8d2ab53b7931b82f",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/normalize.ts",
+      "mirrors": [],
+      "hash": "sha256-uutJgWqCmfkKAjfSFM70bwC6PpXA0s63QgWmpYS1ipE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d2be4c14b01e51e273c951bcf25ac9a2a07363593f16aa5b3fc7d9af4881a020",
+      "contents": "{\"scope\":\"std\",\"name\":\"assert\",\"versions\":{\"0.217.0\":{\"createdAt\":\"2024-02-22T05:47:30.133650Z\"},\"0.223.0\":{\"createdAt\":\"2024-04-16T11:36:00.343777Z\"}}}\n// denoCacheMetadata={\"headers\":{\"content-type\":\"application/json\"},\"url\":\"https://jsr.io/@std/assert/meta.json\",\"time\":0}"
+    },
+    {
+      "path": "remote/https/jsr.io/d2fa38a0296bf757e9c56c05a30bb57b4442c0cc1b0fd26434ccb0182b9fd81e",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1/tty_sync.ts",
+      "mirrors": [],
+      "hash": "sha256-YoqLE3xUKglVd3WGI3yoDzyPJgZaSFqSGKydOmyZJgA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d33a905df585430d48f74f062d5c379ae0f2763f0ec9b6f7e5c383f50c75945e",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/join_globs.ts",
+      "mirrors": [],
+      "hash": "sha256-UlibJiFdE0ptlbWSrhwc81q2cOYslwU8YyADwjxaoOk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d359239fe5b4f27bd68bc713138e47fca1e18c9fe74595968f007f758b744c91",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/normalize_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-nIeoKbbA9EXQOz7K3BRJLihkw+u5ZvTOpB6YMm5ENcY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d3aea22f5a7aa715965bfdb8330e92c52951cb8121c8ad3d0d04774da8d0bd66",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/is_absolute.ts",
+      "mirrors": [],
+      "hash": "sha256-zr5WGtCuKU8M4DZaGHnc/Kir2HKCFRm0/MjYln+Ijt4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d3b46ff30f0628d6cb8c8ba7a7ce2908886f05770d8a1503d2ccd576cb01a54b",
+      "url": "https://jsr.io/@std/io/0.223.0/read_delim.ts",
+      "mirrors": [],
+      "hash": "sha256-gpJsmiw2s0Q6Hr6ir5OjARBs7s9/EGcWjxsRVarEVlg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d409bdb18036b6eae16c13bb54e285ecb6ff92ae0e53226af33fbad451c6597d",
+      "url": "https://jsr.io/@std/assert/0.223.0/assert.ts",
+      "mirrors": [],
+      "hash": "sha256-oe775Kq//RmKB0eukJ5pUDiLMLt6W2z/BmsTeWKhFV0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d46aa9cc53884cdd0a1f8b6841637239942eab8957c68e082d2ec37f5825529c",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/is_glob.ts",
+      "mirrors": [],
+      "hash": "sha256-E1rIseZH9nPqZQ+3E+LZxC0BCMKcrjordzmf7A2uiGQ=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d6691cd2032ee64cf1e1180c43f7052396c8f60e7dcbcc3b654ae4a5a75ad631",
+      "url": "https://jsr.io/@std/streams/0.217.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-1WYkgyuWSbaAx0q5x350bovoGuGiR1bMBGI+JaDUPOk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d7ec8a30007c01b2e9813c9182fcc1138eac4c26869e62691a9e1935c8a89846",
+      "url": "https://jsr.io/@std/path/0.217.0/common.ts",
+      "mirrors": [],
+      "hash": "sha256-TIDaLuVWPrMfh899IYeduQ1hSj+ugzWGcGJeS5A0J0U=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d844e1cb356e556847dd6450f849536c20ffc444b668c6f36fd29d8e6271f361",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/format.ts",
+      "mirrors": [],
+      "hash": "sha256-u7Xs83kwW0crEILNL9wBDkSgAgAwQUl01gKb6a1SrrY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d85aec0aecc73995d145f26505674ad9f1acaf6dc49fce501cd48113c93089cf",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/normalize.ts",
+      "mirrors": [],
+      "hash": "sha256-m59mYVnA5e498pLPVlVVR7G+TNPKVNpqJjowdLjkSWQ=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d874d4bcddad0de4b094f4c395ca82a539ea58c22abebe7afb7c0ed5c3d96a36",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/to_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-AybytRpWk9kXVnzYxJFeUvHrWknyFR0AYO8cSvV7YNM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d87c9d21eb02cd780e08cc10bd77d196ea6dabf98b5d2feddb5fd331fe6cadfc",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/common.ts",
+      "mirrors": [],
+      "hash": "sha256-lMRjaZL1Qwl2f98u3XZHFCpMINBvcS9N7N1DvePiCHI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d8eccee9a2c86612742ff83a868d78b6c141ca03b6bf6f447527919b60fcbdd6",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/cache.ts",
+      "mirrors": [],
+      "hash": "sha256-ZewyXUhemPDyu+agCyHmTogLxxEsWJdzQEp/1JcDUv0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/d91cb466ba6495a5268d2b83ff43a5b85faf91ca70b32f0ade90ed34be2caeba",
+      "url": "https://jsr.io/@std/streams/0.217.0/to_text.ts",
+      "mirrors": [],
+      "hash": "sha256-PLhKEA3h7dnjCKk4N4XUAz6kSTO4WOZ0GLLPictOKI4=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/da1f489f1e09d3cffe15ab0f8fe0d750c0936e021d8ff8f87eff694f81d7d36c",
+      "url": "https://jsr.io/@std/streams/0.217.0/to_blob.ts",
+      "mirrors": [],
+      "hash": "sha256-t23Qolgiy3dSYMXo8FZyQqiTRAhdGIoAzKUeCFLpRKA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/da30e4b43e23c110022f818a3fef81054d401fc6b426936874dea6cae5b24ad1",
+      "url": "https://jsr.io/@std/path/0.217.0/to_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-zhpDngM3eILljwbvQ+8iWdSDurI10etyfxY3sKa9cHA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/dc4954cddb76d73ed01521f2947bfe3c657046cf07da6186c2415623e643b3c5",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/strip_trailing_separators.ts",
+      "mirrors": [],
+      "hash": "sha256-cCSpNEfvzc/qqTOamPpj751T3jY/H76YWJcPG7oCZVo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/dc9f1d17f6c6da624c4459f9fa72d51ffdb4b95af3425e8066b411f60b6cc5c8",
+      "url": "https://jsr.io/@std/semver/0.217.0/parse.ts",
+      "mirrors": [],
+      "hash": "sha256-bjQzVRyjhKksJVFP8sT0DZf1GfKlm/adnMe+Ev6dZks=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/dd0a780c93342c2decc7691e6f9e19dd63f5ae3c67a52d4c3b65cc4c393a5eab",
+      "url": "https://jsr.io/@std/semver/0.217.0/min_satisfying.ts",
+      "mirrors": [],
+      "hash": "sha256-tvrcmvFyeCiUgcQW4esTVhT4gGP0/Ct7crQ+s7qi8I8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/dd7ddfbb6593569ef77822fdea31d90185f7d7544518434b5e9392d99fbe469d",
+      "url": "https://jsr.io/@std/assert/0.217.0/assert_less.ts",
+      "mirrors": [],
+      "hash": "sha256-KC056RzhbjPVuDUncdl8gdhA8YELp7ZbZDMuulsPDFA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/de0721ad950408bbc71c03b443344628ce4ed127881b7b2ab89718e4274a09df",
+      "url": "https://jsr.io/@std/path/0.217.0/_common/glob_to_reg_exp.ts",
+      "mirrors": [],
+      "hash": "sha256-bKwW1cLcI699ZjSKfOQw5d5OcLDu3gdL289JA/Q3TY0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/de3df6c96ec36bd1dbcae8cc9be4ca95fe3a5566dd28b46c7974e459c703faab",
+      "url": "https://jsr.io/@std/io/0.223.0/to_readable_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-C2aZ+y7N2TCSBtWakRK1Z/YMTvGDN1LUGH1ZnjjK9fE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/ded6bd7ab3825d60610939060ee3e543259202e00a5776fddc145fbe00db231d",
+      "url": "https://jsr.io/@std/async/0.217.0/debounce.ts",
+      "mirrors": [],
+      "hash": "sha256-ZjOghICnTh/n7gMCQ1EG5SXZx+lXI6RiGXYBm7VuMIA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/df8f3d7613ff4937b0bc1bf7ebf627393aed6e06c602b2295d8b3d2257ff9c58",
+      "url": "https://jsr.io/@std/path/0.217.0/extname.ts",
+      "mirrors": [],
+      "hash": "sha256-WTMD24royGXL2c7sblXUuaxUEMHidr/TExkWWRuVREE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/dfe2671c8fa71acebc9e9ce3249e25f83769d090ee699977d33dbfd38d954804",
+      "url": "https://jsr.io/@std/streams/0.217.0/writable_stream_from_writer.ts",
+      "mirrors": [],
+      "hash": "sha256-quRJSChe2YM8jpm/tRX2t5fVh2avb46SxwPBuB6tyDY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e052f09f8d0c4c1483ff8ea6491380bae23132488d016328e522f636d3f343da",
+      "url": "https://jsr.io/@std/path/0.223.0/to_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-lgreT3LMVhwyJ4ItRs1jvZtobpN0dP635QemDAUbnO8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e07bfc6518e76a70c492a9544dd06be48760e32175e2b88181320aa557a90a89",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/dirname.ts",
+      "mirrors": [],
+      "hash": "sha256-9a7jz/GDCqgEvua5R8UaZn38cTszmSPYhOWQz/312OA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e0b87b7c5d93a429b230caf1fdf54f64b343fa8078bab44866f0685a59557dfa",
+      "url": "https://jsr.io/@std/io/0.217.0/iterate_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-Y6yKnxxBDljGLOV791QQvhxQbxhqFSO366D6to7r/fs=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e0caf2d04c76e4840c875d42740a73d6399a3402315aab41997b7136c9bb79ff",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/glob_to_regexp.ts",
+      "mirrors": [],
+      "hash": "sha256-5F8fib8/w2+Uq3s7nQAmcpgp+rxIbHf0FMrr7ztzBPg=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e3b95ce15c2acce0a56499d72e91aa377084b3c3734e9e43fcc0dc52f92488ed",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/util.ts",
+      "mirrors": [],
+      "hash": "sha256-ccocPqAvR25gvhzxNsBkPe9rRz3ntJek3HiyRqSeAkA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e410b8aa59473faa79237adf38e69a583474857d7509c83da29bf20a998f8535",
+      "url": "https://jsr.io/@std/path/0.223.0/common.ts",
+      "mirrors": [],
+      "hash": "sha256-TIDaLuVWPrMfh899IYeduQ1hSj+ugzWGcGJeS5A0J0U=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e439b6b359206f7a5617adf2b2a46d002e89ca099252f124fe9bfd804ae37c3e",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-0+PGhvwOoXUlih0qdFPVPgMohxppLI5/x7npy9dLDJo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e4810d7ff39c51fe51f612959ccc047f56be2f2275611ee1758741c8b7d25f79",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1/is_interactive.ts",
+      "mirrors": [],
+      "hash": "sha256-HlDFACOlSX8Xa9SiV9JYMx2ALmnKTHZBtWslaKm4cHk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e48ed181d4545179eca8a68d76cc3412bda25d67ee90724cab5c4aef651112cd",
+      "url": "https://jsr.io/@std/path/0.223.0/extname.ts",
+      "mirrors": [],
+      "hash": "sha256-WTMD24royGXL2c7sblXUuaxUEMHidr/TExkWWRuVREE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e4bacd4746681ac57280cfd0fdbefdd7940ed02cae26bfb2297e0caf9cfa5f58",
+      "url": "https://jsr.io/@std/async/0.217.0/retry.ts",
+      "mirrors": [],
+      "hash": "sha256-PhnoLemN6mzTsiuEiqUq4uCEEAAOxO12lIB60orSi0s=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e5dd3f55296d5f839a23fb395e0d197240da32f7d26511cf1a01d530848d9742",
+      "url": "https://jsr.io/@std/path/0.217.0/parse.ts",
+      "mirrors": [],
+      "hash": "sha256-ZejihfGmO3FOGe8kto9W52k0w98LbmX9RA05kfT4rvs=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e5ed55721b90c972db4aedfc33bf96a1307463306098f08e9a0356a7362f76e7",
+      "url": "https://jsr.io/@std/io/0.223.0/iterate_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-vWAM7IGOZsiBHVRe3uVMBdGqG29M4FsFPLjK4fjNYgY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e7339a2994721fd88531a560081160410c925169d75de5220f7ee233af0390d9",
+      "url": "https://jsr.io/@std/semver/0.217.0/not_equals.ts",
+      "mirrors": [],
+      "hash": "sha256-FxR6b2i50U9GQ8HiFQN4zPaVRxAwn5YY91tBF1Ko4T0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e79f23bf875f90d27d392aa111dcebc0801c2ad80392a304a4e6f726b7969c1a",
+      "url": "https://jsr.io/@std/path/0.217.0/is_absolute.ts",
+      "mirrors": [],
+      "hash": "sha256-R5GvyL/QyH8FJuqmFrDRbns6tqZbYpQuUOrGjeTvZ9c=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/e868a4f9ab0735d807e47884f57452bc330f0c7f531f2791409891fa0959d0c6",
+      "url": "https://jsr.io/@std/streams/0.217.0/merge_readable_streams.ts",
+      "mirrors": [],
+      "hash": "sha256-+4e2TBnHkO3w5trkr2FtW/fueq498jyE1Qb7TJy7Sdk=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/ef64b024eab21534a9fafae94a9c6d4215104c849b10e6115d75760542082655",
+      "url": "https://jsr.io/@std/streams/0.217.0/to_array_buffer.ts",
+      "mirrors": [],
+      "hash": "sha256-vdoZOtfFrMF0+koHdZgWDqmV9YQRTmqzeBn8uWsrymw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/efdf260eeebb72aa3ce5c82c932836d336ac70544d6ff81af502426299c0b5c5",
+      "url": "https://jsr.io/@deno/cache-dir/0.13.2/lib/deno_cache_dir.generated.js",
+      "mirrors": [],
+      "hash": "sha256-Em3utJUYsPYnZV8b3kJ+IeZw6/+yvW43/4Q9VmY8TuI=",
+      "headers": {
+        "content-type": "text/javascript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/efe69786c5e32dec197b1c467d976cda6a7a760beedfae917653e8bbefb979cc",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/format.ts",
+      "mirrors": [],
+      "hash": "sha256-GF6e4gkaQt054qO45JJTcO6EB1cs7hrlKDiu2WMQxcE=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/f0d8ae8e152aad132e2682dd64612ada68cae1bd5fe6935638730e0146bb9026",
+      "url": "https://jsr.io/@std/fs/0.223.0/_get_file_info_type.ts",
+      "mirrors": [],
+      "hash": "sha256-2nvsGKdmHbo2Ch20dbgmsYl3WCzm/Jsl89TuBAP+jL0=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/f1db4df13ed2db1b4bbb326118868439c86b307d33c8ae9ce9993691afb97c20",
+      "url": "https://jsr.io/@std/path/0.223.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-WTljQC1+ZZf1puYgkxZhBTVyyYL8AUAARZ7cH5PMOYk=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/f1de2c852ca43e313d8893f4fe6eae55a28a7055108c525bb77225044026ed3f",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/to_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-G7Ll+BbBH1ZOBP0TGZ2gSfLv/Q10ZBMFyCwR7sTGaiw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/f2c81abf286f455c38afd23bc1874e6a4d373f1cc521a9b255d8709c05060412",
+      "url": "https://jsr.io/@std/path/0.223.0/windows/to_namespaced_path.ts",
+      "mirrors": [],
+      "hash": "sha256-T/pPtvrjIUSNX+gQs8p0HYTfTXiX5h7im+lhpqrImkw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/f3dfdc1b6857cbf34fa6ef487bf4fe9144120fdcd5481f64413e34b3ffdc2b52",
+      "url": "https://jsr.io/@std/path/0.223.0/to_namespaced_path.ts",
+      "mirrors": [],
+      "hash": "sha256-twakEDsQTPrcCWAKX4OMK6lNvNtkI0RVcSLdpERSbkA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/f5ee8a04e8deb032918613c28c50b724afe5e583430808c8a40e70e923a57bdb",
+      "url": "https://jsr.io/@std/path/0.217.0/posix/_util.ts",
+      "mirrors": [],
+      "hash": "sha256-skq9+peCDTqdxpa/eUfDWsLPXYNsFq4gWSqNwHVzIaM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/f8522288a52e4aaa2a7556cb83765faaa28c58cccc820155b9385b12645b8b97",
+      "url": "https://jsr.io/@std/path/0.223.0/_common/to_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-f3atvIPs4buhc+bpiifGR3Esq3c9P4y+A5i3SvyBeIM=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/f876a064531d66c771c25d0016b604132cd4ff8053fe051bab373c258417eb9e",
+      "url": "https://jsr.io/@denosaurs/tty/0.2.1/tty_async.ts",
+      "mirrors": [],
+      "hash": "sha256-sSQKlOLJUKYxkqQ+TU+ML9Mp99+j+9CNU2CD5g/DE4o=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/f9dd259e6b431f030f28af278560caf1737ebad941926587398804537910b832",
+      "url": "https://jsr.io/@std/async/0.217.0/tee.ts",
+      "mirrors": [],
+      "hash": "sha256-TFA86/VRat8uakpWfnx4p9LTesaMs0N0HmZnzWoz2vI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/faeccd97cea140af4c07ded62f9bb02b77416d1f80724f4a0774f233e180c9af",
+      "url": "https://jsr.io/@std/jsonc/0.217.0/mod.ts",
+      "mirrors": [],
+      "hash": "sha256-gnIoiII+GvWo95GL+BDqWB9oCBBk1SkhhTOsrWy3wrw=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fbdd267e6451ef7e27bc91d72c34eae77a5f4c6ac34d7fb319aa38653aaea5f6",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/from_file_url.ts",
+      "mirrors": [],
+      "hash": "sha256-1n5MjnRTWXv4Bx2mqZXWya1B88MBktxklKJb6xRkf/c=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fc01770f66c0e28004cd160882657a32ee6a0526c0736b0618cedf1dd09af8ed",
+      "url": "https://jsr.io/@std/semver/0.217.0/_comparator_max.ts",
+      "mirrors": [],
+      "hash": "sha256-btMBtK2KSI2OCU1vqSGIIQewQDIO8iES1Rr6vnh0H0Y=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fc0ca5a03cf9b2a51061cb3dec5f30b4df61bef68e8b95f5d83fb92fc918f3ca",
+      "url": "https://jsr.io/@std/assert/0.217.0/assertion_error.ts",
+      "mirrors": [],
+      "hash": "sha256-3QJ/szcH2/8izS75tV/bcOIJWHbK88aOz7uBFQXswCI=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fc4e3f64715e9b38284917f0c8fd4b1b5d0ee4ed5dd0b0130af3a1d72012d04c",
+      "url": "https://jsr.io/@std/io/0.223.0/multi_reader.ts",
+      "mirrors": [],
+      "hash": "sha256-VUzSdRE6UOfbiUoJSJ1ZWBYsKFljaRcPMtQ8moYAjDo=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fc9a4712ffe7a4db4242f0ca2382439c13bad20367cc92829bcc17694d758381",
+      "url": "https://jsr.io/@std/io/0.223.0/to_writable_stream.ts",
+      "mirrors": [],
+      "hash": "sha256-VcpSOiRGVoBZ0QUlPSGGyXF7JuyAmAqUXqGcRCIKiLA=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fca3dcc2bd9ba67ed627c2e76605935187a948eeba88b2e30808b36452cabb6c",
+      "url": "https://jsr.io/@std/semver/0.217.0/try_parse_range.ts",
+      "mirrors": [],
+      "hash": "sha256-I54NcRxXRdqMTc2jwHl7S1qDv+SUpR06DwBUcs3HsBY=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fcebc247ffa239ee7dda72938fef20a4d7469414ab52d2dca7f964aeeab2cc74",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/glob_to_regexp.ts",
+      "mirrors": [],
+      "hash": "sha256-dvAS/NsiwEtjP1NsC5ZE0QCGG+o26dpWqUucWJp0Lo8=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fd71e3ac364948b71dd828e4af58aeb1eae2cb937f30ae055ecc7119f6d8a25c",
+      "url": "https://jsr.io/@std/path/0.217.0/windows/basename.ts",
+      "mirrors": [],
+      "hash": "sha256-IBeaJOO0qNXZV/C2xVFdHQXEfH5YJNWVhE8/9VWObls=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fe16d96e13f739860796dc53839e0da8d84ed54af4f98e749ff90ba7ffcecf62",
+      "url": "https://jsr.io/@denosaurs/wait/0.2.2_meta.json",
+      "mirrors": [],
+      "hash": "sha256-XsCn5yxXqWyf2y9KUuLOOxrQEKzFn+/m+IBUqeJ7wz0=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fe5ade7973cf59f7a8c770a208db2ecdce28a2e27b414d1e776dfb5f91b3b133",
+      "url": "https://jsr.io/@std/path/0.217.0/_os.ts",
+      "mirrors": [],
+      "hash": "sha256-j7m5D7a3U72Md8/Yozwv9sX1vBhfUN6MpKxqBXELLBU=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fee84bb7560f8db7431b570c489683eba4eef113777754fcaeff47f4d00865a1",
+      "url": "https://jsr.io/@std/path/0.223.0/posix/join.ts",
+      "mirrors": [],
+      "hash": "sha256-f8LLNxaqG4Y+mQuvMLEB12jbR55wtzE7SGagiNsBb2M=",
+      "headers": {
+        "content-type": "text/typescript"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fefa66dce935cc16783190146f38472dbc5e00114ad25ce6db5a5afb4e4a554c",
+      "url": "https://jsr.io/@std/fs/0.223.0_meta.json",
+      "mirrors": [],
+      "hash": "sha256-O0sFULLFJMuqpakXDJDpbLtzVOg3rRva8V/J3xrpwxw=",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "remote/https/jsr.io/fff66cdcf613b115519b1994d8497d76f810a46210da9a237a4ed7f7cb067f95",
+      "url": "https://jsr.io/@deno/emit/0.46.0/emit.generated.js",
+      "mirrors": [],
+      "hash": "sha256-LkMPtp+nX6E+nQzkZlOB1BcvIldkKVHhpFgYSu5QwEE=",
+      "headers": {
+        "content-type": "text/javascript"
+      }
+    }
+  ]
+}

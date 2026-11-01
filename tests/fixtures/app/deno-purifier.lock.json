@@ -1,7 +1,7 @@
 {
   "version": 1,
   "deno": "2.9.8",
-  "denoLock": "a6c019c8fcc5883e6aad5d5b3b15d8cef4e8348d332f2d2b7baef3dee53a0408",
+  "denoLock": "222bba22bee166332d290d0a60641f5264721281a15133736520c7d2fea413f8",
   "configs": {
     "deno.json": "b69e6f32a37814ec5b68bac34500db039aa9cb673b91faad8f17e348b8eaed7a",
     "greeting/deno.json": "97e85632bc751b95a2c1d48597bf4aedf76a0f82e20612921f6d21de25c99889",
