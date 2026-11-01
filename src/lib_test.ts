@@ -15,6 +15,7 @@ import {
   splitCacheFile,
   stripJsonc,
   trimVersionList,
+  withContentHash,
 } from "./lib.ts";
 
 function assertEquals(actual: unknown, expected: unknown) {
@@ -160,4 +161,24 @@ Deno.test("explainFailure drops download progress and advises on a stale deno.lo
   );
   if (text.includes("Download")) throw new Error(`download lines kept:\n${text}`);
   if (!text.includes("deno-purifier lock --update")) throw new Error(`no advice:\n${text}`);
+});
+
+Deno.test("withContentHash fills in the SHA-256 of the text with the empty value", async () => {
+  // The hash is that of `{"version": 2, "contentHash": ""}`, from sha256sum.
+  assertEquals(
+    await withContentHash('{"version": 2, "contentHash": ""}'),
+    '{"version": 2, "contentHash": "dfdb024c1bebdf75495d35d952080d6d7791886146a10e430966a956d6fb92b6"}',
+  );
+});
+
+Deno.test("withContentHash refuses a text without exactly one empty contentHash", async () => {
+  for (const text of ['{"version": 2}', '{"contentHash": "", "x": {"contentHash": ""}}']) {
+    let refused = false;
+    try {
+      await withContentHash(text);
+    } catch {
+      refused = true;
+    }
+    if (!refused) throw new Error(`accepted ${text}`);
+  }
 });

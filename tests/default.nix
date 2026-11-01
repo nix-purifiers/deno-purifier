@@ -1,23 +1,25 @@
 # SPDX-License-Identifier: MIT
 #
 # The flake's checks. Every one builds in the sandbox; the only network
-# access is the fixed-output fetches of locked downloads.
+# access is the fixed-output fetches of locked downloads. The
+# `conformance-*` checks are those of the purifier contract; the relock
+# check needs the network, so CI runs it as the job `conformance-relock`
+# (tests/relock.sh).
 {
   pkgs,
-  # The flake's default package overlay, which adds buildDenoProject.
+  # The flake's composed library, which has `lib.deno-purifier` and the
+  # shared purifier library as `lib.purifier`.
+  lib,
+  # The flake's default package overlay, which adds the commands.
   overlay,
   # The source of deployctl at the commit tests/dependencies pins.
   deployctl,
-  # The `purifier` namespace of the shared purifier library.
-  purifier,
 }:
 let
-  inherit (pkgs) lib;
+  inherit (lib) purifier;
+  inherit (lib.deno-purifier) buildDenoProject;
 
-  # The fixtures build the way a consumer's package does: through
-  # buildDenoProject of a package set the overlay applies to.
-  withOverlay = pkgs.extend overlay;
-  inherit (withOverlay) buildDenoProject;
+  commands = (pkgs.extend overlay).deno-purifier.deno-purifier;
 
   # A workspace: a root with a build task that runs esbuild (whose native
   # binary comes from a per-platform npm package), a package published to
@@ -25,69 +27,108 @@ let
   # imports the package, a JSR package, a remote module, a remote URL that
   # redirects and a data: URL, and whose task compiles it.
   app = buildDenoProject {
+    inherit pkgs;
     src = ./fixtures/app;
     buildTasks = [ "build" ];
-    doCheck = true;
   };
 
   # A project whose npm dependencies come from package.json, which Deno
   # installs into node_modules, with a task that compiles it.
-  nodeModules = buildDenoProject { src = ./fixtures/node-modules; };
+  nodeModules = buildDenoProject {
+    inherit pkgs;
+    src = ./fixtures/node-modules;
+  };
 
   # deployctl, a real-world project: a deno.jsonc with comments, a JSR
   # package with many pinned @std versions and an npm dependency. Its own
   # deno.lock at that commit is out of date for this Deno, so
   # tests/real/deployctl holds the deno.lock `deno-purifier lock --update`
-  # wrote, and the lockfile for it. Its code does not type-check with the
-  # TypeScript library of this Deno, so the publish check skips type
-  # checking.
+  # wrote, and the lockfile for it, outside deployctl's source. Its code
+  # does not type-check with the TypeScript library of this Deno, so the
+  # publish check skips type checking.
   real = buildDenoProject {
+    inherit pkgs;
     src = deployctl;
-    lockFile = ./real/deployctl/deno.lock;
-    purifierLockFile = ./real/deployctl/deno-purifier.lock.json;
+    lockFile = ./real/deployctl/deno-purifier.lock.json;
+    denoLock = ./real/deployctl/deno.lock;
     publishArgs = [ "--no-check" ];
   };
 
-  # Evaluates the lockfile reader on lockfiles written inline. The purifier
-  # lockfile records the hash of the deno.lock it goes with.
+  # The text of a lockfile with its contentHash, as `deno-purifier lock`
+  # computes it: the SHA-256 of the text with the empty value.
+  seal =
+    recorded:
+    let
+      text = builtins.toJSON (recorded // { contentHash = ""; });
+    in
+    builtins.replaceStrings
+      [ ''"contentHash":""'' ]
+      [
+        ''"contentHash":"${builtins.hashString "sha256" text}"''
+      ]
+      text;
+
+  # Reads lockfiles with the lockfile reader.
+  readLockFiles =
+    {
+      src ? ./fixtures/app,
+      platform ? pkgs.stdenv.hostPlatform,
+      denoLock ? ./fixtures/app/deno.lock,
+      lockText,
+    }:
+    import ../nix/lib/lock.nix {
+      inherit
+        lib
+        src
+        platform
+        denoLock
+        purifier
+        ;
+      lockFile = builtins.toFile "deno-purifier.lock.json" lockText;
+    };
+
+  # Evaluates the lockfile reader on a deno.lock written inline and a
+  # lockfile that records its hash.
   readLock =
     platform: denoLock: recorded:
     let
       text = builtins.toJSON denoLock;
     in
-    import ../nix/lib/lock.nix {
-      inherit lib platform purifier;
-      src = ./fixtures/app;
-      lockFile = builtins.toFile "deno.lock" text;
-      purifierLockFile = builtins.toFile "deno-purifier.lock.json" (
-        builtins.toJSON (
-          {
-            version = 1;
-            denoLock = builtins.hashString "sha256" text;
-            configs = { };
-            npmRegistries."" = "https://registry.npmjs.org/";
-            members = [ ];
-            programs = [ ];
-            remote = [ ];
-          }
-          // recorded
-        )
+    readLockFiles {
+      inherit platform;
+      denoLock = builtins.toFile "deno.lock" text;
+      lockText = seal (
+        {
+          version = 2;
+          denoLock = builtins.hashString "sha256" text;
+          configs = { };
+          npmRegistries."" = "https://registry.npmjs.org/";
+          members = [ ];
+          programs = [ ];
+          remote = [ ];
+        }
+        // recorded
       );
     };
   host = pkgs.stdenv.hostPlatform;
 
-  # Whether evaluating the downloads of a lock fails, as a check of the
-  # lockfile reader's refusals.
-  refuses = lockOf: !(builtins.tryEval (builtins.deepSeq (lockOf null).downloads true)).success;
-
-  # A check of the lockfile reader passes when `assertion` holds; it fails
-  # with `message` otherwise.
+  # A check passes when `assertion` holds; it fails with `message`
+  # otherwise.
   evalCheck =
     name: assertion: message:
     if assertion then
       pkgs.runCommand name { } "touch $out"
     else
       throw "deno-purifier check ${name}: ${message}";
+
+  # Whether the lockfile reader refuses, with a message that names the
+  # command to run and says `what`.
+  refusesWith =
+    what: read:
+    read.problem != null
+    && lib.hasInfix what read.problem
+    && lib.hasInfix "run `deno-purifier lock`" read.problem
+    && !(builtins.tryEval (builtins.deepSeq read.downloads true)).success;
 
   esbuildLock = {
     version = "5";
@@ -105,20 +146,70 @@ let
     };
   };
 
-  appLock = lib.importJSON ./fixtures/app/deno-purifier.lock.json;
-  # The app fixture's purifier lockfile, changed by f.
-  appLockWith = f: builtins.toFile "deno-purifier.lock.json" (builtins.toJSON (f appLock));
+  appLockText = builtins.readFile ./fixtures/app/deno-purifier.lock.json;
+  appLock = builtins.fromJSON appLockText;
+  # The app fixture's lockfile, changed by f and sealed again.
+  appLockWith = f: seal (removeAttrs (f appLock) [ "contentHash" ]);
   # A module of the app fixture that the command-line member imports.
   colors = lib.findFirst (
     e: (e.url or "") == "https://deno.land/std@0.224.0/fmt/colors.ts"
   ) (throw "the app fixture records no colors.ts") appLock.remote;
+  # Another module's hash, a valid SHA-256 that is not that of colors.ts.
+  otherHash = (lib.findFirst (e: e ? hash && e != colors) null appLock.remote).hash;
+
+  # Links the environment of a project the way `deno-purifier prefetch`
+  # does, for the checks that run the commands: a `nix` that answers
+  # `nix build --out-link` with the environment and `nix build
+  # --print-out-paths` with the release, both built by this flake. It
+  # counts its calls in $NIX_CALLS.
+  fakeNix =
+    { environment, release }:
+    pkgs.writeShellScriptBin "nix" ''
+      echo call >> "$NIX_CALLS"
+      while [ $# -gt 0 ]; do
+        case "$1" in
+          --out-link)
+            ln -sfn ${environment} "$2"
+            exit 0
+            ;;
+          --print-out-paths)
+            echo ${release}
+            exit 0
+            ;;
+        esac
+        shift
+      done
+      echo "fake nix: unexpected call" >&2
+      exit 1
+    '';
+
+  appEnvironment = import ../nix/lib/environment.nix {
+    inherit pkgs purifier;
+    src = ./fixtures/app;
+    keep = {
+      inherit (pkgs) deno;
+      denort = pkgs.deno.denort;
+    };
+  };
+
+  # A copy of the app fixture in $TMPDIR/project with the commands on PATH,
+  # a `nix` that links the environment this flake built, and no network.
+  withCommands = ''
+    export HOME="$TMPDIR/home" XDG_CACHE_HOME="$TMPDIR/cache" NO_COLOR=1
+    export NIX_CALLS="$TMPDIR/nix-calls"
+    mkdir -p "$HOME"
+    touch "$NIX_CALLS"
+    cp -r ${./fixtures/app} "$TMPDIR/project"
+    chmod -R u+w "$TMPDIR/project"
+    cd "$TMPDIR/project"
+  '';
 in
 {
-  # The unit tests of the lock run's parsing, cache-file and URL logic.
+  # The unit tests of the lock run's parsing, cache-file and hash logic.
   unit =
     pkgs.runCommand "unit-check"
       {
-        nativeBuildInputs = [ withOverlay.deno ];
+        nativeBuildInputs = [ pkgs.deno ];
       }
       ''
         export HOME="$TMPDIR" DENO_DIR="$TMPDIR/deno-dir" DENO_NO_UPDATE_CHECK=1 NO_COLOR=1
@@ -133,7 +224,7 @@ in
   program =
     pkgs.runCommand "program-check"
       {
-        nativeBuildInputs = [ app.programs.hello ];
+        nativeBuildInputs = [ app.packages.hello ];
       }
       ''
         hello 3 | grep -qx 'hello, odd 3 (a/b)'
@@ -146,28 +237,25 @@ in
   node-modules =
     pkgs.runCommand "node-modules-check"
       {
-        nativeBuildInputs = [ nodeModules.programs.odd ];
+        nativeBuildInputs = [ nodeModules.packages.odd ];
       }
       ''
-        test -e ${nodeModules.project}/node_modules/is-odd/package.json
+        test -e ${nodeModules.packages."task:version"}/node_modules/is-odd/package.json
         odd 7 | grep -qx '7 is odd'
         # The task runs the command of an npm package, a script that starts
         # with `#!/usr/bin/env node`.
-        grep -qx '1.3.0' ${nodeModules.tasks.version}/version.txt
+        grep -qx '1.3.0' ${nodeModules.packages."task:version"}/version.txt
         touch $out
       '';
 
-  # The build task ran esbuild, and the tests ran.
-  project = pkgs.runCommand "project-check" { } ''
-    grep -q 'function greet' ${app.project}/dist/greeting.js
+  # The build task ran esbuild.
+  task = pkgs.runCommand "task-check" { } ''
+    grep -q 'function greet' ${app.packages."task:build"}/dist/greeting.js
     touch $out
   '';
 
-  # The task output holds what the task wrote.
-  task = pkgs.runCommand "task-check" { } ''
-    grep -q 'function greet' ${app.tasks.build}/dist/greeting.js
-    touch $out
-  '';
+  # The project's tests pass in the sandbox.
+  tests = app.tests;
 
   # The JSR package holds its module, and `deno publish --dry-run`
   # accepted it.
@@ -176,39 +264,60 @@ in
     touch $out
   '';
 
-  # Only the members with a name are packages, and only `deno compile`
-  # tasks are programs.
+  # The release holds the workspace after the build task, without
+  # node_modules.
+  release = pkgs.runCommand "release-check" { } ''
+    grep -q 'export function greet' ${app.release}/greeting/mod.ts
+    grep -q 'function greet' ${app.release}/dist/greeting.js
+    test ! -e ${app.release}/node_modules
+    touch $out
+  '';
+
+  # The packages are the programs, the members with a name and the tasks,
+  # and the fetches are the locked downloads.
   outputs = evalCheck "outputs" (
-    builtins.attrNames app.packages == [ "@fixture/greeting" ]
-    && builtins.attrNames app.programs == [ "hello" ]
-    &&
-      builtins.attrNames app.tasks == [
-        "build"
-        "cli:compile"
-      ]
-  ) "the packages, programs or tasks differ from those the fixture declares";
+    builtins.attrNames app.packages == [
+      "@fixture/greeting"
+      "hello"
+      "task:build"
+      "task:cli:compile"
+    ]
+    && builtins.any (e: (e.url or "") == colors.url) app.fetches
+    && builtins.any (e: e ? archive) app.fetches
+  ) "the packages or the fetches differ from those the fixture declares";
 
   # deployctl's JSR package passes `deno publish --dry-run`.
   deployctl-package = real.packages."@deno/deployctl";
 
   # deployctl's release task, which compares the version in its source with
   # the release tag, runs offline.
-  deployctl-task = real.tasks.version-match.overrideAttrs { RELEASE_TAG = "1.13.1"; };
+  deployctl-task = real.packages."task:version-match".overrideAttrs { RELEASE_TAG = "1.13.1"; };
 
-  # deployctl's command-line tool runs from the built project and the
-  # locked downloads, offline.
+  # deployctl's command-line tool runs from its source and the locked
+  # downloads, offline.
   deployctl-cli =
+    let
+      environment = import ../nix/lib/environment.nix {
+        inherit pkgs purifier;
+        src = deployctl;
+        lockFile = ./real/deployctl/deno-purifier.lock.json;
+        denoLock = ./real/deployctl/deno.lock;
+      };
+    in
     pkgs.runCommand "deployctl-cli-check"
       {
-        nativeBuildInputs = [ withOverlay.deno ];
+        nativeBuildInputs = [ pkgs.deno ];
       }
       ''
         export HOME="$TMPDIR" DENO_DIR="$TMPDIR/deno-dir" DENO_NO_UPDATE_CHECK=1 NO_COLOR=1
         mkdir -p "$DENO_DIR"
-        cp -rs --no-preserve=mode ${real.cache}/remote "$DENO_DIR/remote"
-        cp -rL ${real.cache}/npm "$DENO_DIR/npm"
+        cp -rs --no-preserve=mode ${environment.cache}/remote "$DENO_DIR/remote"
+        cp -rL ${environment.cache}/npm "$DENO_DIR/npm"
         chmod -R u+w "$DENO_DIR/npm"
-        cd ${real.project}
+        cp -r ${deployctl} deployctl
+        chmod -R u+w deployctl
+        cp ${./real/deployctl/deno.lock} deployctl/deno.lock
+        cd deployctl
         deno run --cached-only --frozen --no-check -A deployctl.ts --version | grep -q 1.13.1
         touch $out
       '';
@@ -280,27 +389,15 @@ in
       (builtins.head downloads).archive.url == "https://mirror.example/left-pad-1.3.0.tgz"
     ) "the tarball URL of deno.lock was not used";
 
-  # A deno.lock that changed since the lock run stops evaluation.
-  stale-lock = evalCheck "stale-lock" (refuses (
-    _:
-    import ../nix/lib/lock.nix {
-      inherit lib purifier;
-      platform = host;
-      src = ./fixtures/app;
-      lockFile = builtins.toFile "deno.lock" (builtins.toJSON esbuildLock);
-      purifierLockFile = ./fixtures/app/deno-purifier.lock.json;
-    }
-  )) "a deno.lock that changed since the lock run evaluated";
-
-  # A deno.json that changed since the lock run stops evaluation.
-  stale-config = evalCheck "stale-config" (refuses (
-    _:
-    import ../nix/lib/lock.nix {
-      inherit lib purifier;
-      platform = host;
-      src = ./fixtures/app;
-      lockFile = ./fixtures/app/deno.lock;
-      purifierLockFile = appLockWith (
+  # A deno.lock or a deno.json that changed since the lock run stops
+  # evaluation, with the command to run.
+  conformance-stale = evalCheck "conformance-stale" (
+    refusesWith "deno.lock changed" (readLockFiles {
+      denoLock = builtins.toFile "deno.lock" (builtins.toJSON esbuildLock);
+      lockText = appLockText;
+    })
+    && refusesWith "deno.json changed" (readLockFiles {
+      lockText = appLockWith (
         l:
         l
         // {
@@ -309,83 +406,164 @@ in
           };
         }
       );
-    }
-  )) "a deno.json that changed since the lock run evaluated";
+    })
+  ) "a stale lockfile evaluated, or its message does not name `deno-purifier lock`";
 
-  # A lockfile without one of its fields, and one with an entry of no known
-  # shape, stop evaluation.
-  malformed-lock = evalCheck "malformed-lock" (
-    refuses (
-      _:
-      import ../nix/lib/lock.nix {
-        inherit lib purifier;
-        platform = host;
-        src = ./fixtures/app;
-        lockFile = ./fixtures/app/deno.lock;
-        purifierLockFile = appLockWith (l: removeAttrs l [ "remote" ]);
-      }
-    )
-    && refuses (
-      _:
-      import ../nix/lib/lock.nix {
-        inherit lib purifier;
-        platform = host;
-        src = ./fixtures/app;
-        lockFile = ./fixtures/app/deno.lock;
-        purifierLockFile = appLockWith (l: l // { remote = l.remote ++ [ { path = "remote/x"; } ]; });
-      }
-    )
-  ) "a malformed deno-purifier.lock.json evaluated";
-
-  # A hash edited into something other than a SHA-256 in SRI form stops
-  # evaluation. A hash edited into another valid one is caught by Nix
-  # itself, which compares every fixed-output fetch with its hash.
-  tampered-hash = evalCheck "tampered-hash" (refuses (
-    _:
-    import ../nix/lib/lock.nix {
-      inherit lib purifier;
-      platform = host;
-      src = ./fixtures/app;
-      lockFile = ./fixtures/app/deno.lock;
-      purifierLockFile = appLockWith (
-        l:
-        l
-        // {
-          remote = map (e: if e == colors then e // { hash = "sha1-${colors.hash}"; } else e) l.remote;
-        }
-      );
-    }
-  )) "a lockfile with a malformed hash evaluated";
+  # A lockfile in which a download's hash was changed stops evaluation,
+  # with the command to run.
+  conformance-tampered = evalCheck "conformance-tampered" (
+    otherHash != null
+    && refusesWith "does not match its contentHash" (readLockFiles {
+      lockText = builtins.replaceStrings [ colors.hash ] [ otherHash ] appLockText;
+    })
+  ) "a lockfile with a changed hash evaluated, or its message does not name `deno-purifier lock`";
 
   # A build whose lockfile lacks a module the project imports fails, and
   # says to run the lock again.
-  missing-entry =
+  conformance-missing =
     let
       missing = buildDenoProject {
+        inherit pkgs;
         src = ./fixtures/app;
-        purifierLockFile = appLockWith (l: l // { remote = builtins.filter (e: e != colors) l.remote; });
+        lockFile = builtins.toFile "deno-purifier.lock.json" (
+          appLockWith (l: l // { remote = builtins.filter (e: e != colors) l.remote; })
+        );
       };
-      failure = pkgs.testers.testBuildFailure missing.programs.hello;
+      failure = pkgs.testers.testBuildFailure missing.packages.hello;
     in
-    pkgs.runCommand "missing-entry-check" { } ''
+    pkgs.runCommand "conformance-missing-check" { } ''
       grep -q 'not found in cache' ${failure}/testBuildFailure.log
       grep -q 'run `deno-purifier lock`' ${failure}/testBuildFailure.log
       touch $out
     '';
 
-  # The wrapper evaluates nix/lib/interactive.nix for a project; the tree
-  # it builds is the one the sandboxed build of the project uses.
-  interactive =
+  # A lockfile that is not JSON, one without one of its fields, and one
+  # with an entry of no known shape stop evaluation, with the command to
+  # run.
+  conformance-malformed = evalCheck "conformance-malformed" (
+    refusesWith "has no contentHash" (readLockFiles {
+      lockText = builtins.substring 0 100 appLockText;
+    })
+    && refusesWith "lacks remote" (readLockFiles {
+      lockText = appLockWith (l: removeAttrs l [ "remote" ]);
+    })
+    && refusesWith "has a remote entry" (readLockFiles {
+      lockText = appLockWith (l: l // { remote = l.remote ++ [ { path = "remote/x"; } ]; });
+    })
+    && refusesWith "has format" (readLockFiles {
+      lockText = appLockWith (l: l // { version = 1; });
+    })
+  ) "a malformed lockfile evaluated, or its message does not name `deno-purifier lock`";
+
+  # A second build of a compiled program and of a package, which Nix sees
+  # as a different derivation, gives the same output.
+  conformance-rebuild =
     let
-      tree = import ../nix/lib/interactive.nix {
-        inherit pkgs purifier;
-        src = ./fixtures/app;
+      again = drv: drv.overrideAttrs { DENO_PURIFIER_REBUILD = "1"; };
+    in
+    pkgs.runCommand "conformance-rebuild-check" { } ''
+      cmp ${app.packages.hello}/bin/hello ${again app.packages.hello}/bin/hello
+      diff -r ${app.packages."@fixture/greeting"} ${again app.packages."@fixture/greeting"}
+      diff -r ${app.release} ${again app.release}
+      touch $out
+    '';
+
+  # A fixture whose source holds no lockfile builds from a lockfile kept
+  # outside it.
+  conformance-external =
+    let
+      external = buildDenoProject {
+        inherit pkgs;
+        src = lib.cleanSourceWith {
+          src = ./fixtures/app;
+          filter = path: _: baseNameOf path != "deno-purifier.lock.json";
+        };
+        lockFile = ./fixtures/app/deno-purifier.lock.json;
       };
     in
-    evalCheck "interactive" (
-      tree.outPath == app.cache.outPath
-    ) "the tree the wrapper builds differs from the tree the build uses";
+    pkgs.runCommand "conformance-external-check"
+      {
+        nativeBuildInputs = [ external.packages.hello ];
+      }
+      ''
+        test ! -e ${external.packages."task:build"}/deno-purifier.lock.json
+        hello 3 | grep -qx 'hello, odd 3 (a/b)'
+        touch $out
+      '';
 
-  # The commands build.
-  deno-purifier = withOverlay.deno-purifier.deno-purifier;
+  # After `deno-purifier prefetch`, the everyday loop works with no
+  # network (the sandbox has none): the wrapper runs a module, the tests
+  # and a task, and the language server resolves every import. The
+  # prefetch is the only command that calls Nix.
+  conformance-offline =
+    pkgs.runCommand "conformance-offline-check"
+      {
+        nativeBuildInputs = [
+          commands
+          (fakeNix {
+            environment = appEnvironment;
+            inherit (app) release;
+          })
+        ];
+      }
+      ''
+        ${withCommands}
+        deno-purifier prefetch
+        test "$(readlink .deno-purifier/environment)" = ${appEnvironment}
+        test -e ${appEnvironment}/deno -a -e ${appEnvironment}/denort
+        deno run cli/main.ts 5 | grep -qx 'hello, odd 5 (a/b)'
+        deno test
+        deno task build
+        grep -q 'function greet' dist/greeting.js
+        ${pkgs.deno}/bin/deno run -A --no-config --no-lock ${./lsp-check.ts} "$PWD" cli/main.ts greeting/mod.ts
+        test "$(wc -l < "$NIX_CALLS")" = 1
+        # The cache directory can go; the environment rebuilds it without
+        # Nix.
+        rm -rf "$XDG_CACHE_HOME"
+        deno run cli/main.ts 6 | grep -qx 'hello, even 6 (a/b)'
+        test "$(wc -l < "$NIX_CALLS")" = 1
+        touch $out
+      '';
+
+  # The wrapper stops a command that loads modules while deno.lock differs
+  # from the one the lock run read, and names the command to run.
+  stale-wrapper =
+    pkgs.runCommand "stale-wrapper-check"
+      {
+        nativeBuildInputs = [
+          commands
+          (fakeNix {
+            environment = appEnvironment;
+            inherit (app) release;
+          })
+        ];
+      }
+      ''
+        ${withCommands}
+        echo ' ' >> deno.lock
+        if deno run cli/main.ts 5 2> err; then exit 1; fi
+        grep -q 'run `deno-purifier lock`' err
+        touch $out
+      '';
+
+  # `deno-purifier publish` builds the release through Nix and runs `deno
+  # publish` on it.
+  publish =
+    pkgs.runCommand "publish-check"
+      {
+        nativeBuildInputs = [
+          commands
+          (fakeNix {
+            environment = appEnvironment;
+            inherit (app) release;
+          })
+        ];
+      }
+      ''
+        ${withCommands}
+        deno-purifier prefetch
+        deno-purifier publish --dry-run --allow-dirty 2>&1 | tee out
+        grep -q '@fixture/greeting' out
+        touch $out
+      '';
 }

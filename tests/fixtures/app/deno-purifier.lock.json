@@ -1,5 +1,6 @@
 {
-  "version": 1,
+  "version": 2,
+  "contentHash": "9ccfe69310f546118bf687d06a2104dd7d77995a6b47011d28c7a926ce191775",
   "deno": "2.9.8",
   "denoLock": "222bba22bee166332d290d0a60641f5264721281a15133736520c7d2fea413f8",
   "configs": {

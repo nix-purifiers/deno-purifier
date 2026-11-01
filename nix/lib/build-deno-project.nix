@@ -6,95 +6,108 @@
 # every download, every package of the project and every program its tasks
 # compile.
 #
-# The file is a package for callPackage: the first argument set is what it
-# takes from the package set, and the result is the builder. The
-# deno-purifier overlay (`overlays.default`) adds it to the package set as
-# `buildDenoProject`, so a package written for callPackage takes it like
-# any other dependency:
+# The flake's library has it as `lib.deno-purifier.buildDenoProject`:
 #
-#   { buildDenoProject }: (buildDenoProject { src = ./.; }).programs.my-app
+#   (lib.deno-purifier.buildDenoProject { inherit pkgs; src = ./.; })
+#     .packages.my-app
 #
-# and `buildDenoProject.override` replaces what it takes from the set. The
-# builder returns
+# The builder returns
 #
-#   cache            the DENO_DIR of the locked downloads
-#   project          the project after `deno install`, the build tasks and,
-#                    with doCheck, `deno test`
-#   packages.<name>  each package of the project with a `name` in its
-#                    deno.json (the root or a workspace member): the files
-#                    of its directory after the build tasks, once
-#                    `deno publish --dry-run` accepts them
-#   programs.<name>  each `deno compile` command in the tasks, compiled:
-#                    bin/<name> is the binary the command writes
-#   tasks.<name>     the project after `deno task <name>`; a task of a
-#                    workspace member is tasks."<member dir>:<name>"
+#   packages   what the project builds:
+#                <program>      each `deno compile` command in the tasks,
+#                               compiled; bin/<program> is the binary the
+#                               command writes
+#                <package>      each package of the project with a `name`
+#                               in its deno.json (the root or a workspace
+#                               member), such as "@scope/name": the files
+#                               of its directory after the build tasks,
+#                               once `deno publish --dry-run` accepts them
+#                task:<task>    the project after `deno task <task>`; a
+#                               task of a workspace member is
+#                               "task:<member dir>:<task>"
+#   tests      the project after the build tasks and `deno test`
+#   release    what `deno-purifier publish` uploads to JSR: the project
+#              after the build tasks, once `deno publish --dry-run` at the
+#              root accepts every package
+#   fetches    the download entries of the purifier library that the build
+#              fetches, for SBOM, license and vulnerability tools
+#
+# The names of `packages` come from the lockfile, so they are known at
+# evaluation time.
+#
+# `lib` is the composed library, which has the shared purifier library as
+# `lib.purifier`.
+{ lib }:
 {
-  lib,
-  stdenv,
-  callPackage,
-  deno,
-  # The `purifier` namespace of the shared purifier library, which the
-  # deno-purifier overlay passes.
-  purifier,
-}:
-{
-  # The root of the Deno project: the directory of its deno.lock.
+  pkgs,
+  # The root of the Deno project.
   src,
-  lockFile ? src + "/deno.lock",
-  purifierLockFile ? src + "/deno-purifier.lock.json",
+  # deno-purifier.lock.json. A lockfile kept outside `src`, such as in a
+  # packaging flake for a project whose author does not use deno-purifier,
+  # is the one the build reads.
+  lockFile ? src + "/deno-purifier.lock.json",
+  # deno.lock. One given outside `src` replaces the one in `src` during the
+  # build, such as an updated one for a project whose own deno.lock is out
+  # of date.
+  denoLock ? src + "/deno.lock",
+  # The fetchers that replace nixpkgs' own in the purifier library, such as
+  # a fetchurl that goes through a company mirror or sends credentials.
+  fetchers ? { },
   # The Deno that installs, builds, tests and compiles the project. Its
   # `denort` output is the runtime of compiled programs.
-  denoPackage ? deno,
+  denoPackage ? pkgs.deno,
   # The tasks that build the project, run in order at the root before the
-  # packages are taken and the tests run.
+  # packages, the release and the tests are taken.
   buildTasks ? [ ],
-  # Runs `deno test` after the build tasks.
-  doCheck ? false,
   # Arguments of `deno test`, such as permission flags.
   testArgs ? [ ],
   # Arguments of `deno install`, such as `--allow-scripts` for npm packages
   # whose install scripts must run.
   installArgs ? [ ],
-  # Arguments of the `deno publish --dry-run` that checks each package, such
-  # as `--no-check` for a package that does not type-check with this Deno.
+  # Arguments of the `deno publish --dry-run` that checks the packages and
+  # the release, such as `--no-check` for a package that does not
+  # type-check with this Deno.
   publishArgs ? [ ],
   # Tools the tasks and the npm packages' install scripts need.
   nativeBuildInputs ? [ ],
   # Libraries native npm addons link against.
   buildInputs ? [ ],
-  # Replaces the fetcher of the locked downloads, such as for a private
-  # registry that needs credentials.
-  fetchurl ? null,
   # Filters the project root before it is copied into the store, as the
   # `filter` of builtins.path. The default leaves out installed
-  # dependencies, version control and Nix result links.
+  # dependencies, version control, the wrapper's garbage-collector roots
+  # and Nix result links.
   srcFilter ? null,
 }:
 let
+  inherit (pkgs) stdenv;
+
   lock = import ./lock.nix {
     inherit
       lib
       src
       lockFile
-      purifierLockFile
+      denoLock
       ;
+    inherit (lib) purifier;
     platform = stdenv.hostPlatform;
-    inherit purifier;
   };
 
-  cache = callPackage ./cache.nix (
-    {
-      inherit lock purifier;
-    }
-    // lib.optionalAttrs (fetchurl != null) { inherit fetchurl; }
-  );
+  cache = import ./cache.nix {
+    inherit pkgs lock fetchers;
+    inherit (lib) purifier;
+  };
 
   defaultSrcFilter =
     path: type:
     let
       name = baseNameOf path;
     in
-    !((type == "directory" && name == "node_modules") || name == ".git" || lib.hasPrefix "result" name);
+    !(
+      (type == "directory" && name == "node_modules")
+      || name == ".git"
+      || name == ".deno-purifier"
+      || lib.hasPrefix "result" name
+    );
 
   filteredSrc = builtins.path {
     path = src;
@@ -149,13 +162,13 @@ let
     nativeBuildInputs = [ denoPackage ] ++ nativeBuildInputs;
     inherit buildInputs;
     dontConfigure = true;
-    # A deno.lock given apart from the source, such as an updated one for a
-    # project whose own deno.lock is out of date, replaces the one in the
-    # source, so that Deno reads the lockfile Nix read.
-    postPatch = lib.optionalString (lockFile != src + "/deno.lock") ''
-      cp ${lockFile} deno.lock
+    # Deno reads deno.lock from the source, so a deno.lock given apart from
+    # the source replaces the one there.
+    postPatch = lib.optionalString (denoLock != src + "/deno.lock") ''
+      cp ${denoLock} deno.lock
       chmod u+w deno.lock
     '';
+    dontFixup = true;
   };
 
   buildCommands = ''
@@ -166,26 +179,16 @@ let
     done
   '';
 
-  project = stdenv.mkDerivation (
-    common
-    // {
-      name = "deno-project";
-      buildPhase = ''
-        runHook preBuild
-        ${buildCommands}
-        ${lib.optionalString doCheck "deno test --frozen --cached-only ${lib.escapeShellArgs testArgs}"}
-        runHook postBuild
-      '';
-      installPhase = ''
-        runHook preInstall
-        cp -a . "$out"
-        runHook postInstall
-      '';
-      dontFixup = true;
-    }
-  );
-
   storeSafe = name: builtins.replaceStrings [ "@" "/" ":" ] [ "" "-" "-" ] name;
+
+  named = builtins.filter (m: m.name != null) lock.members;
+
+  versionOf =
+    dir:
+    let
+      member = lib.findFirst (m: m.dir == dir) null lock.members;
+    in
+    if member != null && member.version != null then member.version else "0.0.0";
 
   mkPackage =
     member:
@@ -193,7 +196,7 @@ let
       common
       // {
         pname = storeSafe member.name;
-        version = if member.version != null then member.version else "0.0.0";
+        version = versionOf member.dir;
         buildPhase = ''
           runHook preBuild
           ${buildCommands}
@@ -206,7 +209,6 @@ let
           rm -rf "$out/node_modules"
           runHook postInstall
         '';
-        dontFixup = true;
         passthru = {
           inherit (member) name dir;
         };
@@ -219,14 +221,14 @@ let
       common
       // {
         pname = program.name;
-        version =
-          let
-            member = lib.findFirst (m: m.dir == program.member) null lock.members;
-          in
-          if member != null && member.version != null then member.version else "0.0.0";
+        version = versionOf program.member;
         buildPhase = ''
           runHook preBuild
           ${buildCommands}
+          # deno compile embeds the modification time of every file it
+          # packs, and the copies in DENO_DIR and the files the build wrote
+          # have the time of the build.
+          find . "$DENO_DIR" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
           mkdir -p "$out/bin"
           (cd ./${lib.escapeShellArg program.member} && deno compile --frozen --cached-only \
             ${lib.escapeShellArgs program.flags} \
@@ -234,10 +236,9 @@ let
             ${lib.escapeShellArg program.entrypoint} ${lib.escapeShellArgs program.args})
           runHook postBuild
         '';
-        dontInstall = true;
         # A compiled program is denort with the project appended; stripping
         # or patching it would cut the project off.
-        dontFixup = true;
+        dontInstall = true;
         meta.mainProgram = program.name;
       }
     );
@@ -259,19 +260,69 @@ let
           cp -a . "$out"
           runHook postInstall
         '';
-        dontFixup = true;
       }
     );
 
-  named = builtins.filter (m: m.name != null) lock.members;
+  tests = stdenv.mkDerivation (
+    common
+    // {
+      name = "deno-tests";
+      buildPhase = ''
+        runHook preBuild
+        ${buildCommands}
+        deno test --frozen --cached-only ${lib.escapeShellArgs testArgs}
+        runHook postBuild
+      '';
+      installPhase = ''
+        runHook preInstall
+        cp -a . "$out"
+        runHook postInstall
+      '';
+    }
+  );
+
+  release =
+    if named == [ ] then
+      throw "deno-purifier: the project has no package with a `name` in its deno.json, so it has no release to publish"
+    else
+      stdenv.mkDerivation (
+        common
+        // {
+          pname = "deno-release";
+          version = versionOf "";
+          buildPhase = ''
+            runHook preBuild
+            ${buildCommands}
+            deno publish --dry-run --allow-dirty --frozen ${lib.escapeShellArgs publishArgs}
+            runHook postBuild
+          '';
+          installPhase = ''
+            runHook preInstall
+            rm -rf node_modules
+            cp -a . "$out"
+            runHook postInstall
+          '';
+        }
+      );
+
+  programs = map (p: lib.nameValuePair p.name (mkProgram p)) lock.programs;
+  jsrPackages = map (m: lib.nameValuePair m.name (mkPackage m)) named;
+  taskOutputs = lib.concatMap (
+    m:
+    map (
+      t: lib.nameValuePair (if m.dir == "" then "task:${t}" else "task:${m.dir}:${t}") (mkTask m t)
+    ) m.tasks
+  ) lock.members;
+  all = programs ++ jsrPackages ++ taskOutputs;
+  names = map (p: p.name) all;
+  clash = lib.findFirst (n: lib.count (m: m == n) names > 1) null names;
 in
 {
-  inherit cache project;
-  packages = lib.listToAttrs (map (m: lib.nameValuePair m.name (mkPackage m)) named);
-  programs = lib.listToAttrs (map (p: lib.nameValuePair p.name (mkProgram p)) lock.programs);
-  tasks = lib.listToAttrs (
-    lib.concatMap (
-      m: map (t: lib.nameValuePair (if m.dir == "" then t else "${m.dir}:${t}") (mkTask m t)) m.tasks
-    ) lock.members
-  );
+  packages =
+    if clash != null then
+      throw "deno-purifier: more than one output of the project is named ${builtins.toJSON clash}"
+    else
+      builtins.listToAttrs all;
+  inherit tests release;
+  fetches = lock.downloads;
 }

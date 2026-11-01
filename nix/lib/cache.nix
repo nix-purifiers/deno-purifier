@@ -12,26 +12,27 @@
 # alone, so this tree appends the line, with the headers the lock run
 # recorded and a time of 0.
 {
-  lib,
   pkgs,
-  runCommand,
   # The `purifier` namespace of the shared purifier library.
   purifier,
   # The result of nix/lib/lock.nix.
   lock,
-  fetchurl ? null,
+  # The fetchers that replace nixpkgs' own, which go to the library's
+  # fetchEntry unchanged, such as a fetchurl that sends credentials.
+  fetchers ? { },
 }:
 let
+  inherit (pkgs) lib;
   dependencies = purifier.tree (
     {
       inherit pkgs;
       name = "deno-purifier-dependencies";
       entries = lock.downloads;
     }
-    // lib.optionalAttrs (fetchurl != null) { inherit fetchurl; }
+    // fetchers
   );
 in
-runCommand "deno-purifier-cache"
+pkgs.runCommand "deno-purifier-cache"
   {
     preferLocalBuild = true;
     allowSubstitutes = false;

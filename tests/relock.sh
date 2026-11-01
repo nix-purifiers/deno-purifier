@@ -26,7 +26,9 @@ trap 'rm -rf "$work"' EXIT
 cp -r "$source/." "$work/deployctl"
 chmod -R u+w "$work/deployctl"
 cp tests/real/deployctl/deno.lock "$work/deployctl/deno.lock"
-lock --root "$work/deployctl"
+# The lockfile lives outside deployctl's source, as a packaging flake keeps
+# it.
+lock --root "$work/deployctl" --lockfile "$work/deno-purifier.lock.json"
 cmp "$work/deployctl/deno.lock" tests/real/deployctl/deno.lock
-cmp "$work/deployctl/deno-purifier.lock.json" tests/real/deployctl/deno-purifier.lock.json
+cmp "$work/deno-purifier.lock.json" tests/real/deployctl/deno-purifier.lock.json
 echo "relock: every lockfile is reproduced byte for byte"

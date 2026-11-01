@@ -23,6 +23,10 @@
 //             with their name, version, directory and tasks.
 //   programs  one entry per `deno compile` command in the tasks.
 //
+// The lockfile also holds its format `version`, `contentHash` (the SHA-256
+// of its text with that value empty, which Nix checks), and the hashes of
+// deno.lock and of every deno.json, which tell Nix when it is stale.
+//
 // npm packages are not recorded: deno.lock names each one with its
 // integrity and its platform filters, and Nix reads them from there.
 //
@@ -51,10 +55,11 @@ import {
   splitCacheFile,
   stripJsonc,
   trimVersionList,
+  withContentHash,
 } from "./lib.ts";
 
 const LOCK_FILE = "deno-purifier.lock.json";
-const LOCK_VERSION = 1;
+const LOCK_VERSION = 2;
 const SOURCE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"];
 // Directories that hold installed or generated files rather than the
 // project's modules.
@@ -426,7 +431,12 @@ function rebuild(
   }
 }
 
-async function lock(rootArg: string | null, update: boolean, extra: string[]) {
+async function lock(
+  rootArg: string | null,
+  lockfilePath: string | null,
+  update: boolean,
+  extra: string[],
+) {
   const started = Date.now();
   const root = findRoot(rootArg ?? Deno.cwd());
   const members = readMembers(root);
@@ -511,6 +521,7 @@ async function lock(rootArg: string | null, update: boolean, extra: string[]) {
     }
     const lockfile = {
       version: LOCK_VERSION,
+      contentHash: "",
       deno: Deno.version.deno,
       denoLock: hex(await sha256(new TextEncoder().encode(denoLockText))),
       configs,
@@ -520,10 +531,11 @@ async function lock(rootArg: string | null, update: boolean, extra: string[]) {
       programs,
       remote: [...files, ...inline].sort((a, b) => (a.path < b.path ? -1 : 1)),
     };
-    Deno.writeTextFileSync(joinPath(root, LOCK_FILE), JSON.stringify(lockfile, null, 2) + "\n");
+    const target = lockfilePath ?? joinPath(root, LOCK_FILE);
+    Deno.writeTextFileSync(target, await withContentHash(JSON.stringify(lockfile, null, 2) + "\n"));
     const seconds = ((Date.now() - started) / 1000).toFixed(1);
     log(
-      `wrote ${LOCK_FILE} in ${seconds}s: ${files.length} module files, ${inline.length} inline cache entries, ` +
+      `wrote ${target} in ${seconds}s: ${files.length} module files, ${inline.length} inline cache entries, ` +
         `${members.length} packages, ${programs.length} programs`,
     );
   } finally {
@@ -532,13 +544,16 @@ async function lock(rootArg: string | null, update: boolean, extra: string[]) {
 }
 
 function usage(): never {
-  console.error(`usage: deno-purifier lock [--root DIR] [--update] [-- DENO-ARGS...]
+  console.error(`usage: deno-purifier lock [--root DIR] [--lockfile PATH] [--update] [-- DENO-ARGS...]
 
 Records the downloads of the Deno project at DIR (default: the nearest
 directory upwards with a deno.lock) in deno-purifier.lock.json.
 
-  --update   let Deno update deno.lock while the lock run installs, and
-             write the updated deno.lock back to the project
+  --lockfile PATH  write the lockfile to PATH rather than to
+                   deno-purifier.lock.json at DIR, such as for a project
+                   whose source you do not change
+  --update         let Deno update deno.lock while the lock run installs,
+                   and write the updated deno.lock back to the project
   DENO-ARGS  one more Deno command to run in the lock run, for modules a
              task imports at run time, such as \`task build\``);
   Deno.exit(2);
@@ -548,15 +563,17 @@ if (import.meta.main) {
   const [verb, ...rest] = Deno.args;
   if (verb !== "lock") usage();
   let root: string | null = null;
+  let lockfile: string | null = null;
   let update = false;
   let extra: string[] = [];
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--root" && i + 1 < rest.length) root = rest[++i];
+    else if (rest[i] === "--lockfile" && i + 1 < rest.length) lockfile = rest[++i];
     else if (rest[i] === "--update") update = true;
     else if (rest[i] === "--") {
       extra = rest.slice(i + 1);
       break;
     } else usage();
   }
-  await lock(root, update, extra);
+  await lock(root, lockfile, update, extra);
 }

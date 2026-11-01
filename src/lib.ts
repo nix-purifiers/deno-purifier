@@ -295,3 +295,18 @@ export function explainFailure(command: string, output: string): string {
   }
   return `\`deno ${command}\` failed in the lock run:\n${lines}${advice}`;
 }
+
+// The text of a lockfile with its contentHash filled in. The text holds the
+// field once, empty: `"contentHash": ""`. The hash is the SHA-256, in hex,
+// of that text, so Nix checks it by putting the empty value back.
+export async function withContentHash(text: string): Promise<string> {
+  const empty = '"contentHash": ""';
+  if (text.split(empty).length !== 2) {
+    throw new Error(`the lockfile text must hold ${empty} once`);
+  }
+  const digest = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)),
+  );
+  const hex = Array.from(digest, (b) => b.toString(16).padStart(2, "0")).join("");
+  return text.replace(empty, `"contentHash": "${hex}"`);
+}
