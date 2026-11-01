@@ -331,12 +331,9 @@ export function explainFailure(command: string, output: string): string {
     .join("\n")
     .trim();
   let advice = "";
-  if (output.includes("lockfile is out of date")) {
-    advice = "\n\ndeno.lock does not cover every module the project imports with this Deno. " +
-      "Run `deno-purifier update` to let Deno update deno.lock too.";
-  } else if (output.includes("Integrity check failed")) {
+  if (output.includes("Integrity check failed")) {
     advice = "\n\nA download no longer matches the hash in deno.lock. " +
-      "If the change is expected, run `deno-purifier update` to record the new hash.";
+      "If the change is expected, remove its entry from deno.lock and run `deno-purifier lock`.";
   }
   return `\`deno ${command}\` failed in the lock run:\n${lines}${advice}`;
 }

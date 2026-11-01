@@ -17,17 +17,17 @@ for fixture in tests/fixtures/*/; do
 done
 git diff --exit-code -- tests/fixtures
 
-# deployctl at the commit tests/dependencies pins, with the deno.lock of
-# tests/real/deployctl in place of its own out-of-date one.
+# deployctl at the commit tests/dependencies pins. The deno.lock it commits
+# does not cover its imports, so the lock run completes it, and both
+# lockfiles are those of tests/real/deployctl.
 rev="$(nix flake metadata --json ./tests/dependencies | jq -r '.locks.nodes.deployctl.locked.rev')"
 source="$(nix flake prefetch --json "github:denoland/deployctl/$rev" | jq -r .storePath)"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 cp -r "$source/." "$work/deployctl"
 chmod -R u+w "$work/deployctl"
-cp tests/real/deployctl/deno.lock "$work/deployctl/deno.lock"
-# The lockfile lives outside deployctl's source, as a packaging flake keeps
-# it.
+# The lockfile lives outside the source of deployctl, as in the example of
+# the README.
 lock --root "$work/deployctl" --lockfile "$work/deno-purifier.lock.json"
 cmp "$work/deployctl/deno.lock" tests/real/deployctl/deno.lock
 cmp "$work/deno-purifier.lock.json" tests/real/deployctl/deno-purifier.lock.json

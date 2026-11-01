@@ -42,10 +42,10 @@
 // runs `deno install --cached-only` against it, so a recorded lockfile is
 // known to serve the project offline.
 //
-// The installs run with --frozen, so a deno.lock that does not cover the
-// project stops the lock run. `update` runs `deno update` first, and its
-// lock run lets Deno change deno.lock, then copies the new deno.lock back to
-// the project.
+// A first pass lets Deno write deno.lock where it is missing or does not
+// cover the project, and Deno keeps every resolution that deno.lock holds.
+// The recording installs then run with --frozen. `update` runs
+// `deno update` before the lock run, to change the resolution.
 //
 // DENO-ARGS, when given, are one more Deno command the lock run runs in the
 // copy, such as `task build`, for modules a task imports at run time.
@@ -243,7 +243,7 @@ function findRoot(start: string): string {
         "and deno-purifier builds from deno.lock. Remove the setting, run `deno install`, then run `deno-purifier lock`.",
     );
   }
-  fail(`${outermostConfig} has no deno.lock; run \`deno install\` there, then run \`deno-purifier lock\`.`);
+  return outermostConfig;
 }
 
 // The root and its workspace members, from their configuration files.
@@ -447,7 +447,6 @@ async function rebuild(
 async function lock(
   rootArg: string | null,
   lockfilePath: string | null,
-  update: boolean,
   extra: string[],
 ) {
   const started = Date.now();
@@ -464,23 +463,23 @@ async function lock(
     copyTree(root, project);
     const env = { DENO_DIR: denoDir, DENO_NO_UPDATE_CHECK: "1", NO_COLOR: "1" };
 
-    // For `update`, a first pass lets Deno update deno.lock, with a cache
-    // of its own. The downloads are then always recorded from a frozen pass
-    // into an empty cache, so the record does not depend on whether
-    // deno.lock changed: a frozen install reads redirects from deno.lock
-    // and fetches their targets alone, as the sandbox does.
-    if (update) {
-      log("updating deno.lock");
-      const updateEnv = { ...env, DENO_DIR: joinPath(work, "update-deno-dir") };
-      for (const args of [["install"], ["install", ...entrypoints]]) {
-        const install = await run(args, { cwd: project, env: updateEnv });
-        if (!install.ok) fail(explainFailure(args.slice(0, 1).join(" "), install.output));
-      }
-      // A node_modules the first pass made would let the frozen pass skip
-      // the downloads it must record.
-      for (const rel of walkDirs(project)) {
-        Deno.removeSync(joinPath(project, rel), { recursive: true });
-      }
+    // A first pass lets Deno write deno.lock where it is missing or does not
+    // cover the project, with a cache of its own. Deno keeps every
+    // resolution that deno.lock holds. The downloads are then always
+    // recorded from a frozen pass into an empty cache, so the record does
+    // not depend on whether deno.lock changed: a frozen install reads
+    // redirects from deno.lock and fetches their targets alone, as the
+    // sandbox does.
+    log("completing deno.lock");
+    const completeEnv = { ...env, DENO_DIR: joinPath(work, "complete-deno-dir") };
+    for (const args of [["install"], ["install", ...entrypoints]]) {
+      const install = await run(args, { cwd: project, env: completeEnv });
+      if (!install.ok) fail(explainFailure(args.slice(0, 1).join(" "), install.output));
+    }
+    // A node_modules the first pass made would let the frozen pass skip the
+    // downloads it must record.
+    for (const rel of walkDirs(project)) {
+      Deno.removeSync(joinPath(project, rel), { recursive: true });
     }
 
     log(`installing the dependencies and ${modules.length} modules into an empty DENO_DIR`);
@@ -524,9 +523,10 @@ async function lock(
       }
     }
 
-    if (update && denoLockText !== Deno.readTextFileSync(joinPath(root, "deno.lock"))) {
-      Deno.writeTextFileSync(joinPath(root, "deno.lock"), denoLockText);
-      log("updated deno.lock");
+    const rootDenoLock = joinPath(root, "deno.lock");
+    if (!exists(rootDenoLock) || denoLockText !== Deno.readTextFileSync(rootDenoLock)) {
+      Deno.writeTextFileSync(rootDenoLock, denoLockText);
+      log("wrote deno.lock");
     }
     const configs: Record<string, string> = {};
     for (const m of members) {
@@ -583,7 +583,7 @@ async function update(
   } finally {
     Deno.removeSync(work, { recursive: true });
   }
-  await lock(root, lockfilePath, true, []);
+  await lock(root, lockfilePath, []);
 }
 
 function usage(): never {
@@ -591,11 +591,11 @@ function usage(): never {
        deno-purifier update [--root DIR] [--lockfile PATH] [--latest] [PACKAGE...]
 
 lock records the downloads of the Deno project at DIR (default: the
-nearest directory upwards with a deno.lock) in deno-purifier.lock.json,
-with the resolution deno.lock holds. update first updates the
-dependencies with \`deno update\`, all of them or each PACKAGE, then
-records the downloads and lets Deno add what the code imports to
-deno.lock.
+nearest directory upwards with a deno.lock) in deno-purifier.lock.json. It
+keeps the resolution deno.lock holds, and writes deno.lock only where it is
+missing or does not cover the project. update first updates the
+dependencies with \`deno update\`, all of them or each PACKAGE, then runs
+lock.
 
   --lockfile PATH  write the lockfile to PATH rather than to
                    deno-purifier.lock.json at DIR, such as for a project
@@ -625,6 +625,6 @@ if (import.meta.main) {
     } else if (verb === "update" && !rest[i].startsWith("-")) packages.push(rest[i]);
     else usage();
   }
-  if (verb === "lock") await lock(root, lockfile, false, extra);
+  if (verb === "lock") await lock(root, lockfile, extra);
   else await update(root, lockfile, latest, packages);
 }

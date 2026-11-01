@@ -23,11 +23,14 @@ Record the lockfile at the project root and commit it with `deno.lock`:
 nix run github:nix-purifiers/deno-purifier -- lock
 ```
 
-A project without a `deno.lock` needs one first: run `deno install`. A
-project whose configuration sets `"lock": false` needs that setting removed,
-since Deno then neither writes nor reads `deno.lock`. When the lock run
-reports that `deno.lock` is out of date, run
-`nix run github:nix-purifiers/deno-purifier -- update`.
+`lock` keeps the resolution that `deno.lock` holds. Where the project has
+no `deno.lock`, or its `deno.lock` does not cover every import, Deno writes
+the missing entries first. A project whose configuration sets
+`"lock": false` needs that setting removed, since Deno then neither writes
+nor reads `deno.lock`.
+
+`nix run github:nix-purifiers/deno-purifier -- update` moves the
+dependencies to newer versions and records both lockfiles in one run.
 
 The flake's `overlays.default` adds the builder `buildDenoProject` to a
 package set, where nixpkgs keeps its own builders. A package written for
@@ -94,10 +97,10 @@ are the download entries of every system, and an npm package with
 platform filters carries `systems`, the systems it installs on. `outputs`
 names each attribute of `packages`. `problems` holds a message for a
 stale, edited, malformed or missing lockfile, and each message names the
-command that fixes it. The builder passes the lock to the purifier
-library's `checkLock`, takes the downloads of its system from
-`entriesFor`, and returns the entries as `fetches`. A tool that reads
-every purifier, such as an SBOM generator, can call `readLock` alone.
+command that fixes it. The builder fails evaluation with those problems,
+fetches the entries that have no `systems` and those whose `systems`
+include its own system, and returns the entries as `fetches`. A tool that
+reads every purifier, such as an SBOM generator, can call `readLock` alone.
 
 ### The builder's arguments
 
@@ -154,31 +157,28 @@ Nix reads most of what it fetches from `deno.lock` at evaluation time:
 | `configs`, `denoLock` | Hashes of every `deno.json` and of `deno.lock`. | They tell Nix that the lockfile is stale. |
 | `version`, `contentHash` | The format, and the SHA-256 of the file's text with that value empty. | They make an edited or truncated lockfile fail. |
 
-`deno-purifier lock` copies the project to a temporary directory and runs
-`deno install` there with an empty `DENO_DIR` and the network, once
-plainly and once on every module of the project, then runs `deno check`.
-The project's modules are its source files, without what the root
-configuration's `exclude` lists and without nested projects: directories
-with a `deno.json`, `deno.jsonc` or `package.json` of their own that are
-not workspace members, such as an example with its own import map. It
-then rebuilds a `DENO_DIR` the way Nix does, from `deno.lock` and what it
-recorded alone, runs `deno install --cached-only` against it, and writes
-the lockfile only when that succeeds.
-
-The installs run with `--frozen`, so `lock` keeps the resolution
-`deno.lock` holds. A `deno.lock` that does not cover every module stops it
-with the change Deno wants to make. Locking a project again with the same
-`deno.lock` writes the same lockfile, byte for byte.
+`deno-purifier lock` copies the project to a temporary directory. A first
+`deno install` pass there lets Deno write `deno.lock` where it is missing
+or does not cover the project, and Deno keeps every resolution that
+`deno.lock` holds. Two frozen installs then run with an empty `DENO_DIR`
+and the network, once plainly and once on every module of the project,
+followed by `deno check`. The project's modules are its source files,
+without what the root configuration's `exclude` lists and without nested
+projects: directories with a `deno.json`, `deno.jsonc` or `package.json` of
+their own that are not workspace members, such as an example with its own
+import map. The lock run then rebuilds a `DENO_DIR` the way Nix does, from
+`deno.lock` and what it recorded alone, runs
+`deno install --cached-only` against it, and writes the lockfile only when
+that succeeds. It writes `deno.lock` back to the project when the first
+pass changed it. Locking a project again with the same `deno.lock` writes
+the same lockfile, byte for byte.
 
 `deno-purifier update [--latest] [<package>...]` updates both lockfiles in
 one run. It runs `deno update --recursive` on the project, for every
 dependency or the named ones, within the version requirements of
 `deno.json` or, with `--latest`, to the latest versions. Deno writes the
-new requirements and resolution to `deno.json` and `deno.lock`. The lock
-run that follows lets a first pass add to `deno.lock` what the code
-imports, writes it back to the project, and records the downloads from a
-frozen pass, so the lockfile it writes is the same as the one a plain lock
-run then writes.
+new requirements and resolution to `deno.json` and `deno.lock`, and the
+lock run follows.
 
 `--lockfile <path>` writes the lockfile outside the project, and `update`,
 `prefetch` and `publish` take it too, matching the builder's `lockFile`.
@@ -189,13 +189,16 @@ run then writes.
 nix develop github:nix-purifiers/deno-purifier
 ```
 
-The shell has `deno-purifier` and a `deno` wrapper. The development loop is
-Deno's own commands, `deno run`, `deno test`, `deno task` and the rest,
-through the wrapper. In a project with both lockfiles, the wrapper reads
-the locked downloads and nothing from the network: it passes
-`--cached-only` to the commands that load modules (`run`, `test`, `check`,
-`install`, `cache`, `bench`, `compile`, `info`, `doc`, `serve`, `eval` and
-`repl`).
+The shell has `deno-purifier` and a `deno` wrapper. Deno has no plugin
+mechanism for tasks, so deno-purifier is a separate command that runs Deno,
+and the wrapper puts the locked downloads under Deno's own commands.
+
+The development loop is Deno's own commands, `deno run`, `deno test`,
+`deno task` and the rest, through the wrapper. In a project with both
+lockfiles, the wrapper reads the locked downloads and nothing from the
+network: it passes `--cached-only` to the commands that load modules
+(`run`, `test`, `check`, `install`, `cache`, `bench`, `compile`, `info`,
+`doc`, `serve`, `eval` and `repl`).
 
 Adding a dependency goes `deno add jsr:@std/fmt`, which the wrapper lets
 reach the network, then `deno-purifier lock`. Until the lock run, the
@@ -246,8 +249,8 @@ language server needs what `prefetch` realizes.
 | `does not match its contentHash` or `has no contentHash` | `deno-purifier.lock.json` was edited or cut short. | `deno-purifier lock` |
 | `lacks … or has a value of the wrong type`, `has format` | The lockfile is malformed or from another deno-purifier version. | `deno-purifier lock` |
 | `Deno needs a module that deno-purifier.lock.json does not record` | The code imports a module the lock run did not see, such as one added since. | `deno-purifier lock` |
-| `deno.lock does not cover every module the project imports` (lock run) | An import in the code is missing from `deno.lock`. | `deno-purifier update` |
-| `sets "lock": false` (lock run) | Deno ignores `deno.lock` for this project. | Remove the setting, `deno install`, `deno-purifier lock` |
+| `Integrity check failed` (lock run) | A download no longer matches the hash in `deno.lock`. | Remove its entry from `deno.lock`, then `deno-purifier lock` |
+| `sets "lock": false` (lock run) | Deno ignores `deno.lock` for this project. | Remove the setting, then `deno-purifier lock` |
 | `hash mismatch in fixed-output derivation` (build) | A server now serves different bytes at a locked URL. | `deno-purifier lock`, then review the change |
 
 ## Supported language repositories
@@ -272,8 +275,8 @@ Limits that affect a project:
   `deno-purifier lock -- task build`.
 - Nix builds each program for the system it builds on, so a `--target`
   flag in a `deno compile` command has no effect.
-- A project needs a `deno.lock`. A project that sets `"lock": false` has
-  none, so it needs that setting removed.
+- A project that sets `"lock": false` has no `deno.lock`, so it needs that
+  setting removed.
 - A `deno` command inside a task runs as Deno runs it, without
   `--cached-only`, so it tries to refresh the metadata of npm packages. In
   the sandbox and offline it falls back to the cached packages and
@@ -292,15 +295,15 @@ In the packaging directory, clone the project and record the lockfiles:
 
 ```zsh
 git clone https://github.com/denoland/deployctl
-nix run github:nix-purifiers/deno-purifier -- update --root deployctl --lockfile deno-purifier.lock.json
+nix run github:nix-purifiers/deno-purifier -- lock --root deployctl --lockfile deno-purifier.lock.json
 cp deployctl/deno.lock .
 ```
 
 The `deno.lock` that deployctl commits does not cover every import for a
-current Deno, which is why the first command is `update` and not `lock`.
-`update` writes `deno-purifier.lock.json` into the packaging directory and
-updates the `deno.lock` in the clone, and the last command copies that
-`deno.lock` beside it.
+current Deno. `lock` writes the missing entries into the `deno.lock` in
+the clone, keeps the versions it pins, and writes
+`deno-purifier.lock.json` into the packaging directory. The last command
+copies the completed `deno.lock` beside it.
 
 The flake takes the source of deployctl as an input that is not a flake,
 and builds its JSR package:

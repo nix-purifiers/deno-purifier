@@ -182,7 +182,7 @@ let
       packageSystems = systemsOf entry;
     in
     if !(entry ? integrity) then
-      throw "deno-purifier: npm package ${key} has no integrity in deno.lock; run `deno-purifier update` to record one."
+      throw "deno-purifier: npm package ${key} has no integrity in deno.lock; run `deno-purifier lock` to record one."
     else
       {
         path = "npm/${hostOf registry}/${name}/${version}";
