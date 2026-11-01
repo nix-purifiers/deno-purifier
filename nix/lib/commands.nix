@@ -41,8 +41,14 @@ in
   };
 
   release =
-    ((import ./build-deno-project.nix { inherit lib; }) {
-      inherit pkgs src;
-      lockFile = lockPath;
-    }).release;
+    (pkgs.callPackage ./build-deno-project.nix
+      {
+        inherit purifier;
+        readLock = import ./lock.nix { inherit lib; };
+      }
+      {
+        inherit src;
+        lockFile = lockPath;
+      }
+    ).release;
 }

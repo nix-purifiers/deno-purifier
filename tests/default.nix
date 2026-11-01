@@ -10,16 +10,18 @@
   # The flake's composed library, which has `lib.deno-purifier` and the
   # shared purifier library as `lib.purifier`.
   lib,
-  # The flake's default package overlay, which adds the commands.
+  # The flake's default package overlay, which adds the builder and the
+  # commands.
   overlay,
   # The source of deployctl at the commit tests/dependencies pins.
   deployctl,
 }:
 let
   inherit (lib) purifier;
-  inherit (lib.deno-purifier) buildDenoProject;
+  withOverlay = pkgs.extend overlay;
+  inherit (withOverlay) buildDenoProject;
 
-  commands = (pkgs.extend overlay).deno-purifier.deno-purifier;
+  commands = withOverlay.deno-purifier.deno-purifier;
 
   # A workspace: a root with a build task that runs esbuild (whose native
   # binary comes from a per-platform npm package), a package published to
@@ -27,7 +29,6 @@ let
   # imports the package, a JSR package, a remote module, a remote URL that
   # redirects and a data: URL, and whose task compiles it.
   app = buildDenoProject {
-    inherit pkgs;
     src = ./fixtures/app;
     buildTasks = [ "build" ];
   };
@@ -35,7 +36,6 @@ let
   # A project whose npm dependencies come from package.json, which Deno
   # installs into node_modules, with a task that compiles it.
   nodeModules = buildDenoProject {
-    inherit pkgs;
     src = ./fixtures/node-modules;
   };
 
@@ -47,7 +47,6 @@ let
   # does not type-check with the TypeScript library of this Deno, so the
   # publish check skips type checking.
   real = buildDenoProject {
-    inherit pkgs;
     src = deployctl;
     lockFile = ./real/deployctl/deno-purifier.lock.json;
     denoLock = ./real/deployctl/deno.lock;
@@ -419,7 +418,6 @@ in
   conformance-missing =
     let
       missing = buildDenoProject {
-        inherit pkgs;
         src = ./fixtures/app;
         lockFile = builtins.toFile "deno-purifier.lock.json" (
           appLockWith (l: l // { jsrFiles = removeAttrs l.jsrFiles [ pathMod ]; })
@@ -477,7 +475,6 @@ in
   conformance-external =
     let
       external = buildDenoProject {
-        inherit pkgs;
         src = lib.cleanSourceWith {
           src = ./fixtures/app;
           filter = path: _: baseNameOf path != "deno-purifier.lock.json";

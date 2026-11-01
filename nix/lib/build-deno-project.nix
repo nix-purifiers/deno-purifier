@@ -6,12 +6,16 @@
 # every download, every package of the project and every program its tasks
 # compile.
 #
-# The flake's library has it as `lib.deno-purifier.buildDenoProject`:
+# The file is a package for callPackage: the first argument set is what it
+# takes from the package set, and the result is the builder. The
+# deno-purifier overlay (`overlays.default`) adds it to the package set as
+# `buildDenoProject`, so a package written for callPackage takes it like
+# any other dependency:
 #
-#   (lib.deno-purifier.buildDenoProject { inherit pkgs; src = ./.; })
-#     .packages.my-app
+#   { buildDenoProject }: (buildDenoProject { src = ./.; }).packages.my-app
 #
-# The builder returns
+# and `buildDenoProject.override` replaces what it takes from the set. The
+# builder returns
 #
 #   packages   what the project builds:
 #                <program>      each `deno compile` command in the tasks,
@@ -35,11 +39,17 @@
 # The names of `packages` come from the lockfile, so they are known at
 # evaluation time.
 #
-# `lib` is the composed library, which has the shared purifier library as
-# `lib.purifier`.
-{ lib }:
 {
+  lib,
   pkgs,
+  stdenv,
+  deno,
+  # The `purifier` namespace of the shared purifier library, and `readLock`
+  # of the deno-purifier library namespace, which the overlay passes.
+  purifier,
+  readLock,
+}:
+{
   # The root of the Deno project.
   src,
   # deno-purifier.lock.json. A lockfile kept outside `src`, such as in a
@@ -55,7 +65,7 @@
   fetchers ? { },
   # The Deno that installs, builds, tests and compiles the project. Its
   # `denort` output is the runtime of compiled programs.
-  denoPackage ? pkgs.deno,
+  denoPackage ? deno,
   # The tasks that build the project, run in order at the root before the
   # packages, the release and the tests are taken.
   buildTasks ? [ ],
@@ -79,20 +89,15 @@
   srcFilter ? null,
 }:
 let
-  inherit (pkgs) stdenv;
-
   # The lock in memory of the purifier contract; checkLock fails evaluation
   # with its problems.
-  lock = lib.purifier.checkLock (
-    lib.deno-purifier.readLock {
-      inherit src lockFile denoLock;
-    }
-  );
+  lock = purifier.checkLock (readLock {
+    inherit src lockFile denoLock;
+  });
 
   cache = import ./cache.nix {
-    inherit pkgs fetchers;
-    inherit (lib) purifier;
-    entries = lib.purifier.entriesFor stdenv.hostPlatform.system lock;
+    inherit pkgs purifier fetchers;
+    entries = purifier.entriesFor stdenv.hostPlatform.system lock;
   };
 
   defaultSrcFilter =

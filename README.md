@@ -29,7 +29,15 @@ since Deno then neither writes nor reads `deno.lock`. When the lock run
 reports that `deno.lock` is out of date, run
 `nix run github:nix-purifiers/deno-purifier -- update`.
 
-Build the project with the builder in the flake's library:
+The flake's `overlays.default` adds the builder `buildDenoProject` to a
+package set, where nixpkgs keeps its own builders. A package written for
+`callPackage` takes it by name, like any other builder:
+
+```nix
+# package.nix
+{ buildDenoProject }:
+(buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app
+```
 
 ```nix
 {
@@ -39,19 +47,22 @@ Build the project with the builder in the flake's library:
   outputs = { nixpkgs, deno-purifier, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-      project = deno-purifier.lib.deno-purifier.buildDenoProject {
-        inherit pkgs;
-        src = ./.;
-        buildTasks = [ "build" ];
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [
+          deno-purifier.overlays.default
+          (final: prev: { my-app = final.callPackage ./package.nix { }; })
+        ];
       };
     in
     {
-      packages.${system}.default = project.packages.my-app;
-      checks.${system}.tests = project.tests;
+      packages.${system}.default = pkgs.my-app;
     };
 }
 ```
+
+`buildDenoProject.override` replaces the packages the builder takes from
+the set, such as `deno`.
 
 ### What the builder returns
 
@@ -92,7 +103,7 @@ every purifier, such as an SBOM generator, can call `readLock` alone.
 
 `nix/lib/build-deno-project.nix` documents each of them:
 
-- `pkgs` and `src` are the package set and the project root.
+- `src` is the project root.
 - `lockFile` is `deno-purifier.lock.json`, and `denoLock` is `deno.lock`.
   Either may live outside `src`, such as in a packaging flake for a
   project whose author does not use deno-purifier. A `deno.lock` given
@@ -172,13 +183,13 @@ run then writes.
 `--lockfile <path>` writes the lockfile outside the project, and `update`,
 `prefetch` and `publish` take it too, matching the builder's `lockFile`.
 
-## Everyday loop
+## Development loop
 
 ```zsh
 nix develop github:nix-purifiers/deno-purifier
 ```
 
-The shell has `deno-purifier` and a `deno` wrapper. The everyday loop is
+The shell has `deno-purifier` and a `deno` wrapper. The development loop is
 Deno's own commands, `deno run`, `deno test`, `deno task` and the rest,
 through the wrapper. In a project with both lockfiles, the wrapper reads
 the locked downloads and nothing from the network: it passes
@@ -198,19 +209,20 @@ wrapper stops the commands that load modules and says to run
 `deno publish` on it, with the arguments that follow, such as `--dry-run`
 or `--token`.
 
-## Offline work
+## Working offline
 
 ```zsh
 deno-purifier prefetch
 ```
 
-`prefetch` realizes everything the everyday loop and the editor read: the
-locked downloads, the wrapper's Deno and `denort`, the runtime that
+`prefetch` realizes everything the development loop and the editor read:
+the locked downloads, the wrapper's Deno and `denort`, the runtime that
 `deno compile` embeds. It links them into the project as
-`.deno-purifier/environment`, a garbage-collector root, so `nix-collect-garbage`
-keeps them. The directory holds a `.gitignore` of its own, so it stays out
-of version control. After a prefetch, `deno run`, `deno test`, `deno task`
-and `deno compile` work with the network cut off, and so does the editor.
+`.deno-purifier/environment`, a garbage-collector root, so
+`nix-collect-garbage` keeps them. The directory holds a `.gitignore` of
+its own, so it stays out of version control. After a prefetch,
+`deno run`, `deno test`, `deno task` and `deno compile` work with the
+network cut off, and so does the editor.
 
 The wrapper prefetches by itself when the environment is missing or older
 than the lockfiles, so `prefetch` matters before going offline. The
@@ -223,9 +235,9 @@ An editor that starts `deno lsp` from the `PATH` of the development shell
 gets the wrapper, so the language server reads the locked downloads. An
 import the lock covers resolves, and one it does not is reported as an
 uncached URL, as Deno reports any module missing from its cache. The
-language server needs nothing beyond what `prefetch` realizes.
+language server needs what `prefetch` realizes.
 
-## Errors and fixes
+## Troubleshooting
 
 | What you see | What it means | What to run |
 |---|---|---|
@@ -238,31 +250,30 @@ language server needs nothing beyond what `prefetch` realizes.
 | `sets "lock": false` (lock run) | Deno ignores `deno.lock` for this project. | Remove the setting, `deno install`, `deno-purifier lock` |
 | `hash mismatch in fixed-output derivation` (build) | A server now serves different bytes at a locked URL. | `deno-purifier lock`, then review the change |
 
-## Sources supported and refused
+## Supported language repositories
 
-Supported:
-
-- npm packages from the npm registry and from the registries `.npmrc`
-  names per scope, with the per-platform packages of the build's system;
-- `package.json` dependencies, which Deno installs into `node_modules`;
-- JSR packages, from `jsr.io` or the registry `JSR_URL` names;
-- remote modules over HTTPS or HTTP, including redirected URLs;
-- `data:` URLs, which need no download;
-- workspaces, with packages and compiled programs in any member.
+The builder fetches npm packages from the npm registry and from the
+registries that `.npmrc` names per scope, and it takes the per-platform
+packages of the system it builds for. It fetches JSR packages from
+`jsr.io`, or from the registry that `JSR_URL` names, and it fetches remote
+modules over HTTPS or HTTP, including redirected URLs. A `data:` URL needs
+no download. Deno installs the `package.json` dependencies of a project
+into `node_modules`, and a workspace can have packages and compiled
+programs in any member.
 
 The lock run keeps the headers of a remote module when they change how
 Deno reads it, as for a module without an extension.
 
-Refused or left out:
+Limits that affect a project:
 
-- A module a program imports at run time from a URL it computes is not
-  among the modules the lock run installs and type-checks. Pass the
-  command that imports it after `--` to record its downloads too, as in
+- The lock run records the modules that `deno install` and `deno check`
+  download. A module that a program imports at run time from a URL it
+  computes needs the command that imports it after `--`, as in
   `deno-purifier lock -- task build`.
-- A `--target` flag in a `deno compile` command is left out. Nix builds
-  each program for each system on that system.
-- A project that sets `"lock": false` is refused until it keeps a
-  `deno.lock`.
+- Nix builds each program for the system it builds on, so a `--target`
+  flag in a `deno compile` command has no effect.
+- A project needs a `deno.lock`. A project that sets `"lock": false` has
+  none, so it needs that setting removed.
 - A `deno` command inside a task runs as Deno runs it, without
   `--cached-only`, so it tries to refresh the metadata of npm packages. In
   the sandbox and offline it falls back to the cached packages and
@@ -306,9 +317,11 @@ and builds its JSR package:
   outputs = { nixpkgs, deno-purifier, deployctl, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-      project = deno-purifier.lib.deno-purifier.buildDenoProject {
-        inherit pkgs;
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ deno-purifier.overlays.default ];
+      };
+      project = pkgs.buildDenoProject {
         src = deployctl;
         lockFile = ./deno-purifier.lock.json;
         denoLock = ./deno.lock;
