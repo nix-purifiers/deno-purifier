@@ -220,7 +220,10 @@ uncached URL, as Deno reports any module missing from its cache.
   with Deno 2.9.8's TypeScript library. CI builds it from the lockfiles in
   `tests/real/deployctl`: its JSR package passes `deno publish --dry-run
   --no-check`, its release task runs, and its command-line tool prints its
-  version. A lock run of it takes about three seconds.
+  version. A lock run of it takes about three seconds. Through the `deno`
+  wrapper, its test suite (`deno test -A --unstable --no-check tests/
+  src/`) passes all 31 tests with only the locked downloads, and
+  `deno run -A deployctl.ts --version` prints `deployctl 1.13.1`.
 
   Working through it led to `--update`, to leaving nested projects and
   `exclude`d paths out of the lock run, to `publishArgs`, to the `lockFile`
