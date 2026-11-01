@@ -271,27 +271,29 @@ Refused or left out:
   the sandbox and offline it falls back to the cached packages and
   downloads nothing.
 
-## Real-world projects
+## Examples
 
-- [deployctl](https://github.com/denoland/deployctl) at `87e43e5`, the
-  command-line tool of Deno Deploy: a `deno.jsonc` with comments, a JSR
-  package with many pinned `@std` versions, an npm dependency, a nested
-  Node.js GitHub Action and a nested Fresh example. Its `deno.lock` at that
-  commit is out of date for Deno 2.9.8, and its code does not type-check
-  with Deno 2.9.8's TypeScript library. CI builds it from the lockfiles in
-  `tests/real/deployctl`, kept outside its source: its JSR package passes
-  `deno publish --dry-run --no-check`, its release task runs, and its
-  command-line tool prints its version. A lock run of it takes about three
-  seconds. Through the `deno` wrapper, its test suite (`deno test -A
-  --unstable --no-check tests/ src/`) passes all 31 tests with only the
-  locked downloads.
+CI locks and builds the small projects in `tests/fixtures` and one real
+project, deployctl. These examples show what the lock run and the
+builder handle, and they are not a list of the projects that work.
 
-  Working through it led to the pass of `update` that lets Deno update
-  `deno.lock`, to leaving nested projects and `exclude`d paths out of the
-  lock run, to `publishArgs`, to the `denoLock` argument, and to the error
-  messages above.
-- [oak](https://github.com/oakserver/oak), the web framework, sets
-  `"lock": false`, which led to the lock run's message for that case.
+[deployctl](https://github.com/denoland/deployctl) at `87e43e5` is the
+command-line tool of Deno Deploy. It has a `deno.jsonc` with comments, a
+JSR package with many pinned `@std` versions, an npm dependency, a nested
+Node.js GitHub Action and a nested Fresh example. Its `deno.lock` at that
+commit is out of date for Deno 2.9.8, and its code does not type-check
+with the TypeScript library of Deno 2.9.8. CI builds it from the lockfiles
+in `tests/real/deployctl`, kept outside its source. Its JSR package passes
+`deno publish --dry-run --no-check`, its release task runs, and its
+command-line tool prints its version. A lock run of it takes about three
+seconds. Through the `deno` wrapper, its test suite (`deno test -A
+--unstable --no-check tests/ src/`) passes all 31 tests with only the
+locked downloads.
+
+Working on deployctl led to the pass of `update` that lets Deno update
+`deno.lock`, to leaving nested projects and `exclude`d paths out of the
+lock run, to `publishArgs`, to the `denoLock` argument, and to several of
+the error messages above.
 
 `nix flake check` runs every check in the sandbox on x86_64-linux and
 aarch64-linux: the unit tests of the lock run (`src/lib_test.ts`), the
