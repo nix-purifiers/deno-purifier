@@ -1,9 +1,9 @@
 {
   "version": 3,
-  "contentHash": "c2330485151e92cd6234bed4200873f22d46d18a525963fe504ce28a5b7235b2",
+  "contentHash": "50ff161f5a1311a1e4683b7531e9134235db5391e8ab55045fdb66b07a7f452f",
   "denoLock": "b35ca8faf72f292b31969252b36f0636b67d13d47305736da9ec283b0228492a",
   "configs": {
-    "deno.json": "8100253c30fc2bfd5b8347373453cd1d999c25fe00c28f0a602f86aea11f6d3c"
+    "deno.json": "e1cf643d26fb2afa7906547222e25e6b4934d3126d0e654931e08c74bc15a885"
   },
   "jsrRegistry": "https://jsr.io/",
   "npmRegistries": {
@@ -15,7 +15,9 @@
       "version": null,
       "dir": "",
       "config": "deno.json",
-      "tasks": []
+      "tasks": [
+        "hello"
+      ]
     }
   ],
   "programs": [],

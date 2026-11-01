@@ -16,12 +16,13 @@
       inherit (libOverlays) default;
     };
 
-    # The packages are the `default` entry of this flake's package overlay
-    # registry (pkg-overlays/): the package set applies it by default, and
-    # the flake exports it as `pkgOverlays` and as the plain
-    # `overlays.default`.
+    # The package overlay registry (pkg-overlays/) has the `default` entry,
+    # which adds the scope `pkgs.deno-purifier`. The package set applies it
+    # by default, and the flake exports it as `pkgOverlays` and as the plain
+    # `overlays.default`. The scope holds the builder, a function, so the
+    # flake names the packages it exports below.
     nixpkgs = {
-      packages.export.enabled = true;
+      packages.export.enabled = false;
     };
   };
 
@@ -30,11 +31,13 @@
   # with `deno-purifier`, and with `deno` wrapped to read the locked
   # downloads from the Nix store.
   perSystem =
-    { config, pkgs, ... }:
+    { pkgs, ... }:
     {
-      packages.default = config.packages.deno-purifier;
+      packages = pkgs.lib.filterAttrs (_: pkgs.lib.isDerivation) pkgs.deno-purifier // {
+        default = pkgs.deno-purifier.deno-purifier;
+      };
       devShells.default = pkgs.mkShell {
-        packages = [ config.packages.deno-purifier ];
+        packages = [ pkgs.deno-purifier.deno-purifier ];
       };
     };
 

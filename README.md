@@ -17,7 +17,7 @@ set, and keeps working for as long as nixpkgs packages a Deno.
 
 ## Quickstart
 
-Record the lockfile at the project root and commit it with `deno.lock`:
+Record the lockfile at the project root:
 
 ```zsh
 nix run github:nix-purifiers/deno-purifier -- lock
@@ -29,17 +29,22 @@ the missing entries first. A project whose configuration sets
 `"lock": false` needs that setting removed, since Deno then neither writes
 nor reads `deno.lock`.
 
+We recommend committing `deno.lock` and `deno-purifier.lock.json` to the
+repository of the project. The builder and the commands look for them in
+the project by default.
+
 `nix run github:nix-purifiers/deno-purifier -- update` moves the
 dependencies to newer versions and records both lockfiles in one run.
 
-The flake's `overlays.default` adds the builder `buildDenoProject` to a
-package set, where nixpkgs keeps its own builders. A package written for
-`callPackage` takes it by name, like any other builder:
+The flake's `overlays.default` adds one attribute to a package set, the
+scope `deno-purifier`. The scope holds the builder `buildDenoProject`
+beside the `deno-purifier` command. A package written for `callPackage`
+takes the scope by name:
 
 ```nix
 # package.nix
-{ buildDenoProject }:
-(buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app
+{ deno-purifier }:
+(deno-purifier.buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app
 ```
 
 ```nix
@@ -64,8 +69,9 @@ package set, where nixpkgs keeps its own builders. A package written for
 }
 ```
 
-`buildDenoProject.override` replaces the packages the builder takes from
-the set, such as `deno`.
+`deno-purifier.buildDenoProject.override` replaces the packages the builder
+takes by name, such as `deno`, and `deno-purifier.overrideScope` replaces
+what everything in the scope shares.
 
 ### What the builder returns
 
@@ -108,9 +114,9 @@ reads every purifier, such as an SBOM generator, can call `readLock` alone.
 
 - `src` is the project root.
 - `lockFile` is `deno-purifier.lock.json`, and `denoLock` is `deno.lock`.
-  Either may live outside `src`, such as in a packaging flake for a
-  project whose author does not use deno-purifier. A `deno.lock` given
-  outside `src` replaces the one in `src` during the build.
+  Either may live outside `src`, in a build that does not change the
+  source of the project. A `deno.lock` given outside `src` replaces the one
+  in `src` during the build.
 - `fetchers` replaces the fetchers of the purifier library, such as a
   `fetchurl` that goes through a company mirror or sends credentials.
 - `buildTasks` lists the tasks that build the project, run at the root
@@ -180,8 +186,17 @@ dependency or the named ones, within the version requirements of
 new requirements and resolution to `deno.json` and `deno.lock`, and the
 lock run follows.
 
-`--lockfile <path>` writes the lockfile outside the project, and `update`,
-`prefetch` and `publish` take it too, matching the builder's `lockFile`.
+Every command takes the purifier lockfile as `--lockfile <path>` or the
+environment variable `DENO_PURIFIER_LOCKFILE`, and `deno.lock` as
+`--tool-lockfile <path>` or `DENO_PURIFIER_TOOL_LOCKFILE`, for a build that
+keeps the lockfiles outside the project. With either of the second kind,
+`lock` and `update` write `deno.lock` there and leave the `deno.lock` in the
+project as it is, and `lock` starts from the `deno.lock` in the project
+when the file outside does not exist yet. The flake of such a build can set
+both variables in its development shell, to the paths it passes to the
+builder as `lockFile` and `denoLock`. `update` with a `deno.lock` outside
+the project keeps the version requirements of `deno.json` and takes the
+newest versions they allow, so it does not take `--latest`.
 
 ## Development loop
 
@@ -198,7 +213,8 @@ The development loop is Deno's own commands, `deno run`, `deno test`,
 lockfiles, the wrapper reads the locked downloads and nothing from the
 network: it passes `--cached-only` to the commands that load modules
 (`run`, `test`, `check`, `install`, `cache`, `bench`, `compile`, `info`,
-`doc`, `serve`, `eval` and `repl`).
+`doc`, `serve`, `eval` and `repl`), and `--lock` when `deno.lock` lies
+outside the project.
 
 Adding a dependency goes `deno add jsr:@std/fmt`, which the wrapper lets
 reach the network, then `deno-purifier lock`. Until the lock run, the
@@ -280,30 +296,31 @@ Limits that affect a project:
 - A `deno` command inside a task runs as Deno runs it, without
   `--cached-only`, so it tries to refresh the metadata of npm packages. In
   the sandbox and offline it falls back to the cached packages and
-  downloads nothing.
+  downloads nothing. It also reads the `deno.lock` in the project, so a
+  task that runs Deno offline needs that file to be the one the build
+  uses.
 
 ## Examples
 
 ### deployctl
 
 [deployctl](https://github.com/denoland/deployctl) is the command-line
-tool of Deno Deploy. Its authors do not use deno-purifier, so the two
-lockfiles live in a packaging directory beside the flake, outside the
-source of deployctl.
+tool of Deno Deploy. For a project that you own, run `lock` in the project
+and commit both lockfiles, as the Quickstart does. This example builds
+deployctl without changing its source, so the two lockfiles live in a
+packaging directory beside the flake, outside the source of deployctl.
 
 In the packaging directory, clone the project and record the lockfiles:
 
 ```zsh
 git clone https://github.com/denoland/deployctl
-nix run github:nix-purifiers/deno-purifier -- lock --root deployctl --lockfile deno-purifier.lock.json
-cp deployctl/deno.lock .
+nix run github:nix-purifiers/deno-purifier -- lock --root deployctl --lockfile deno-purifier.lock.json --tool-lockfile deno.lock
 ```
 
 The `deno.lock` that deployctl commits does not cover every import for a
-current Deno. `lock` writes the missing entries into the `deno.lock` in
-the clone, keeps the versions it pins, and writes
-`deno-purifier.lock.json` into the packaging directory. The last command
-copies the completed `deno.lock` beside it.
+current Deno. `lock` keeps the versions it pins, writes the completed
+`deno.lock` and `deno-purifier.lock.json` into the packaging directory, and
+leaves the `deno.lock` in the clone as it is.
 
 The flake takes the source of deployctl as an input that is not a flake,
 and builds its JSR package:
@@ -324,7 +341,7 @@ and builds its JSR package:
         inherit system;
         overlays = [ deno-purifier.overlays.default ];
       };
-      project = pkgs.buildDenoProject {
+      project = pkgs.deno-purifier.buildDenoProject {
         src = deployctl;
         lockFile = ./deno-purifier.lock.json;
         denoLock = ./deno.lock;

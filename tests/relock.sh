@@ -17,6 +17,14 @@ for fixture in tests/fixtures/*/; do
 done
 git diff --exit-code -- tests/fixtures
 
+# The lockfiles of tests/external/update live outside the project, which
+# keeps its own deno.lock. The lock run starts from the deno.lock outside and
+# keeps its resolution.
+lock --root tests/fixtures/update \
+  --lockfile tests/external/update/deno-purifier.lock.json \
+  --tool-lockfile tests/external/update/deno.lock
+git diff --exit-code -- tests/external tests/fixtures
+
 # deployctl at the commit tests/dependencies pins. The deno.lock it commits
 # does not cover its imports, so the lock run completes it, and both
 # lockfiles are those of tests/real/deployctl.

@@ -11,10 +11,11 @@
   # The source of the shared purifier library, at the revision the
   # deno-purifier flake locks.
   purifierSource,
-  # The absolute paths of the project root and of its deno-purifier
-  # lockfile.
+  # The absolute paths of the project root, of its deno-purifier lockfile
+  # and of the deno.lock the build reads.
   root,
   lockFile,
+  denoLockFile,
   # The store paths of the wrapper's Deno and its runtime for compiled
   # programs.
   deno,
@@ -28,11 +29,13 @@ let
   };
   src = /. + root;
   lockPath = /. + lockFile;
+  denoLockPath = /. + denoLockFile;
 in
 {
   environment = import ./environment.nix {
     inherit pkgs lib src;
     lockFile = lockPath;
+    denoLock = denoLockPath;
     keep = {
       deno = builtins.storePath deno;
       denort = builtins.storePath denort;
@@ -49,6 +52,7 @@ in
       {
         inherit src;
         lockFile = lockPath;
+        denoLock = denoLockPath;
       }
     ).release;
 }

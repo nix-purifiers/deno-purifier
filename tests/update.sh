@@ -27,3 +27,24 @@ fi
 nix run "$root" -- prefetch
 test "$(nix shell "$root" -c deno run main.ts)" = "a/b"
 echo "update: both lockfiles were updated and pass the stale check"
+
+# The same update with both lockfiles outside the project, which keeps the
+# deno.lock it has.
+cd "$work"
+cp -r "$root/tests/fixtures/update" external
+chmod -R u+w external
+mkdir outside
+cd external
+nix run "$root" -- update \
+  --lockfile ../outside/deno-purifier.lock.json \
+  --tool-lockfile ../outside/deno.lock
+cmp deno.lock "$root/tests/fixtures/update/deno.lock"
+if grep -q '"@std/path@1.0.0"' ../outside/deno.lock; then
+  echo "update: the deno.lock outside the project still pins @std/path 1.0.0" >&2
+  exit 1
+fi
+nix run "$root" -- prefetch \
+  --lockfile ../outside/deno-purifier.lock.json \
+  --tool-lockfile ../outside/deno.lock
+test "$(nix shell "$root" -c deno run main.ts)" = "a/b"
+echo "update: the lockfiles outside the project were updated and pass the stale check"

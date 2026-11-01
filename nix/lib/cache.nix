@@ -12,7 +12,13 @@
 # alone, so this tree appends the line, with the headers of the entry and a
 # time of 0.
 {
-  pkgs,
+  lib,
+  runCommand,
+  fetchurl,
+  unzip,
+  zstd,
+  python3,
+  writeText,
   # The `purifier` namespace of the shared purifier library.
   purifier,
   # The download entries of the system, from the library's entriesFor.
@@ -22,17 +28,24 @@
   fetchers ? { },
 }:
 let
-  inherit (pkgs) lib;
   dependencies = purifier.tree (
     {
-      inherit pkgs entries;
+      inherit
+        runCommand
+        fetchurl
+        unzip
+        zstd
+        python3
+        writeText
+        entries
+        ;
       name = "deno-purifier-dependencies";
     }
     // fetchers
   );
   modules = builtins.filter (e: e ? url) entries;
 in
-pkgs.runCommand "deno-purifier-cache"
+runCommand "deno-purifier-cache"
   {
     preferLocalBuild = true;
     allowSubstitutes = false;

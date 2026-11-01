@@ -33,7 +33,15 @@ let
     }
   );
   cache = import ./cache.nix {
-    inherit pkgs;
+    inherit (pkgs)
+      lib
+      runCommand
+      fetchurl
+      unzip
+      zstd
+      python3
+      writeText
+      ;
     inherit (lib) purifier;
     entries = lib.purifier.entriesFor pkgs.stdenv.hostPlatform.system lock;
   };

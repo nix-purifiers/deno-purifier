@@ -5,14 +5,21 @@
 #   deno-purifier   `lock` records the project's downloads in
 #                   deno-purifier.lock.json (src/deno-purifier.ts);
 #                   `update` updates the dependencies with `deno update`
-#                   and then records the downloads; `prefetch` realizes what the everyday loop and the
-#                   editor read (nix/lib/environment.nix) and links it into
-#                   the project as .deno-purifier/environment, a
+#                   and then records the downloads; `prefetch` realizes
+#                   what the development loop and the editor read
+#                   (nix/lib/environment.nix) and links it into the
+#                   project as .deno-purifier/environment, a
 #                   garbage-collector root; `publish` builds the release
 #                   with Nix and runs `deno publish` on it.
 #   deno            Deno, wrapped so that in a project with a
 #                   deno-purifier.lock.json it reads the locked downloads
 #                   from the Nix store and nothing from the network.
+#
+# Every command takes the purifier lockfile as `--lockfile PATH` or
+# DENO_PURIFIER_LOCKFILE, and deno.lock as `--tool-lockfile PATH` or
+# DENO_PURIFIER_TOOL_LOCKFILE, for a project whose lockfiles live outside
+# its tree. A prefetch links them as .deno-purifier/lockfile and
+# .deno-purifier/tool-lockfile, which the wrapper follows.
 #
 # The wrapper keeps the project's DENO_DIR under
 # $XDG_CACHE_HOME/deno-purifier, made from .deno-purifier/environment. When
@@ -41,6 +48,23 @@ let
     builtins.toJSON (lib.importJSON ../../flake.lock).nodes.purifier.locked
   );
 
+  # The Nix expression that the commands evaluate, with the part that
+  # selects the result. The paths come from the environment variables
+  # DENO_PURIFIER_EVAL_ROOT, DENO_PURIFIER_EVAL_LOCKFILE and
+  # DENO_PURIFIER_EVAL_DENO_LOCK.
+  evaluation = result: ''
+    (import ${../../nix/lib}/commands.nix {
+      nixpkgs = ${path};
+      system = "${stdenv.hostPlatform.system}";
+      purifierSource = (builtins.fetchTree (builtins.fromJSON (builtins.readFile ${purifierLocked}))).outPath;
+      root = builtins.getEnv "DENO_PURIFIER_EVAL_ROOT";
+      lockFile = builtins.getEnv "DENO_PURIFIER_EVAL_LOCKFILE";
+      denoLockFile = builtins.getEnv "DENO_PURIFIER_EVAL_DENO_LOCK";
+      deno = "${deno}";
+      denort = "${deno.denort}";
+    }).${result}
+  '';
+
   # The shell functions the two commands share.
   common = ''
     deno=${lib.getExe deno}
@@ -60,15 +84,15 @@ let
       grep -o '"denoLock": "[0-9a-f]*"' "$1" | grep -o '[0-9a-f]\{64\}' || true
     }
 
-    # Whether the deno.lock of root $1 is the one the lockfile $2 records.
+    # Whether the deno.lock $1 is the one the lockfile $2 records.
     denoLockMatches() {
-      [ "$(sha256 < "$1/deno.lock")" = "$(lockedDenoLock "$2")" ]
+      [ "$(sha256 < "$1")" = "$(lockedDenoLock "$2")" ]
     }
 
-    # What the environment and the DENO_DIR of root $1 with lockfile $2
-    # were made from.
+    # What the environment and the DENO_DIR of root $1 with lockfile $2 and
+    # deno.lock $3 were made from.
     stampOf() {
-      cat "$1/deno.lock" "$2" | sha256
+      cat "$3" "$2" | sha256
     }
 
     # The DENO_DIR of root $1.
@@ -76,31 +100,29 @@ let
       echo "''${XDG_CACHE_HOME:-$HOME/.cache}/deno-purifier/$(printf '%s' "$1" | sha256 | cut -c1-32)"
     }
 
-    # Builds .deno-purifier/environment of root $1 with lockfile $2 through
-    # Nix, the garbage-collector root of everything the everyday loop and
-    # the editor read.
+    # Builds .deno-purifier/environment of root $1 with lockfile $2 and
+    # deno.lock $3 through Nix, the garbage-collector root of everything the
+    # development loop and the editor read.
     buildEnvironment() {
-      local root="$1" lockfile="$2" state="$1/.deno-purifier"
+      local root="$1" lockfile="$2" denolock="$3" state="$1/.deno-purifier"
       echo "deno-purifier: building the environment of $root" >&2
       mkdir -p "$state"
       # The directory holds links into the store and nothing to commit.
       printf '*\n' > "$state/.gitignore"
-      DENO_PURIFIER_ROOT="$root" DENO_PURIFIER_LOCKFILE="$lockfile" \
+      DENO_PURIFIER_EVAL_ROOT="$root" DENO_PURIFIER_EVAL_LOCKFILE="$lockfile" \
+        DENO_PURIFIER_EVAL_DENO_LOCK="$denolock" \
         nix build --impure --out-link "$state/environment" --expr '
-          (import ${../../nix/lib}/commands.nix {
-            nixpkgs = ${path};
-            system = "${stdenv.hostPlatform.system}";
-            purifierSource = (builtins.fetchTree (builtins.fromJSON (builtins.readFile ${purifierLocked}))).outPath;
-            root = builtins.getEnv "DENO_PURIFIER_ROOT";
-            lockFile = builtins.getEnv "DENO_PURIFIER_LOCKFILE";
-            deno = "${deno}";
-            denort = "${deno.denort}";
-          }).environment
+          ${evaluation "environment"}
         ' || fail "building the environment failed; the message above says why."
+      # The wrapper follows these links to lockfiles outside the project.
+      rm -f "$state/lockfile" "$state/tool-lockfile"
       if [ "$lockfile" != "$root/$LOCK_FILE" ]; then
         ln -sfn "$lockfile" "$state/lockfile"
       fi
-      stampOf "$root" "$lockfile" > "$state/stamp"
+      if [ "$denolock" != "$root/deno.lock" ]; then
+        ln -sfn "$denolock" "$state/tool-lockfile"
+      fi
+      stampOf "$root" "$lockfile" "$denolock" > "$state/stamp"
     }
 
     # Makes the DENO_DIR of root $1 from its environment. Deno writes
@@ -125,26 +147,27 @@ let
       printf '%s\n' "$stamp" > "$dir/stamp"
     }
 
-    # Makes sure root $1 with lockfile $2 has an environment and a DENO_DIR
-    # made from its current lockfiles. With the environment in place, this
-    # needs neither Nix nor the network.
+    # Makes sure root $1 with lockfile $2 and deno.lock $3 has an
+    # environment and a DENO_DIR made from its current lockfiles. With the
+    # environment in place, this needs neither Nix nor the network.
     prepare() {
-      local root="$1" lockfile="$2" stamp
-      stamp="$(stampOf "$root" "$lockfile")"
+      local root="$1" lockfile="$2" denolock="$3" stamp
+      stamp="$(stampOf "$root" "$lockfile" "$denolock")"
       if [ ! -e "$root/.deno-purifier/environment/cache" ] \
         || [ "$(cat "$root/.deno-purifier/stamp" 2> /dev/null || true)" != "$stamp" ]; then
-        buildEnvironment "$root" "$lockfile"
+        buildEnvironment "$root" "$lockfile" "$denolock"
       fi
       if [ "$(cat "$(denoDirOf "$root")/stamp" 2> /dev/null || true)" != "$stamp" ]; then
         makeDenoDir "$root" "$stamp"
       fi
     }
 
-    # The nearest directory upwards from $1 with a deno.lock.
+    # The nearest directory upwards from $1 with a deno.lock or a Deno
+    # configuration file.
     findRoot() {
       local dir="$1"
-      while [ ! -f "$dir/deno.lock" ]; do
-        [ "$dir" = / ] && fail "no deno.lock in $1 or above it; run \`deno install\` to write one."
+      while [ ! -f "$dir/deno.lock" ] && [ ! -f "$dir/deno.json" ] && [ ! -f "$dir/deno.jsonc" ]; do
+        [ "$dir" = / ] && fail "no deno.lock or deno.json in $1 or above it."
         dir="$(dirname "$dir")"
       done
       echo "$dir"
@@ -162,10 +185,10 @@ let
 
       usage() {
         cat >&2 << 'EOF'
-      usage: deno-purifier lock [--root DIR] [--lockfile PATH] [-- DENO-ARGS...]
-             deno-purifier update [--root DIR] [--lockfile PATH] [--latest] [PACKAGE...]
-             deno-purifier prefetch [--root DIR] [--lockfile PATH]
-             deno-purifier publish [--root DIR] [--lockfile PATH] [DENO-PUBLISH-ARGS...]
+      usage: deno-purifier lock [--root DIR] [--lockfile PATH] [--tool-lockfile PATH] [-- DENO-ARGS...]
+             deno-purifier update [--root DIR] [--lockfile PATH] [--tool-lockfile PATH] [--latest] [PACKAGE...]
+             deno-purifier prefetch [--root DIR] [--lockfile PATH] [--tool-lockfile PATH]
+             deno-purifier publish [--root DIR] [--lockfile PATH] [--tool-lockfile PATH] [DENO-PUBLISH-ARGS...]
 
         lock      record the project's downloads in deno-purifier.lock.json,
                   with the resolution deno.lock holds
@@ -173,12 +196,14 @@ let
                   each PACKAGE, then record the downloads
         prefetch  realize the locked downloads, Deno and its runtime in the
                   Nix store, with a garbage-collector root in the project,
-                  so that the everyday loop and the editor work offline
+                  so that the development loop and the editor work offline
         publish   build the release with Nix and run `deno publish` on it
 
       DIR is the project root, by default the nearest directory upwards with
-      a deno.lock. PATH is the lockfile, by default deno-purifier.lock.json
-      at DIR.
+      a deno.lock or a deno.json. The first PATH is the lockfile, by default
+      deno-purifier.lock.json at DIR, and DENO_PURIFIER_LOCKFILE sets it too.
+      The second PATH is deno.lock, by default deno.lock at DIR, and
+      DENO_PURIFIER_TOOL_LOCKFILE sets it too.
       EOF
         exit 2
       }
@@ -196,7 +221,8 @@ let
       esac
 
       root=
-      lockfile=
+      lockfile="''${DENO_PURIFIER_LOCKFILE:-}"
+      denolock="''${DENO_PURIFIER_TOOL_LOCKFILE:-}"
       while [ $# -gt 0 ]; do
         case "$1" in
           --root)
@@ -206,38 +232,38 @@ let
             ;;
           --lockfile)
             [ $# -ge 2 ] || usage
-            lockfile="$(realpath "$2")"
+            lockfile="$2"
+            shift 2
+            ;;
+          --tool-lockfile)
+            [ $# -ge 2 ] || usage
+            denolock="$2"
             shift 2
             ;;
           *) break ;;
         esac
       done
       [ -n "$root" ] || root="$(findRoot "$PWD")"
-      [ -n "$lockfile" ] || lockfile="$root/$LOCK_FILE"
+      if [ -n "$lockfile" ]; then lockfile="$(realpath "$lockfile")"; else lockfile="$root/$LOCK_FILE"; fi
+      if [ -n "$denolock" ]; then denolock="$(realpath "$denolock")"; else denolock="$root/deno.lock"; fi
       [ -f "$lockfile" ] || fail "$lockfile does not exist; run \`deno-purifier lock\` to write it."
+      [ -f "$denolock" ] || fail "$denolock does not exist; run \`deno-purifier lock\` to write it."
 
       case "$verb" in
         prefetch)
           [ $# -eq 0 ] || usage
-          buildEnvironment "$root" "$lockfile"
-          makeDenoDir "$root" "$(stampOf "$root" "$lockfile")"
+          buildEnvironment "$root" "$lockfile" "$denolock"
+          makeDenoDir "$root" "$(stampOf "$root" "$lockfile" "$denolock")"
           echo "deno-purifier: $root/.deno-purifier/environment holds the locked downloads, Deno and its runtime; the deno wrapper and its language server now work offline." >&2
           ;;
         publish)
-          prepare "$root" "$lockfile"
+          prepare "$root" "$lockfile" "$denolock"
           echo "deno-purifier: building the release of $root" >&2
           release="$(
-            DENO_PURIFIER_ROOT="$root" DENO_PURIFIER_LOCKFILE="$lockfile" \
+            DENO_PURIFIER_EVAL_ROOT="$root" DENO_PURIFIER_EVAL_LOCKFILE="$lockfile" \
+              DENO_PURIFIER_EVAL_DENO_LOCK="$denolock" \
               nix build --impure --no-link --print-out-paths --expr '
-                (import ${../../nix/lib}/commands.nix {
-                  nixpkgs = ${path};
-                  system = "${stdenv.hostPlatform.system}";
-                  purifierSource = (builtins.fetchTree (builtins.fromJSON (builtins.readFile ${purifierLocked}))).outPath;
-                  root = builtins.getEnv "DENO_PURIFIER_ROOT";
-                  lockFile = builtins.getEnv "DENO_PURIFIER_LOCKFILE";
-                  deno = "${deno}";
-                  denort = "${deno.denort}";
-                }).release
+                ${evaluation "release"}
               '
           )" || fail "building the release failed; the message above says why."
           # deno publish reads its configuration from the working directory,
@@ -304,16 +330,26 @@ let
       esac
 
       # The project root is the nearest directory upwards with a deno.lock
-      # and a lockfile: deno-purifier.lock.json, or the lockfile outside the
-      # project that a prefetch linked as .deno-purifier/lockfile.
+      # or a Deno configuration file, and with both lockfiles. A lockfile
+      # outside the project is the one that DENO_PURIFIER_LOCKFILE or
+      # DENO_PURIFIER_TOOL_LOCKFILE names, or else the one that a prefetch
+      # linked as .deno-purifier/lockfile or .deno-purifier/tool-lockfile.
       dir="$PWD"
       while :; do
-        if [ -f "$dir/deno.lock" ]; then
-          if [ -f "$dir/$LOCK_FILE" ]; then
-            lockfile="$dir/$LOCK_FILE"
-            break
+        if [ -f "$dir/deno.lock" ] || [ -f "$dir/deno.json" ] || [ -f "$dir/deno.jsonc" ]; then
+          lockfile="$dir/$LOCK_FILE"
+          denolock="$dir/deno.lock"
+          if [ -n "''${DENO_PURIFIER_LOCKFILE:-}" ]; then
+            lockfile="$(realpath "$DENO_PURIFIER_LOCKFILE")"
           elif [ -f "$dir/.deno-purifier/lockfile" ]; then
             lockfile="$(realpath "$dir/.deno-purifier/lockfile")"
+          fi
+          if [ -n "''${DENO_PURIFIER_TOOL_LOCKFILE:-}" ]; then
+            denolock="$(realpath "$DENO_PURIFIER_TOOL_LOCKFILE")"
+          elif [ -f "$dir/.deno-purifier/tool-lockfile" ]; then
+            denolock="$(realpath "$dir/.deno-purifier/tool-lockfile")"
+          fi
+          if [ -f "$lockfile" ] && [ -f "$denolock" ]; then
             break
           fi
         fi
@@ -326,14 +362,14 @@ let
         run | test | check | install | i | cache | bench | compile | info | doc | serve | eval | repl | task | lsp) loads=1 ;;
       esac
 
-      if ! denoLockMatches "$dir" "$lockfile"; then
+      if ! denoLockMatches "$denolock" "$lockfile"; then
         if [ "$loads" = 1 ]; then
-          fail "deno.lock changed since $lockfile was written; run \`deno-purifier lock\` at $dir to record the change, or DENO_PURIFIER=0 to run Deno with the network."
+          fail "$denolock changed since $lockfile was written; run \`deno-purifier lock\` at $dir to record the change, or DENO_PURIFIER=0 to run Deno with the network."
         fi
         exec "$deno" "$@"
       fi
 
-      prepare "$dir" "$lockfile"
+      prepare "$dir" "$lockfile" "$denolock"
 
       export DENO_DIR
       DENO_DIR="$(denoDirOf "$dir")/deno-dir"
@@ -341,9 +377,15 @@ let
       # Deno checks for a newer release over the network; the locked Deno is
       # the one nixpkgs ships.
       export DENO_NO_UPDATE_CHECK=1
+      # The options that follow the command: no network, and the deno.lock
+      # outside the project when there is one.
+      options=(--cached-only)
+      if [ "$denolock" != "$dir/deno.lock" ]; then
+        options+=(--lock "$denolock")
+      fi
       case "$command" in
         run | test | check | install | i | cache | bench | compile | info | doc)
-          set -- "''${@:1:$((position + 1))}" --cached-only "''${@:$((position + 2))}"
+          set -- "''${@:1:$((position + 1))}" "''${options[@]}" "''${@:$((position + 2))}"
           # Deno's error for a module missing from the locked downloads
           # names the module only; the wrapper adds what to run.
           errors="$(mktemp)"
@@ -357,7 +399,7 @@ let
           exit "$status"
           ;;
         serve | eval | repl)
-          set -- "''${@:1:$((position + 1))}" --cached-only "''${@:$((position + 2))}"
+          set -- "''${@:1:$((position + 1))}" "''${options[@]}" "''${@:$((position + 2))}"
           ;;
       esac
       exec "$deno" "$@"

@@ -447,6 +447,7 @@ async function rebuild(
 async function lock(
   rootArg: string | null,
   lockfilePath: string | null,
+  toolLockPath: string | null,
   extra: string[],
 ) {
   const started = Date.now();
@@ -461,6 +462,11 @@ async function lock(
     const project = joinPath(work, "project");
     const denoDir = joinPath(work, "deno-dir");
     copyTree(root, project);
+    // With a deno.lock outside the project, the lock run starts from that
+    // file when it exists, and from the copy in the project otherwise.
+    if (toolLockPath !== null && exists(toolLockPath)) {
+      Deno.copyFileSync(toolLockPath, joinPath(project, "deno.lock"));
+    }
     const env = { DENO_DIR: denoDir, DENO_NO_UPDATE_CHECK: "1", NO_COLOR: "1" };
 
     // A first pass lets Deno write deno.lock where it is missing or does not
@@ -523,10 +529,12 @@ async function lock(
       }
     }
 
-    const rootDenoLock = joinPath(root, "deno.lock");
-    if (!exists(rootDenoLock) || denoLockText !== Deno.readTextFileSync(rootDenoLock)) {
-      Deno.writeTextFileSync(rootDenoLock, denoLockText);
-      log("wrote deno.lock");
+    // The project keeps its own deno.lock as it is when the lock run writes
+    // one outside the project.
+    const denoLockTarget = toolLockPath ?? joinPath(root, "deno.lock");
+    if (!exists(denoLockTarget) || denoLockText !== Deno.readTextFileSync(denoLockTarget)) {
+      Deno.writeTextFileSync(denoLockTarget, denoLockText);
+      log(`wrote ${denoLockTarget}`);
     }
     const configs: Record<string, string> = {};
     for (const m of members) {
@@ -564,31 +572,51 @@ async function lock(
 // latest versions. Deno writes deno.json and deno.lock; the lock run then
 // records the downloads, letting Deno add what the code imports to
 // deno.lock.
+//
+// With a deno.lock outside the project, the update runs in a copy of the
+// project and leaves the project as it is. The new deno.lock goes to the
+// outside file, and the lock run completes it for the deno.json of the
+// project, which an external build cannot change.
 async function update(
   rootArg: string | null,
   lockfilePath: string | null,
+  toolLockPath: string | null,
   latest: boolean,
   packages: string[],
 ) {
   const root = findRoot(rootArg ?? Deno.cwd());
+  if (toolLockPath !== null && latest) {
+    fail(
+      "--latest changes the version requirements in deno.json, which a build with a deno.lock " +
+        "outside the project cannot change. Update deno.json in the project, or leave out the " +
+        "deno.lock outside the project.",
+    );
+  }
   const work = Deno.makeTempDirSync({ prefix: "deno-purifier-update-" });
   try {
     log(`updating ${packages.length > 0 ? packages.join(", ") : "every dependency"}`);
     const args = ["update", "--recursive", ...(latest ? ["--latest"] : []), ...packages];
+    let cwd = root;
+    if (toolLockPath !== null) {
+      cwd = joinPath(work, "project");
+      copyTree(root, cwd);
+      if (exists(toolLockPath)) Deno.copyFileSync(toolLockPath, joinPath(cwd, "deno.lock"));
+    }
     const result = await run(args, {
-      cwd: root,
-      env: { DENO_DIR: work, DENO_NO_UPDATE_CHECK: "1", NO_COLOR: "1" },
+      cwd,
+      env: { DENO_DIR: joinPath(work, "deno-dir"), DENO_NO_UPDATE_CHECK: "1", NO_COLOR: "1" },
     });
     if (!result.ok) fail(explainFailure(args.join(" "), result.output));
+    if (toolLockPath !== null) Deno.copyFileSync(joinPath(cwd, "deno.lock"), toolLockPath);
   } finally {
     Deno.removeSync(work, { recursive: true });
   }
-  await lock(root, lockfilePath, []);
+  await lock(root, lockfilePath, toolLockPath, []);
 }
 
 function usage(): never {
-  console.error(`usage: deno-purifier lock [--root DIR] [--lockfile PATH] [-- DENO-ARGS...]
-       deno-purifier update [--root DIR] [--lockfile PATH] [--latest] [PACKAGE...]
+  console.error(`usage: deno-purifier lock [--root DIR] [--lockfile PATH] [--tool-lockfile PATH] [-- DENO-ARGS...]
+       deno-purifier update [--root DIR] [--lockfile PATH] [--tool-lockfile PATH] [--latest] [PACKAGE...]
 
 lock records the downloads of the Deno project at DIR (default: the
 nearest directory upwards with a deno.lock) in deno-purifier.lock.json. It
@@ -597,14 +625,27 @@ missing or does not cover the project. update first updates the
 dependencies with \`deno update\`, all of them or each PACKAGE, then runs
 lock.
 
-  --lockfile PATH  write the lockfile to PATH rather than to
-                   deno-purifier.lock.json at DIR, such as for a project
-                   whose source you do not change
-  --latest         update to the latest versions, regardless of the
-                   version requirements in deno.json
-  DENO-ARGS        one more Deno command to run in the lock run, for
-                   modules a task imports at run time, such as \`task build\``);
+  --lockfile PATH       write the lockfile to PATH rather than to
+                        deno-purifier.lock.json at DIR; the environment
+                        variable DENO_PURIFIER_LOCKFILE does the same
+  --tool-lockfile PATH  write deno.lock to PATH and leave the deno.lock at
+                        DIR as it is. When PATH does not exist yet, the
+                        lock run starts from the deno.lock at DIR. The
+                        environment variable DENO_PURIFIER_TOOL_LOCKFILE
+                        does the same
+  --latest              update to the latest versions, regardless of the
+                        version requirements in deno.json
+  DENO-ARGS             one more Deno command to run in the lock run, for
+                        modules a task imports at run time, such as
+                        \`task build\``);
   Deno.exit(2);
+}
+
+// A path from a flag or from an environment variable, made absolute so that
+// the lock run, which changes directory, finds the same file.
+function absolute(path: string | null | undefined): string | null {
+  if (path === null || path === undefined || path === "") return null;
+  return path.startsWith("/") ? path : joinPath(Deno.cwd(), path);
 }
 
 if (import.meta.main) {
@@ -612,12 +653,14 @@ if (import.meta.main) {
   if (verb !== "lock" && verb !== "update") usage();
   let root: string | null = null;
   let lockfile: string | null = null;
+  let toolLockfile: string | null = null;
   let latest = false;
   let extra: string[] = [];
   const packages: string[] = [];
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--root" && i + 1 < rest.length) root = rest[++i];
     else if (rest[i] === "--lockfile" && i + 1 < rest.length) lockfile = rest[++i];
+    else if (rest[i] === "--tool-lockfile" && i + 1 < rest.length) toolLockfile = rest[++i];
     else if (verb === "update" && rest[i] === "--latest") latest = true;
     else if (verb === "lock" && rest[i] === "--") {
       extra = rest.slice(i + 1);
@@ -625,6 +668,8 @@ if (import.meta.main) {
     } else if (verb === "update" && !rest[i].startsWith("-")) packages.push(rest[i]);
     else usage();
   }
-  if (verb === "lock") await lock(root, lockfile, extra);
-  else await update(root, lockfile, latest, packages);
+  const lockfilePath = absolute(lockfile ?? Deno.env.get("DENO_PURIFIER_LOCKFILE"));
+  const toolLockPath = absolute(toolLockfile ?? Deno.env.get("DENO_PURIFIER_TOOL_LOCKFILE"));
+  if (verb === "lock") await lock(root, lockfilePath, toolLockPath, extra);
+  else await update(root, lockfilePath, toolLockPath, latest, packages);
 }

@@ -19,7 +19,7 @@
 let
   inherit (lib) purifier;
   withOverlay = pkgs.extend overlay;
-  inherit (withOverlay) buildDenoProject;
+  inherit (withOverlay.deno-purifier) buildDenoProject;
 
   commands = withOverlay.deno-purifier.deno-purifier;
 
@@ -474,12 +474,23 @@ in
   # outside it.
   conformance-external =
     let
-      external = buildDenoProject {
-        src = lib.cleanSourceWith {
-          src = ./fixtures/app;
+      withoutLockfile =
+        src:
+        lib.cleanSourceWith {
+          inherit src;
           filter = path: _: baseNameOf path != "deno-purifier.lock.json";
         };
+      external = buildDenoProject {
+        src = withoutLockfile ./fixtures/app;
         lockFile = ./fixtures/app/deno-purifier.lock.json;
+      };
+      # The update fixture commits a deno.lock that pins an old @std/path.
+      # The build replaces it with the deno.lock outside the source, which
+      # pins a newer one, and takes the purifier lockfile from outside too.
+      replaced = buildDenoProject {
+        src = withoutLockfile ./fixtures/update;
+        lockFile = ./external/update/deno-purifier.lock.json;
+        denoLock = ./external/update/deno.lock;
       };
     in
     pkgs.runCommand "conformance-external-check"
@@ -489,6 +500,10 @@ in
       ''
         test ! -e ${external.packages."task:build"}/deno-purifier.lock.json
         hello 3 | grep -qx 'hello, odd 3 (a/b)'
+        # The project in the source has another deno.lock.
+        ! cmp -s ${./fixtures/update/deno.lock} ${./external/update/deno.lock}
+        cmp ${replaced.packages."task:hello"}/deno.lock ${./external/update/deno.lock}
+        grep -qx 'a/b' ${replaced.packages."task:hello"}/out.txt
         touch $out
       '';
 

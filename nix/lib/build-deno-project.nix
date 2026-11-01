@@ -41,8 +41,13 @@
 #
 {
   lib,
-  pkgs,
   stdenv,
+  runCommand,
+  fetchurl,
+  unzip,
+  zstd,
+  python3,
+  writeText,
   deno,
   # The `purifier` namespace of the shared purifier library, and `readLock`
   # of the deno-purifier library namespace, which the overlay passes.
@@ -96,7 +101,17 @@ let
   });
 
   cache = import ./cache.nix {
-    inherit pkgs purifier fetchers;
+    inherit
+      lib
+      runCommand
+      fetchurl
+      unzip
+      zstd
+      python3
+      writeText
+      purifier
+      fetchers
+      ;
     entries = purifier.entriesFor stdenv.hostPlatform.system lock;
   };
 
