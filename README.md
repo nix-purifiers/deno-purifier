@@ -80,7 +80,8 @@ separate packaging repository and call the builder directly:
 
 ```nix
 {
-  inputs.deno-purifier.url = "github:nix-purifiers/deno-purifier";
+  inputs.deno-purifier.url =
+    "github:nix-purifiers/deno-purifier";
   inputs.nixpkgs.follows = "deno-purifier/nixpkgs";
 
   outputs =
@@ -364,7 +365,8 @@ and builds its JSR package:
 
 ```nix
 {
-  inputs.deno-purifier.url = "github:nix-purifiers/deno-purifier";
+  inputs.deno-purifier.url =
+    "github:nix-purifiers/deno-purifier";
   inputs.nixpkgs.follows = "deno-purifier/nixpkgs";
   inputs.deployctl = {
     url = "github:denoland/deployctl";
@@ -392,7 +394,8 @@ and builds its JSR package:
       };
     in
     {
-      packages.${system}.default = project.packages."@deno/deployctl";
+      packages.${system}.default =
+        project.packages."@deno/deployctl";
     };
 }
 ```
