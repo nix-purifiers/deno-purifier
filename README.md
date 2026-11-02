@@ -40,7 +40,7 @@ For persistent use, add these packages through your usual Nix configuration.
 ## Development loop
 
 ```zsh
-nix develop github:nix-purifiers/deno-purifier
+nix shell 'github:nix-purifiers/deno-purifier'
 ```
 
 The shell has `deno-purifier` and a `deno` wrapper. Deno has no plugin
