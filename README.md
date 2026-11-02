@@ -94,7 +94,8 @@ separate packaging repository and call the builder directly:
   inputs.deno-purifier.url = "github:nix-purifiers/deno-purifier";
   inputs.nixpkgs.follows = "deno-purifier/nixpkgs";
 
-  outputs = { nixpkgs, deno-purifier, ... }:
+  outputs =
+    { nixpkgs, deno-purifier, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -104,7 +105,10 @@ separate packaging repository and call the builder directly:
     in
     {
       packages.${system}.default =
-        (pkgs.deno-purifier.buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app;
+        (pkgs.deno-purifier.buildDenoProject {
+          src = ./.;
+          buildTasks = [ "build" ];
+        }).packages.my-app;
     };
 }
 ```
@@ -244,15 +248,17 @@ For an ad hoc build, the builder can also be evaluated directly from the
 project root. Replace the example package name with one from your project:
 
 ```zsh
-nix build --impure --expr '
-  let
-    purifier = builtins.getFlake "github:nix-purifiers/deno-purifier";
-    pkgs = import purifier.inputs.nixpkgs {
-      system = builtins.currentSystem;
-      overlays = [ purifier.overlays.default ];
-    };
-  in
-  (pkgs.deno-purifier.buildDenoProject { src = ./.; buildTasks = [ "build" ]; }).packages.my-app'
+nix build --impure --expr 'let
+  purifier = builtins.getFlake "github:nix-purifiers/deno-purifier";
+  pkgs = import purifier.inputs.nixpkgs {
+    system = builtins.currentSystem;
+    overlays = [ purifier.overlays.default ];
+  };
+in
+(pkgs.deno-purifier.buildDenoProject {
+  src = ./.;
+  buildTasks = [ "build" ];
+}).packages.my-app'
 ```
 
 This uses the purifier's pinned nixpkgs, matching the lock command above.
@@ -353,7 +359,9 @@ In the packaging directory, clone the project and record the lockfiles:
 
 ```zsh
 git clone https://github.com/denoland/deployctl
-nix run github:nix-purifiers/deno-purifier -- lock --root deployctl --lockfile deno-purifier.lock.json --tool-lockfile deno.lock
+nix run github:nix-purifiers/deno-purifier -- lock --root \
+  deployctl --lockfile deno-purifier.lock.json --tool-lockfile \
+  deno.lock
 ```
 
 The `deno.lock` that deployctl commits does not cover every import for a
@@ -373,7 +381,13 @@ and builds its JSR package:
     flake = false;
   };
 
-  outputs = { nixpkgs, deno-purifier, deployctl, ... }:
+  outputs =
+    {
+      nixpkgs,
+      deno-purifier,
+      deployctl,
+      ...
+    }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
