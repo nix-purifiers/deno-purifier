@@ -5,13 +5,6 @@ Nix-resolved dependencies. Use the normal build and test commands in your
 working tree; building the project itself in the Nix sandbox is an
 optional next step.
 
-It follows the [purifier contract](https://github.com/nix-purifiers/purifier/blob/main/CONTRACT.md).
-
-deno-purifier meets the
-[purifier contract](https://github.com/nix-purifiers/purifier/blob/main/CONTRACT.md)
-of the nix-purifiers: the builder, the commands, the checks and this
-README follow the same shape in every purifier.
-
 Deno's maintainers have announced that the runtime gets one more year of
 bug-fix and security releases, after which its development ends. JSR keeps
 running on Cloudflare. deno-purifier builds with the Deno of its package
