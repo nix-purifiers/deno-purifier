@@ -347,8 +347,9 @@ packaging directory beside the flake, outside the source of deployctl.
 In the packaging directory, clone the project and record the lockfiles:
 
 ```zsh
+nix shell 'github:nix-purifiers/deno-purifier'
 git clone https://github.com/denoland/deployctl
-nix run github:nix-purifiers/deno-purifier -- lock --root \
+deno-purifier lock --root \
   deployctl --lockfile deno-purifier.lock.json --tool-lockfile \
   deno.lock
 ```
