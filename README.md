@@ -416,10 +416,8 @@ nix build
 
 ## Credits
 
-deno-purifier follows the design of
-[sbt-purifier](https://github.com/nix-purifiers/sbt-purifier): the build
-tool records its downloads in a lockfile, and Nix builds from it. The
-purifier idea was inspired by nixcloud's
-[cargo (libnix)](https://github.com/nixcloud/cargo). Compiled programs
-embed `denort`, which nixpkgs builds from source as an output of its Deno
-package.
+The purifier idea was inspired by nixcloud's
+[cargo (libnix)](https://github.com/nixcloud/cargo).
+
+Compiled programs embed `denort`, which nixpkgs builds from source as an
+output of its Deno package.
