@@ -57,6 +57,7 @@ let
   systems = [
     "x86_64-linux"
     "aarch64-linux"
+    "aarch64-darwin"
   ];
 
   relock = what: "deno-purifier: ${what}; run `deno-purifier lock` at the project root.";

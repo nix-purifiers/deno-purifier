@@ -133,6 +133,11 @@ let
         os = [ "linux" ];
         cpu = [ "arm64" ];
       };
+      "@esbuild/darwin-arm64@0.25.0" = {
+        integrity = "sha512-mVwdUb5SRkPayVadIOI78K7aAnPamoeFR2bT5nszFUZ9P8UpK4ratOdYbZZXYSqPKMHfS1wdHCJk1P1EZpRdvw==";
+        os = [ "darwin" ];
+        cpu = [ "arm64" ];
+      };
     };
   };
 
@@ -332,7 +337,11 @@ in
         urls "aarch64-linux" == [
           "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.25.0.tgz"
         ]
-    ) "the downloads for x86_64-linux and aarch64-linux are not the matching esbuild package";
+      &&
+        urls "aarch64-darwin" == [
+          "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.0.tgz"
+        ]
+    ) "the downloads for one of the systems are not the matching esbuild package";
 
   # A scope with its own registry takes its packages from there, and Deno
   # keeps them under the host of that registry. A peer-dependency suffix
