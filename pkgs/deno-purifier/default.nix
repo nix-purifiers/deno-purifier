@@ -35,12 +35,15 @@
   writeText,
   runCommand,
   deno,
+  nix,
   coreutils,
   gnugrep,
   path,
   stdenv,
 }:
 let
+  helperDeno = (import path { system = stdenv.hostPlatform.system; }).deno;
+  denort = if deno ? denort then toString deno.denort else "";
   # The commands evaluate outside this flake, so they fetch the shared
   # purifier library at the revision this flake locks, the one the
   # sandboxed builds use.
@@ -61,7 +64,8 @@ let
       lockFile = builtins.getEnv "DENO_PURIFIER_EVAL_LOCKFILE";
       denoLockFile = builtins.getEnv "DENO_PURIFIER_EVAL_DENO_LOCK";
       deno = "${deno}";
-      denort = "${deno.denort}";
+      denort = "${denort}";
+      nativeTools = "${../../src}";
     }).${result}
   '';
 
@@ -140,6 +144,9 @@ let
       if [ -d "$root/.deno-purifier/environment/cache/remote" ]; then
         cp -rs --no-preserve=mode "$root/.deno-purifier/environment/cache/remote" "$dir/deno-dir/remote"
       fi
+      if [ -d "$root/.deno-purifier/environment/cache/deps" ]; then
+        cp -rs --no-preserve=mode "$root/.deno-purifier/environment/cache/deps" "$dir/deno-dir/deps"
+      fi
       if [ -d "$root/.deno-purifier/environment/cache/npm" ]; then
         cp -rL "$root/.deno-purifier/environment/cache/npm" "$dir/deno-dir/npm"
         chmod -R u+w "$dir/deno-dir/npm"
@@ -151,7 +158,9 @@ let
     # environment and a DENO_DIR made from its current lockfiles. With the
     # environment in place, this needs neither Nix nor the network.
     prepare() {
-      local root="$1" lockfile="$2" denolock="$3" stamp
+      local root="$1" lockfile="$2" denolock="$3" command="''${4:-}" stamp
+      ${helperDeno}/bin/deno run --allow-read --allow-env --allow-run=${deno}/bin/deno --no-config --no-lock ${../../src}/check-selected.ts "$lockfile" ${deno} ${helperDeno} "$command" \
+        || fail "selected Deno SDK differs from the lock; select the captured SDK or run deno-purifier lock with the intended SDK"
       stamp="$(stampOf "$root" "$lockfile" "$denolock")"
       if [ ! -e "$root/.deno-purifier/environment/cache" ] \
         || [ "$(cat "$root/.deno-purifier/stamp" 2> /dev/null || true)" != "$stamp" ]; then
@@ -213,7 +222,14 @@ let
       case "$verb" in
         lock | update)
           export DENO_NO_UPDATE_CHECK=1
-          exec "$deno" run --allow-all --no-config --no-lock \
+          export DENO_PURIFIER_PROJECT_DENO="$deno"
+          export DENO_PURIFIER_PROJECT_SDK=${deno}
+          export DENO_PURIFIER_HELPER_SDK=${helperDeno}
+          export DENO_PURIFIER_NIX=${nix}/bin/nix
+          export DENO_PURIFIER_NIXPKGS=${path}
+          export DENO_PURIFIER_SYSTEM=${stdenv.hostPlatform.system}
+          export DENO_PURIFIER_OFFLINE_VERIFY=${../../nix/lib/native-offline.nix}
+          exec ${helperDeno}/bin/deno run --allow-all --no-config --no-lock \
             ${../../src}/deno-purifier.ts "$verb" "$@"
           ;;
         prefetch | publish) ;;
@@ -375,20 +391,30 @@ let
         exec "$deno" "$@"
       fi
 
-      prepare "$dir" "$lockfile" "$denolock"
+      prepare "$dir" "$lockfile" "$denolock" "$command"
 
+      ${lib.optionalString (toString deno != toString helperDeno) "unset LD_LIBRARY_PATH LD_PRELOAD"}
       export DENO_DIR
       DENO_DIR="$(denoDirOf "$dir")/deno-dir"
-      export DENORT_BIN=${deno.denort}/bin/denort
+      ${lib.optionalString (denort != "") "export DENORT_BIN=${denort}/bin/denort"}
       # Deno checks for a newer release over the network; the locked Deno is
       # the one nixpkgs ships.
       export DENO_NO_UPDATE_CHECK=1
       # The options that follow the command: no network, and the deno.lock
       # outside the project when there is one.
       options=(--cached-only)
-      if [ "$denolock" != "$dir/deno.lock" ]; then
-        options+=(--lock "$denolock")
-      fi
+      ${
+        if toString deno != toString helperDeno then
+          ''
+            options+=(--lock "$denolock")
+          ''
+        else
+          ''
+            if [ "$denolock" != "$dir/deno.lock" ]; then
+              options+=(--lock "$denolock")
+            fi
+          ''
+      }
       case "$command" in
         run | test | check | install | i | cache | bench | compile | info | doc)
           set -- "''${@:1:$((position + 1))}" "''${options[@]}" "''${@:$((position + 2))}"

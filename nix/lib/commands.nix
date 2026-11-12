@@ -20,6 +20,7 @@
   # programs.
   deno,
   denort,
+  nativeTools ? ../../src,
 }:
 let
   pkgs = import nixpkgs { inherit system; };
@@ -30,27 +31,35 @@ let
   src = /. + root;
   lockPath = /. + lockFile;
   denoLockPath = /. + denoLockFile;
+  selectedSdk = {
+    outPath = builtins.storePath deno;
+    name = "selected-deno";
+  }
+  // pkgs.lib.optionalAttrs (denort != "") { denort = builtins.storePath denort; };
 in
 {
   environment = import ./environment.nix {
     inherit pkgs lib src;
+    nativeTools = /. + nativeTools;
     lockFile = lockPath;
     denoLock = denoLockPath;
     keep = {
       deno = builtins.storePath deno;
-      denort = builtins.storePath denort;
       purifier = builtins.storePath purifierSource;
-    };
+    }
+    // pkgs.lib.optionalAttrs (denort != "") { denort = builtins.storePath denort; };
   };
 
   release =
     (pkgs.callPackage ./build-deno-project.nix
       {
         inherit purifier;
+        nativeTools = /. + nativeTools;
         readLock = import ./lock.nix { inherit lib; };
       }
       {
         inherit src;
+        denoPackage = selectedSdk;
         lockFile = lockPath;
         denoLock = denoLockPath;
       }
