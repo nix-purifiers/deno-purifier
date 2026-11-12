@@ -22,7 +22,31 @@ def run(args,input=None,env=None,timeout=90,output_limit=8388608,cwd=None):
      if sum(map(len,output))>output_limit:raise ValueError('owned command output bound')
     else:selector.unregister(key.fileobj)
   return types.SimpleNamespace(args=args,returncode=child.returncode,stdout=bytes(output[0]),stderr=bytes(output[1]))
+ except Exception as error:
+  error.stdout=bytes(output[0]);error.stderr=bytes(output[1])
+  raise
  finally:
   try:os.killpg(child.pid,signal.SIGKILL)
   except ProcessLookupError:pass
   child.wait(timeout=5);selector.close();child.stdout.close();child.stderr.close()
+
+
+def run_recorded(argv, *, record, logs, save, **options):
+ """Persist raw streams and outcome before returning or rethrowing."""
+ import hashlib
+ failure=None
+ try:
+  result=run(argv, **options)
+ except Exception as error:
+  failure=error
+  result=types.SimpleNamespace(returncode=None,stdout=getattr(error,"stdout",b""),stderr=getattr(error,"stderr",b""))
+ record.update(argv=list(argv),exit=result.returncode)
+ if failure is not None:
+  record["boundedFailure"]={"type":type(failure).__name__,"message":str(failure)}
+ for stream in ("stdout","stderr"):
+  raw=getattr(result,stream)
+  (logs/(record["label"]+"."+stream)).write_bytes(raw)
+  record[stream+"Sha256"]=hashlib.sha256(raw).hexdigest()
+ save()
+ if failure is not None:raise failure
+ return result

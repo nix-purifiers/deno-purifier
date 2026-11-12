@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 """Actual selected SDK, cold capture, offline runtime/tests and moved project."""
 import argparse
-from bounded_command import run as bounded_run
+from bounded_command import run_recorded
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -77,14 +77,11 @@ def save():
 
 def run(label, argv, expected=True, environment=None):
     argv = list(map(str, argv))
-    result = bounded_run(argv, cwd=project, env=environment or clean, timeout=180, output_limit=16 * 1024 * 1024)
-    record = dict(label=label, argv=argv, exit=result.returncode, expectedSuccess=expected)
-    for stream in ["stdout", "stderr"]:
-        raw = getattr(result, stream)
-        (logs / (label + "." + stream)).write_bytes(raw)
-        record[stream + "Sha256"] = hashlib.sha256(raw).hexdigest()
+    record = dict(label=label, expectedSuccess=expected)
     receipt["commands"].append(record)
-    save()
+    result = run_recorded(argv, record=record, logs=logs, save=save,
+                          cwd=project, env=environment or clean, timeout=180,
+                          output_limit=16 * 1024 * 1024)
     assert (result.returncode == 0) == expected, (label, result.stdout, result.stderr)
     return result
 
@@ -135,7 +132,12 @@ try:
             run("reject-missing-update", [args.cli, "update", "--root", project], expected=False)
             assert (project / "deno.lock").read_bytes() == native_lock
             assert (project / "deno-purifier.lock.json").read_bytes() == original
+    before_prefetch = requests.count(module_path)
     run("prefetch", [args.cli, "prefetch", "--root", project], environment=base)
+    receipt["sourceGetsDuringPrefetch"] = requests.count(module_path) - before_prefetch
+    if not args.seed_source:
+        assert receipt["sourceGetsDuringPrefetch"] >= 1, "cold native source was not fetched during Nix prefetch"
+    save()
 finally:
     server.shutdown()
     server.server_close()

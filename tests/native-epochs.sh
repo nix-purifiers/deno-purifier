@@ -3,6 +3,10 @@
 # Run outside the Nix sandbox: native capture needs the local HTTP server.
 # CI must leave DENO_NATIVE_LOCAL_SEED unset to prove a cold source fetch.
 set -euo pipefail
+if [ "${GITHUB_ACTIONS:-false}" = true ] && [ "${DENO_NATIVE_LOCAL_SEED:-0}" = 1 ]; then
+  echo "CI requires cold source fetching; local seed qualification is unavailable" >&2
+  exit 1
+fi
 root="$(cd "$(dirname "$0")/.." && pwd)"
 work="${DENO_NATIVE_RECEIPTS:-$(mktemp -d)}"
 mkdir -p "$work"
