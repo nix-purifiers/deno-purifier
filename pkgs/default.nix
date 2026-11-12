@@ -10,10 +10,10 @@
   # store, offline.
   deno-purifier = callPackage ./deno-purifier { };
 
-  # The builder (nix/lib/build-deno-project.nix). It is a package for
+  # The builder (pkgs/build-deno-project/default.nix). It is a package for
   # callPackage in this scope, so `buildDenoProject.override` replaces the
   # packages it takes by name.
-  buildDenoProject = callPackage ../nix/lib/build-deno-project.nix {
+  buildDenoProject = callPackage ./build-deno-project/default.nix {
     inherit (lib) purifier;
     inherit (lib.deno-purifier) readLock;
   };
