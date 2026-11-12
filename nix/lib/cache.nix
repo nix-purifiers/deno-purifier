@@ -26,6 +26,7 @@
   # The fetchers that replace nixpkgs' own, which go to the library's
   # fetchEntry unchanged, such as a fetchurl that sends credentials.
   fetchers ? { },
+  verification ? null,
 }:
 let
   dependencies = purifier.tree (
@@ -43,13 +44,14 @@ let
     }
     // fetchers
   );
-  modules = builtins.filter (e: e ? url) entries;
+  modules = builtins.filter (e: e ? url && lib.hasPrefix "remote/" e.path) entries;
 in
 runCommand "deno-purifier-cache"
   {
     preferLocalBuild = true;
     allowSubstitutes = false;
     passAsFile = [ "modules" ];
+    nativeSdkVerified = if verification == null then "" else verification;
     # One line per module: its path and its metadata line. Nix writes JSON
     # without newlines or tabs, so each line holds one module.
     modules = lib.concatMapStrings (

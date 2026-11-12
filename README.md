@@ -107,6 +107,32 @@ separate packaging repository and call the builder directly:
 takes by name, such as `deno`, and `deno-purifier.overrideScope` replaces
 what everything in the scope shares.
 
+### Selecting the project's Deno
+
+Select the same Deno derivation for the command and `denoPackage` for the
+builder, then capture the lock with that command. For example,
+`pkgs.deno-purifier.deno-purifier.override { deno = projectDeno; }` selects
+`projectDeno` for locking and the development wrapper. The lock records
+its actual executable, native version and recursive Nix closure. Changing
+the selected SDK requires capturing the lock again. The lock helper uses
+its own modern Deno; it does not replace the project's runtime.
+
+The native URL-module path covers flat Deno 1.0 locks and lock formats
+2 through 5. Original Deno 1.0.0, 1.46.3 and 2.0.6 are source-pinned
+Linux test points alongside the current package-set Deno. These points
+exercise separate cache layouts and command interfaces; they do not
+assert that every intervening release or platform has been tested.
+The selected-SDK path currently rejects npm, JSR and workspaces. The
+existing default SDK keeps those workflows. A project without a
+`deno.json` can pass `--root` explicitly.
+
+A selected runtime must provide the native command and offline flags
+needed for an operation. Missing compile, publish, task or update
+capabilities produce an error. Deno 1.0 can lock, prefetch, run and test
+URL projects; it cannot compile or publish them. Its native lock stays
+unchanged, and its redirect sidecars and empty source modules survive
+cache reconstruction. Import permissions remain the project's choice.
+
 ### What the builder returns
 
 - `packages.<program>`: for each `deno compile` command in the tasks of the
@@ -184,7 +210,8 @@ Nix reads most of what it fetches from `deno.lock` at evaluation time:
   `integrity`;
 - the version list (`meta.json`) of each JSR package, which Nix writes
   with the locked versions;
-- the redirects, which Deno reads from `deno.lock` itself.
+- the redirects, which modern Deno reads from `deno.lock`; early flat
+  native locks additionally need the captured redirect cache metadata.
 
 `deno-purifier.lock.json` records the rest:
 

@@ -52,3 +52,23 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
       - run: tests/update.sh
+
+  # Original released native SDKs, with real loopback HTTP capture and cold
+  # fixed-output fetching. This job deliberately never seeds the Nix store.
+  native-epochs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
+      - name: Capture and replay the native SDK epochs
+        env:
+          DENO_NATIVE_RECEIPTS: ${{ runner.temp }}/deno-native-receipts
+        run: tests/native-epochs.sh
+      - name: Retain native commands, locks, SDK identities and raw logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: deno-native-epochs-${{ github.sha }}
+          path: ${{ runner.temp }}/deno-native-receipts
+          if-no-files-found: error

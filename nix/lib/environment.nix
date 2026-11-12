@@ -25,6 +25,7 @@
   # The store paths the environment keeps alive besides the cache, by name:
   # the toolchain and the library source.
   keep ? { },
+  nativeTools ? ../../src,
 }:
 let
   lock = lib.purifier.checkLock (
@@ -32,6 +33,11 @@ let
       inherit src lockFile denoLock;
     }
   );
+  native = (lib.importJSON lockFile).native or null;
+  verification = import ./native-sdk-check.nix {
+    inherit pkgs native nativeTools;
+    denoPackage = keep.deno or (throw "selected native SDK is missing from the environment");
+  };
   cache = import ./cache.nix {
     inherit (pkgs)
       lib
@@ -43,6 +49,7 @@ let
       writeText
       ;
     inherit (lib) purifier;
+    inherit verification;
     entries = lib.purifier.entriesFor pkgs.stdenv.hostPlatform.system lock;
   };
 in

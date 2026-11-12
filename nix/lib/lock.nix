@@ -31,8 +31,8 @@
 #              that fixes it; `entries` and `outputs` are empty then
 #
 # Deno keeps a remote module at remote/<scheme>/<host>/<SHA-256 of the
-# path and query>, with a port written as <host>_PORT<port>. Deno reads
-# redirects from deno.lock, so they need no entry.
+# path and query>. The selected SDK records its observed cache layout,
+# including legacy sidecars and redirects absent from early native locks.
 #
 # deno-purifier.lock.json holds `contentHash`: the SHA-256 of the file's
 # text with that value replaced by the empty string. The reader checks it
@@ -120,6 +120,10 @@ let
       }, and this deno-purifier reads format ${toString format}"
     else if malformed != { } then
       relock "${name} lacks ${lib.concatStringsSep ", " (builtins.attrNames malformed)} or has a value of the wrong type there"
+    else if
+      !(import ./native-context.nix { inherit lib; } (recorded.native or null) parsedDenoLock)
+    then
+      relock "selected native SDK/cache context is malformed or conflicts with deno.lock"
     else if badFiles != { } then
       relock "${name} records a hash that is not a SHA-256 in SRI form for ${builtins.head (builtins.attrNames badFiles)}"
     else if builtins.hashFile "sha256" denoLock != recorded.denoLock then
@@ -228,7 +232,7 @@ let
         if hostPort == null || builtins.elemAt hostPort 1 == defaultPort.${scheme} or null then
           builtins.head (lib.splitString ":" authority)
         else
-          "${builtins.elemAt hostPort 0}_PORT${builtins.elemAt hostPort 1}";
+          "${builtins.elemAt hostPort 0}_port_${builtins.elemAt hostPort 1}";
     in
     if parts == null then
       throw "deno-purifier: cannot read the URL ${url}"
@@ -244,15 +248,72 @@ let
     };
 
   fileEntry = url: hash: {
-    path = cachePath url;
+    path = if recorded ? native then recorded.native.cachePaths.${url} else cachePath url;
     inherit url hash;
     mirrors = [ ];
     headers = recorded.headers.${url} or { };
   };
 
   # The remote modules outside JSR, which deno.lock pins by URL.
+  nativeRemote =
+    if (recorded.native.lockVersion or null) == "flat" then
+      parsedDenoLock
+    else
+      parsedDenoLock.remote or { };
   remoteFiles = lib.mapAttrsToList (url: hex: fileEntry url (sriOf hex)) (
-    parsedDenoLock.remote or { }
+    if recorded ? native then
+      lib.filterAttrs (url: _: recorded.native.cachePaths ? ${url}) nativeRemote
+    else
+      nativeRemote
+  );
+  sidecars = map (entry: {
+    path = entry.path + ".metadata.json";
+    contents = builtins.toJSON {
+      inherit (entry) url headers;
+      now = {
+        secs_since_epoch = 0;
+        nanos_since_epoch = 0;
+      };
+    };
+  }) (builtins.filter (entry: lib.hasPrefix "deps/" entry.path) remoteFiles);
+
+  redirectEntries = lib.concatLists (
+    lib.mapAttrsToList (
+      url: row:
+      let
+        headers = {
+          location = row.location;
+        };
+        metadata = {
+          inherit url headers;
+          time = 0;
+        };
+      in
+      if lib.hasPrefix "deps/" row.path then
+        [
+          {
+            path = row.path;
+            contents = "";
+          }
+          {
+            path = row.path + ".metadata.json";
+            contents = builtins.toJSON {
+              inherit url headers;
+              now = {
+                secs_since_epoch = 0;
+                nanos_since_epoch = 0;
+              };
+            };
+          }
+        ]
+      else
+        [
+          {
+            path = row.path;
+            contents = "\n// denoCacheMetadata=${builtins.toJSON metadata}";
+          }
+        ]
+    ) (recorded.native.redirects or { })
   );
 
   # The JSR versions of deno.lock, keyed "@scope/name@version".
@@ -342,6 +403,9 @@ in
   purifier = "deno-purifier";
   problems = lib.optional (problem != null) problem;
   entries =
-    if problem != null then [ ] else npm ++ remoteFiles ++ versionMetas ++ jsrFiles ++ versionLists;
+    if problem != null then
+      [ ]
+    else
+      npm ++ remoteFiles ++ sidecars ++ redirectEntries ++ versionMetas ++ jsrFiles ++ versionLists;
   outputs = if problem != null then { } else builtins.listToAttrs outputList;
 }

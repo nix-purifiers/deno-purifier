@@ -200,6 +200,10 @@ let
   '';
 in
 {
+  native-schema = evalCheck "native-schema" (import ./native-schema.nix {
+    inherit lib;
+  }) "native SDK/cache schema accepted a malformed control";
+
   # The unit tests of the lock run's parsing, cache-file and hash logic.
   unit =
     pkgs.runCommand "unit-check"

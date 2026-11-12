@@ -40,6 +40,8 @@
 # evaluation time.
 #
 {
+  pkgs,
+  nativeTools ? ../../src,
   lib,
   stdenv,
   runCommand,
@@ -100,6 +102,18 @@ let
     inherit src lockFile denoLock;
   });
 
+  native = (lib.importJSON lockFile).native or null;
+  verification = import ./native-sdk-check.nix {
+    inherit
+      pkgs
+      denoPackage
+      native
+      nativeTools
+      ;
+  };
+  compileRuntime =
+    if builtins.isAttrs denoPackage && denoPackage ? denort then denoPackage.denort else null;
+
   cache = import ./cache.nix {
     inherit
       lib
@@ -112,6 +126,7 @@ let
       purifier
       fetchers
       ;
+    inherit verification;
     entries = purifier.entriesFor stdenv.hostPlatform.system lock;
   };
 
@@ -145,10 +160,13 @@ let
     export DENO_DIR="$TMPDIR/deno-dir"
     export DENO_NO_UPDATE_CHECK=1
     export NO_COLOR=1
-    export DENORT_BIN=${denoPackage.denort}/bin/denort
+    ${lib.optionalString (compileRuntime != null) "export DENORT_BIN=${compileRuntime}/bin/denort"}
     mkdir -p "$HOME" "$DENO_DIR"
     if [ -d ${cache}/remote ]; then
       cp -rs --no-preserve=mode ${cache}/remote "$DENO_DIR/remote"
+    fi
+    if [ -d ${cache}/deps ]; then
+      cp -rs --no-preserve=mode ${cache}/deps "$DENO_DIR/deps"
     fi
     if [ -d ${cache}/npm ]; then
       cp -rL ${cache}/npm "$DENO_DIR/npm"
@@ -158,14 +176,19 @@ let
     # module only; the build adds what to run.
     deno() {
       local status=0
-      command deno "$@" 2> >(tee -a "$TMPDIR/deno-errors" >&2) || status=$?
+      ${denoPackage}/bin/deno "$@" 2> >(tee -a "$TMPDIR/deno-errors" >&2) || status=$?
       wait
       if [ "$status" != 0 ] && grep -q 'not found in cache' "$TMPDIR/deno-errors"; then
         echo "deno-purifier: Deno needs a module that deno-purifier.lock.json does not record; run \`deno-purifier lock\` at the project root and commit the result." >&2
       fi
       return "$status"
     }
-    deno install --frozen --cached-only ${lib.escapeShellArgs installArgs}
+    ${
+      if native != null && !native.capabilities.install then
+        "${denoPackage}/bin/deno cache --lock=deno.lock ${lib.optionalString native.capabilities.frozen "--frozen"} ${lib.escapeShellArgs native.modules}"
+      else
+        "deno install --frozen --cached-only ${lib.escapeShellArgs installArgs}"
+    }
   '';
 
   # Runs task $2 of the member in directory $1 ("" for the root).
@@ -204,6 +227,10 @@ let
 
   mkPackage =
     { member, version, ... }:
+    assert
+      native == null
+      || native.capabilities.publish
+      || throw "selected native SDK has no publish capability";
     stdenv.mkDerivation (
       common
       // {
@@ -229,6 +256,11 @@ let
 
   mkProgram =
     { program, version, ... }:
+    assert
+      native == null
+      || native.capabilities.compile
+      || throw "selected native SDK has no compile capability";
+    assert compileRuntime != null || throw "selected Deno SDK has no offline compile runtime";
     stdenv.mkDerivation (
       common
       // {
@@ -257,6 +289,8 @@ let
 
   mkTask =
     { member, task, ... }:
+    assert
+      native == null || native.capabilities.task || throw "selected native SDK has no task capability";
     stdenv.mkDerivation (
       common
       // {
@@ -282,7 +316,9 @@ let
       buildPhase = ''
         runHook preBuild
         ${buildCommands}
-        deno test --frozen --cached-only ${lib.escapeShellArgs testArgs}
+        ${denoPackage}/bin/deno test ${
+          lib.optionalString (native == null || native.capabilities.frozen) "--frozen"
+        } --lock=deno.lock --cached-only ${lib.escapeShellArgs testArgs}
         runHook postBuild
       '';
       installPhase = ''
@@ -294,6 +330,10 @@ let
   );
 
   release =
+    assert
+      native == null
+      || native.capabilities.publish
+      || throw "selected native SDK has no publish capability";
     if jsrPackages == [ ] then
       throw "deno-purifier: the project has no package with a `name` in its deno.json, so it has no release to publish"
     else
@@ -323,6 +363,10 @@ let
     task = mkTask;
   };
 in
+assert
+  native != null
+  || toString denoPackage == toString deno
+  || throw "selected Deno SDK needs a lock captured with that SDK";
 {
   packages = builtins.mapAttrs (_: output: build.${output.kind} output) lock.outputs;
   inherit tests release;
