@@ -7,7 +7,7 @@
 #                   `update` updates the dependencies with `deno update`
 #                   and then records the downloads; `prefetch` realizes
 #                   what the development loop and the editor read
-#                   (nix/lib/environment.nix) and links it into the
+#                   (pkgs/build-deno-project/environment.nix) and links it into the
 #                   project as .deno-purifier/environment, a
 #                   garbage-collector root; `publish` builds the release
 #                   with Nix and runs `deno publish` on it.
@@ -42,6 +42,15 @@
   stdenv,
 }:
 let
+  runtime = lib.fileset.toSource {
+    root = ../..;
+    fileset = lib.fileset.unions [
+      ../../lib-overlays
+      ../../pkgs
+      ../../src
+      ../../flake.lock
+    ];
+  };
   helperDeno = (import path { system = stdenv.hostPlatform.system; }).deno;
   denort = if deno ? denort then toString deno.denort else "";
   # The commands evaluate outside this flake, so they fetch the shared
@@ -56,7 +65,7 @@ let
   # DENO_PURIFIER_EVAL_ROOT, DENO_PURIFIER_EVAL_LOCKFILE and
   # DENO_PURIFIER_EVAL_DENO_LOCK.
   evaluation = result: ''
-    (import ${../../nix/lib}/commands.nix {
+    (import ${runtime}/pkgs/build-deno-project/commands.nix {
       nixpkgs = ${path};
       system = "${stdenv.hostPlatform.system}";
       purifierSource = (builtins.fetchTree (builtins.fromJSON (builtins.readFile ${purifierLocked}))).outPath;
@@ -228,7 +237,7 @@ let
           export DENO_PURIFIER_NIX=${nix}/bin/nix
           export DENO_PURIFIER_NIXPKGS=${path}
           export DENO_PURIFIER_SYSTEM=${stdenv.hostPlatform.system}
-          export DENO_PURIFIER_OFFLINE_VERIFY=${../../nix/lib/native-offline.nix}
+          export DENO_PURIFIER_OFFLINE_VERIFY=${../build-deno-project/native-offline.nix}
           exec ${helperDeno}/bin/deno run --allow-all --no-config --no-lock \
             ${../../src}/deno-purifier.ts "$verb" "$@"
           ;;

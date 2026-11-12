@@ -170,7 +170,7 @@ reads every purifier, such as an SBOM generator, can call `readLock` alone.
 
 ### The builder's arguments
 
-`nix/lib/build-deno-project.nix` documents each of them:
+`pkgs/build-deno-project/default.nix` documents each of them:
 
 - `src` is the project root.
 - `lockFile` is `deno-purifier.lock.json`, and `denoLock` is `deno.lock`.

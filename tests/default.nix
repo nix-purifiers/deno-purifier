@@ -178,7 +178,7 @@ let
       exit 1
     '';
 
-  appEnvironment = import ../nix/lib/environment.nix {
+  appEnvironment = import ../pkgs/build-deno-project/environment.nix {
     inherit pkgs lib;
     src = ./fixtures/app;
     keep = {
@@ -303,7 +303,7 @@ in
   # downloads, offline.
   deployctl-cli =
     let
-      environment = import ../nix/lib/environment.nix {
+      environment = import ../pkgs/build-deno-project/environment.nix {
         inherit pkgs lib;
         src = deployctl;
         lockFile = ./real/deployctl/deno-purifier.lock.json;

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 #
 # What the `deno-purifier` commands build for a project, outside any flake:
-# `prefetch` builds `environment` (nix/lib/environment.nix) and `publish`
+# `prefetch` builds `environment` (pkgs/build-deno-project/environment.nix) and `publish`
 # builds `release`, the release of buildDenoProject. The commands evaluate
 # this file with `nix build --impure`, passing the paths below as strings.
 {
@@ -51,11 +51,11 @@ in
   };
 
   release =
-    (pkgs.callPackage ./build-deno-project.nix
+    (pkgs.callPackage ./default.nix
       {
         inherit purifier;
         nativeTools = /. + nativeTools;
-        readLock = import ./lock.nix { inherit lib; };
+        readLock = import ../../lib-overlays/default/lock.nix { inherit lib; };
       }
       {
         inherit src;

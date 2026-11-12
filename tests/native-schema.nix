@@ -2,7 +2,7 @@
 # Schema controls only; this synthetic SDK identity is never executed.
 { lib }:
 let
-  check = import ../nix/lib/native-context.nix { inherit lib; };
+  check = import ../lib-overlays/default/native-context.nix { inherit lib; };
   sdk = "/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-schema-control";
   sri = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
   url = "https://example.com/leaf.js";

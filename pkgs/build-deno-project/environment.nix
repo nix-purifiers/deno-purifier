@@ -12,7 +12,7 @@
 #   purifier    the source of the shared purifier library, which the
 #               commands evaluate
 #
-# The commands evaluate this file through nix/lib/commands.nix; the checks
+# The commands evaluate this file through pkgs/build-deno-project/commands.nix; the checks
 # evaluate it directly.
 {
   pkgs,
@@ -29,7 +29,7 @@
 }:
 let
   lock = lib.purifier.checkLock (
-    import ./lock.nix { inherit lib; } {
+    import ../../lib-overlays/default/lock.nix { inherit lib; } {
       inherit src lockFile denoLock;
     }
   );
